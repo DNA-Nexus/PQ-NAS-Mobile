@@ -29,6 +29,33 @@
 
         </activity>
 
+        <!-- PQNAS_INCOMING_ANDROID_SHARE_V1: Receive Android Sharesheet files into DNA-Nexus. -->
+        <activity
+            android:name=".IncomingShareActivity"
+            android:exported="true"
+            android:noHistory="true"
+            android:excludeFromRecents="true"
+            android:theme="@style/Theme.PQNAS">
+
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="image/*" />
+                <data android:mimeType="video/*" />
+                <data android:mimeType="application/pdf" />
+                <data android:mimeType="text/plain" />
+            </intent-filter>
+
+            <intent-filter>
+                <action android:name="android.intent.action.SEND_MULTIPLE" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="image/*" />
+                <data android:mimeType="video/*" />
+                <data android:mimeType="application/pdf" />
+            </intent-filter>
+
+        </activity>
+
         <activity
             android:name=".ui.screens.PortraitCaptureActivity"
             android:screenOrientation="portrait"

@@ -1,5 +1,6 @@
 package com.pqnas.mobile
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.WindowManager
 import androidx.activity.compose.setContent
@@ -29,6 +30,21 @@ import com.pqnas.mobile.api.ApiFactory
 import com.pqnas.mobile.ui.screens.AdminScreen
 
 class MainActivity : FragmentActivity() {
+    // PQNAS_INCOMING_ANDROID_SHARE_V1
+    private var incomingShareHandler: ((Intent) -> Unit)? = null
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        incomingShareHandler?.invoke(intent)
+    }
+
+    private fun extractIncomingShareManifestPath(intent: Intent?): String? {
+        return intent
+            ?.getStringExtra(IncomingShareActivity.EXTRA_MANIFEST_PATH)
+            ?.takeIf { it.isNotBlank() }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -50,6 +66,28 @@ class MainActivity : FragmentActivity() {
                 var pairPayload by remember { mutableStateOf<PairQrPayload?>(null) }
                 var authLoaded by remember { mutableStateOf(false) }
                 var isAdmin by remember { mutableStateOf(false) }
+
+                // PQNAS_INCOMING_ANDROID_SHARE_V1: pending Android Sharesheet batch, processed after app unlock.
+                var incomingShareManifestPath by remember {
+                    mutableStateOf(extractIncomingShareManifestPath(intent))
+                }
+                var incomingShareNonce by remember {
+                    mutableIntStateOf(if (incomingShareManifestPath.isNullOrBlank()) 0 else 1)
+                }
+
+                DisposableEffect(Unit) {
+                    incomingShareHandler = { incoming ->
+                        val nextManifestPath = extractIncomingShareManifestPath(incoming)
+                        if (!nextManifestPath.isNullOrBlank()) {
+                            incomingShareManifestPath = nextManifestPath
+                            incomingShareNonce += 1
+                        }
+                    }
+
+                    onDispose {
+                        incomingShareHandler = null
+                    }
+                }
 
                 var appUnlocked by remember { mutableStateOf(false) }
                 var appLockStatus by remember { mutableStateOf("") }
@@ -300,6 +338,11 @@ class MainActivity : FragmentActivity() {
                                 } else null,
                                 onBeforeExternalPicker = {
                                     externalPickerLaunchedAtMs.longValue = System.currentTimeMillis()
+                                },
+                                incomingShareManifestPath = incomingShareManifestPath,
+                                incomingShareNonce = incomingShareNonce,
+                                onIncomingShareConsumed = {
+                                    incomingShareManifestPath = null
                                 }
                             )
                         }

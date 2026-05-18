@@ -113,7 +113,10 @@ fun FilesScreen(
     filesRepository: FilesRepository,
     onLogout: (() -> Unit)? = null,
     onOpenAdmin: (() -> Unit)? = null,
-    onBeforeExternalPicker: () -> Unit = {}
+    onBeforeExternalPicker: () -> Unit = {},
+    incomingShareManifestPath: String? = null,
+    incomingShareNonce: Int = 0,
+    onIncomingShareConsumed: () -> Unit = {}
 ) {
     val context = LocalContext.current
     val initialFileListCache = remember(context) {
@@ -239,6 +242,37 @@ fun FilesScreen(
             .split("/")
             .filter { it.isNotBlank() }
             .joinToString("/")
+    }
+
+    // PQNAS_INCOMING_ANDROID_SHARE_V1: incoming Android Sharesheet names are external input.
+    fun sanitizeIncomingUploadName(name: String): String {
+        val cleaned = name
+            .replace(Regex("[\\\\/:*?\"<>|\\u0000-\\u001F]"), "_")
+            .trim()
+            .trim('.')
+
+        return cleaned.ifBlank { "shared_file.bin" }.take(180)
+    }
+
+    fun allocateIncomingUploadName(
+        preferredName: String,
+        reservedNames: MutableSet<String>
+    ): String {
+        val safeName = sanitizeIncomingUploadName(preferredName)
+        if (reservedNames.add(safeName)) return safeName
+
+        val dot = safeName.lastIndexOf('.')
+        val base = if (dot > 0) safeName.substring(0, dot) else safeName
+        val ext = if (dot > 0) safeName.substring(dot) else ""
+
+        for (i in 2..9999) {
+            val candidate = "${base}_${i}${ext}"
+            if (reservedNames.add(candidate)) return candidate
+        }
+
+        return "shared_${System.currentTimeMillis()}.bin".also {
+            reservedNames.add(it)
+        }
     }
 
     fun isInternalPqnasFolder(item: FileItemDto): Boolean {
@@ -1072,11 +1106,163 @@ fun FilesScreen(
         }
     }
 
+    // PQNAS_INCOMING_ANDROID_SHARE_V1: upload files staged by IncomingShareActivity.
+    fun uploadStagedIncomingShareManifest(manifestPath: String) {
+        if (uploadInProgress) {
+            status = "Another upload is already running. Try sharing again after it finishes."
+            scope.launch { snackbarHostState.showSnackbar(status) }
+            onIncomingShareConsumed()
+            return
+        }
+
+        if (!scopedOps.canWrite(currentScope)) {
+            status = "You do not have write access here."
+            scope.launch { snackbarHostState.showSnackbar(status) }
+            onIncomingShareConsumed()
+            return
+        }
+
+        val scopeSnapshot = currentScope
+        val pathSnapshot = currentPath
+        val manifestFile = File(manifestPath)
+        val stagedDir = manifestFile.parentFile
+
+        onIncomingShareConsumed()
+
+        uploadJob = scope.launch {
+            var uploadedCount = 0
+
+            try {
+                if (!manifestFile.isFile) {
+                    throw IllegalStateException("Incoming share manifest is missing.")
+                }
+
+                val manifestJson = JSONObject(
+                    withContext(Dispatchers.IO) {
+                        manifestFile.readText(Charsets.UTF_8)
+                    }
+                )
+
+                val shareItems = manifestJson.getJSONArray("items")
+                if (shareItems.length() <= 0) {
+                    throw IllegalStateException("Incoming share had no uploadable items.")
+                }
+
+                val reservedNames = items
+                    .map { it.name }
+                    .toMutableSet()
+
+                for (index in 0 until shareItems.length()) {
+                    if (uploadCancelRequested) {
+                        throw CancellationException("User cancelled incoming share upload")
+                    }
+
+                    val entry = shareItems.getJSONObject(index)
+                    if (entry.optString("kind") != "file") continue
+
+                    val stagedPath = entry.optString("path")
+                    val stagedFile = File(stagedPath)
+                    if (!stagedFile.isFile) {
+                        throw IllegalStateException("Staged file is missing: $stagedPath")
+                    }
+
+                    val preferredName = entry
+                        .optString("name")
+                        .ifBlank { stagedFile.name }
+                        .ifBlank { "shared_file.bin" }
+
+                    val uploadName = allocateIncomingUploadName(
+                        preferredName = preferredName,
+                        reservedNames = reservedNames
+                    )
+
+                    val targetPath = buildItemPath(pathSnapshot, uploadName)
+                    val mimeType = entry
+                        .optString("mime")
+                        .ifBlank { "application/octet-stream" }
+
+                    var lastProgressUiUpdateAtMs = 0L
+                    var lastProgressUiBytes = -1L
+                    val totalBytes = stagedFile.length()
+
+                    uploadInProgress = true
+                    uploadCancelRequested = false
+                    uploadFileName = uploadName
+                    uploadBytesSent = 0L
+                    uploadBytesTotal = totalBytes
+                    status = "Uploading shared item ${index + 1}/${shareItems.length()}: $uploadName..."
+
+                    val onUploadProgress: (Long, Long) -> Unit = { sent, total ->
+                        val nowMs = System.currentTimeMillis()
+                        val bytesDelta = sent - lastProgressUiBytes
+                        val shouldUpdate =
+                            sent == total ||
+                                    lastProgressUiBytes < 0L ||
+                                    bytesDelta >= 256 * 1024L ||
+                                    (nowMs - lastProgressUiUpdateAtMs) >= 100L
+
+                        if (shouldUpdate) {
+                            lastProgressUiBytes = sent
+                            lastProgressUiUpdateAtMs = nowMs
+                            mainThreadHandler.post {
+                                uploadBytesSent = sent
+                                uploadBytesTotal = total
+                            }
+                        }
+                    }
+
+                    scopedOps.uploadTempFile(
+                        scope = scopeSnapshot,
+                        path = targetPath,
+                        file = stagedFile,
+                        mimeType = mimeType,
+                        overwrite = false,
+                        onProgress = onUploadProgress,
+                        isCancelled = { uploadCancelRequested }
+                    )
+
+                    uploadedCount += 1
+                }
+
+                if (uploadedCount <= 0) {
+                    throw IllegalStateException("Incoming share had no files to upload.")
+                }
+
+                status = "OK"
+                snackbarHostState.showSnackbar(
+                    if (uploadedCount == 1) {
+                        "Uploaded shared item"
+                    } else {
+                        "Uploaded $uploadedCount shared items"
+                    }
+                )
+                load(pathSnapshot)
+            } catch (e: CancellationException) {
+                status = "Incoming share upload cancelled."
+                snackbarHostState.showSnackbar("Upload cancelled")
+            } catch (e: Exception) {
+                val msg = friendlyHttpMessage("Incoming share upload", e)
+                status = msg
+                snackbarHostState.showSnackbar(msg)
+            } finally {
+                runCatching { stagedDir?.deleteRecursively() }
+                clearUploadProgressState()
+            }
+        }
+    }
+
     val uploadDocumentLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument()
     ) { uri: Uri? ->
         if (uri == null) return@rememberLauncherForActivityResult
         uploadUri(uri, overwrite = false)
+    }
+
+    LaunchedEffect(incomingShareNonce, incomingShareManifestPath) {
+        val manifestPath = incomingShareManifestPath
+        if (incomingShareNonce > 0 && !manifestPath.isNullOrBlank()) {
+            uploadStagedIncomingShareManifest(manifestPath)
+        }
     }
 
     LaunchedEffect(Unit) {
