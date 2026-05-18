@@ -229,6 +229,12 @@ fun FilesScreen(
     var uploadJob by remember { mutableStateOf<Job?>(null) }
     var uploadCancelRequested by remember { mutableStateOf(false) }
 
+    // PQNAS_INCOMING_DESTINATION_PICKER_V1: pending Android Sharesheet upload destination picker state.
+    var showIncomingShareDestinationDialog by remember { mutableStateOf(false) }
+    var pendingIncomingShareManifestPath by remember { mutableStateOf<String?>(null) }
+    var incomingShareDestinationMode by remember { mutableStateOf("phone_uploads") }
+    var incomingSharePhoneUploadsPath by remember { mutableStateOf("") }
+
     var newFolderDialogOpen by remember { mutableStateOf(false) }
     var newFolderName by remember { mutableStateOf("") }
 
@@ -1106,8 +1112,50 @@ fun FilesScreen(
         }
     }
 
+    // PQNAS_INCOMING_DESTINATION_PICKER_V1: destination helpers for Android Sharesheet uploads.
+    fun defaultIncomingSharePhoneUploadsPath(): String {
+        val month = SimpleDateFormat("yyyy-MM", Locale.US).format(Date())
+        val stamp = SimpleDateFormat("yyyyMMdd-HHmmss", Locale.US).format(Date())
+        return "Phone Uploads/$month/$stamp"
+    }
+
+    fun incomingShareDestinationLabel(scope: FileScope, path: String?): String {
+        val cleanPath = normalizeRelPath(path)
+        val suffix = if (cleanPath.isBlank()) "/" else "/$cleanPath"
+
+        return when (scope) {
+            FileScope.User -> "My Files $suffix"
+            is FileScope.Workspace -> "${scope.workspaceName.ifBlank { "Workspace" }} $suffix"
+        }
+    }
+
+    suspend fun ensureIncomingDestinationFolders(scope: FileScope, destinationPath: String?) {
+        val cleanPath = normalizeRelPath(destinationPath)
+        if (cleanPath.isBlank()) return
+        if (!scopedOps.canWrite(scope)) return
+
+        var partial = ""
+
+        cleanPath
+            .split("/")
+            .map { it.trim() }
+            .filter { it.isNotBlank() }
+            .forEach { segment ->
+                partial = if (partial.isBlank()) segment else "$partial/$segment"
+
+                // Folder may already exist. That is fine; upload will still validate the final path.
+                runCatching {
+                    scopedOps.mkdir(scope, partial)
+                }
+            }
+    }
+
     // PQNAS_INCOMING_ANDROID_SHARE_V1: upload files staged by IncomingShareActivity.
-    fun uploadStagedIncomingShareManifest(manifestPath: String) {
+    fun uploadStagedIncomingShareManifest(
+        manifestPath: String,
+        destinationScope: FileScope,
+        destinationPath: String?
+    ) {
         if (uploadInProgress) {
             status = "Another upload is already running. Try sharing again after it finishes."
             scope.launch { snackbarHostState.showSnackbar(status) }
@@ -1115,15 +1163,15 @@ fun FilesScreen(
             return
         }
 
-        if (!scopedOps.canWrite(currentScope)) {
+        if (!scopedOps.canWrite(destinationScope)) {
             status = "You do not have write access here."
             scope.launch { snackbarHostState.showSnackbar(status) }
             onIncomingShareConsumed()
             return
         }
 
-        val scopeSnapshot = currentScope
-        val pathSnapshot = currentPath
+        val scopeSnapshot = destinationScope
+        val pathSnapshot = normalizeRelPath(destinationPath).ifBlank { null }
         val manifestFile = File(manifestPath)
         val stagedDir = manifestFile.parentFile
 
@@ -1133,6 +1181,8 @@ fun FilesScreen(
             var uploadedCount = 0
 
             try {
+                ensureIncomingDestinationFolders(scopeSnapshot, pathSnapshot)
+
                 if (!manifestFile.isFile) {
                     throw IllegalStateException("Incoming share manifest is missing.")
                 }
@@ -1236,6 +1286,8 @@ fun FilesScreen(
                         "Uploaded $uploadedCount shared items"
                     }
                 )
+                currentScope = scopeSnapshot
+                currentPath = pathSnapshot
                 load(pathSnapshot)
             } catch (e: CancellationException) {
                 status = "Incoming share upload cancelled."
@@ -1261,7 +1313,12 @@ fun FilesScreen(
     LaunchedEffect(incomingShareNonce, incomingShareManifestPath) {
         val manifestPath = incomingShareManifestPath
         if (incomingShareNonce > 0 && !manifestPath.isNullOrBlank()) {
-            uploadStagedIncomingShareManifest(manifestPath)
+            // PQNAS_INCOMING_DESTINATION_PICKER_V1: hold the staged share until user chooses destination.
+            pendingIncomingShareManifestPath = manifestPath
+            incomingSharePhoneUploadsPath = defaultIncomingSharePhoneUploadsPath()
+            incomingShareDestinationMode = "phone_uploads"
+            showIncomingShareDestinationDialog = true
+            onIncomingShareConsumed()
         }
     }
 
@@ -1716,6 +1773,204 @@ fun FilesScreen(
             }
         }
         }
+
+    if (showIncomingShareDestinationDialog) {
+        AlertDialog(
+            onDismissRequest = {
+                val manifestPath = pendingIncomingShareManifestPath
+                if (!manifestPath.isNullOrBlank()) {
+                    runCatching { File(manifestPath).parentFile?.deleteRecursively() }
+                }
+
+                pendingIncomingShareManifestPath = null
+                showIncomingShareDestinationDialog = false
+                onIncomingShareConsumed()
+            },
+            title = {
+                Text("Upload shared items to DNA-Nexus")
+            },
+            text = {
+                val currentDestinationLabel = incomingShareDestinationLabel(currentScope, currentPath)
+                val phoneUploadsPath = incomingSharePhoneUploadsPath.ifBlank {
+                    defaultIncomingSharePhoneUploadsPath()
+                }
+                val writableWorkspaces = workspaces.filter { ws ->
+                    scopedOps.canWrite(
+                        FileScope.Workspace(
+                            workspaceId = ws.workspace_id,
+                            workspaceName = ws.name,
+                            workspaceRole = ws.role
+                        )
+                    )
+                }
+
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text(
+                        text = "Choose where this Android share should be uploaded.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+
+                    ListItem(
+                        headlineContent = { Text("Phone Uploads") },
+                        supportingContent = { Text("/$phoneUploadsPath") },
+                        leadingContent = {
+                            RadioButton(
+                                selected = incomingShareDestinationMode == "phone_uploads",
+                                onClick = { incomingShareDestinationMode = "phone_uploads" }
+                            )
+                        },
+                        modifier = Modifier.clickable {
+                            incomingShareDestinationMode = "phone_uploads"
+                        }
+                    )
+
+                    ListItem(
+                        headlineContent = { Text("Current location") },
+                        supportingContent = { Text(currentDestinationLabel) },
+                        leadingContent = {
+                            RadioButton(
+                                selected = incomingShareDestinationMode == "current",
+                                onClick = { incomingShareDestinationMode = "current" }
+                            )
+                        },
+                        modifier = Modifier.clickable {
+                            incomingShareDestinationMode = "current"
+                        }
+                    )
+
+                    ListItem(
+                        headlineContent = { Text("My Files root") },
+                        supportingContent = { Text("Upload directly to /") },
+                        leadingContent = {
+                            RadioButton(
+                                selected = incomingShareDestinationMode == "my_files_root",
+                                onClick = { incomingShareDestinationMode = "my_files_root" }
+                            )
+                        },
+                        modifier = Modifier.clickable {
+                            incomingShareDestinationMode = "my_files_root"
+                        }
+                    )
+
+                    if (writableWorkspaces.isNotEmpty()) {
+                        HorizontalDivider()
+
+                        Text(
+                            text = "Workspace roots",
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+
+                        writableWorkspaces.forEach { ws ->
+                            val mode = "workspace:${ws.workspace_id}"
+                            ListItem(
+                                headlineContent = { Text(ws.name.ifBlank { ws.workspace_id }) },
+                                supportingContent = { Text("Workspace root • ${ws.role}") },
+                                leadingContent = {
+                                    RadioButton(
+                                        selected = incomingShareDestinationMode == mode,
+                                        onClick = { incomingShareDestinationMode = mode }
+                                    )
+                                },
+                                modifier = Modifier.clickable {
+                                    incomingShareDestinationMode = mode
+                                }
+                            )
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        val manifestPath = pendingIncomingShareManifestPath
+                        if (manifestPath.isNullOrBlank()) {
+                            status = "Incoming share is missing."
+                            showIncomingShareDestinationDialog = false
+                            return@TextButton
+                        }
+
+                        var destinationScope = currentScope
+                        var destinationPath: String? = currentPath
+
+                        when {
+                            incomingShareDestinationMode == "phone_uploads" -> {
+                                destinationScope = FileScope.User
+                                destinationPath = incomingSharePhoneUploadsPath.ifBlank {
+                                    defaultIncomingSharePhoneUploadsPath()
+                                }
+                            }
+
+                            incomingShareDestinationMode == "current" -> {
+                                destinationScope = currentScope
+                                destinationPath = currentPath
+                            }
+
+                            incomingShareDestinationMode == "my_files_root" -> {
+                                destinationScope = FileScope.User
+                                destinationPath = null
+                            }
+
+                            incomingShareDestinationMode.startsWith("workspace:") -> {
+                                val workspaceId = incomingShareDestinationMode.removePrefix("workspace:")
+                                val ws = workspaces.firstOrNull { it.workspace_id == workspaceId }
+                                if (ws == null) {
+                                    status = "Selected workspace is no longer available."
+                                    return@TextButton
+                                }
+
+                                destinationScope = FileScope.Workspace(
+                                    workspaceId = ws.workspace_id,
+                                    workspaceName = ws.name,
+                                    workspaceRole = ws.role
+                                )
+                                destinationPath = null
+                            }
+
+                            else -> {
+                                status = "Unknown upload destination."
+                                return@TextButton
+                            }
+                        }
+
+                        pendingIncomingShareManifestPath = null
+                        showIncomingShareDestinationDialog = false
+
+                        uploadStagedIncomingShareManifest(
+                            manifestPath = manifestPath,
+                            destinationScope = destinationScope,
+                            destinationPath = destinationPath
+                        )
+                    }
+                ) {
+                    Text("Upload")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        val manifestPath = pendingIncomingShareManifestPath
+                        if (!manifestPath.isNullOrBlank()) {
+                            runCatching { File(manifestPath).parentFile?.deleteRecursively() }
+                        }
+
+                        pendingIncomingShareManifestPath = null
+                        showIncomingShareDestinationDialog = false
+                        onIncomingShareConsumed()
+                    }
+                ) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
 
     if (showAboutDialog) {
         AlertDialog(
