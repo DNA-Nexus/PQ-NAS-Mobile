@@ -47,6 +47,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
@@ -1774,8 +1775,12 @@ fun FilesScreen(
         }
         }
 
+    // PQNAS_REPAIR_INCOMING_DESTINATION_STYLE_SCOPE_V1
     if (showIncomingShareDestinationDialog) {
+        // PQNAS_INCOMING_DESTINATION_PICKER_STYLE_V1
         AlertDialog(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+            tonalElevation = 6.dp,
             onDismissRequest = {
                 val manifestPath = pendingIncomingShareManifestPath
                 if (!manifestPath.isNullOrBlank()) {
@@ -1790,6 +1795,7 @@ fun FilesScreen(
                 Text("Upload shared items to DNA-Nexus")
             },
             text = {
+                // PQNAS_INCOMING_DESTINATION_PICKER_UNIFIED_STYLE_V1
                 val currentDestinationLabel = incomingShareDestinationLabel(currentScope, currentPath)
                 val phoneUploadsPath = incomingSharePhoneUploadsPath.ifBlank {
                     defaultIncomingSharePhoneUploadsPath()
@@ -1807,13 +1813,18 @@ fun FilesScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
+                        .background(MaterialTheme.colorScheme.surfaceVariant)
                         .verticalScroll(rememberScrollState()),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Text(
                         text = "Choose where this Android share should be uploaded.",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(MaterialTheme.colorScheme.surfaceVariant)
+                            .padding(horizontal = 4.dp, vertical = 4.dp)
                     )
 
                     ListItem(
@@ -1827,7 +1838,10 @@ fun FilesScreen(
                         },
                         modifier = Modifier.clickable {
                             incomingShareDestinationMode = "phone_uploads"
-                        }
+                        },
+                        colors = ListItemDefaults.colors(
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant
+                        )
                     )
 
                     ListItem(
@@ -1841,7 +1855,10 @@ fun FilesScreen(
                         },
                         modifier = Modifier.clickable {
                             incomingShareDestinationMode = "current"
-                        }
+                        },
+                        colors = ListItemDefaults.colors(
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant
+                        )
                     )
 
                     ListItem(
@@ -1855,17 +1872,26 @@ fun FilesScreen(
                         },
                         modifier = Modifier.clickable {
                             incomingShareDestinationMode = "my_files_root"
-                        }
+                        },
+                        colors = ListItemDefaults.colors(
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant
+                        )
                     )
 
                     if (writableWorkspaces.isNotEmpty()) {
-                        HorizontalDivider()
+                        HorizontalDivider(
+                            color = MaterialTheme.colorScheme.outline.copy(alpha = 0.25f)
+                        )
 
                         Text(
                             text = "Workspace roots",
                             style = MaterialTheme.typography.titleSmall,
                             fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(MaterialTheme.colorScheme.surfaceVariant)
+                                .padding(horizontal = 4.dp, vertical = 4.dp)
                         )
 
                         writableWorkspaces.forEach { ws ->
@@ -1881,7 +1907,10 @@ fun FilesScreen(
                                 },
                                 modifier = Modifier.clickable {
                                     incomingShareDestinationMode = mode
-                                }
+                                },
+                                colors = ListItemDefaults.colors(
+                                    containerColor = MaterialTheme.colorScheme.surfaceVariant
+                                )
                             )
                         }
                     }
