@@ -135,6 +135,13 @@ class FilesRepository(
         )
     }
 
+    private val circleStackApi by lazy {
+        ApiFactory.createCircleStackApi(
+            baseUrl = baseUrlProvider(),
+            tokenStore = tokenStore
+        )
+    }
+
     private val authedOkHttpClient by lazy {
         ApiFactory.createAuthedOkHttpClient(
             baseUrl = baseUrlProvider(),
@@ -159,6 +166,10 @@ class FilesRepository(
 
     internal fun createEchoStackApiInternal() =
         echoStackApi
+
+    internal fun createCircleStackApiInternal() =
+        circleStackApi
+
     internal fun createFilesApiInternal() =
         filesApi
     suspend fun getMyStorage() =

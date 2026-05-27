@@ -64,6 +64,11 @@ object ApiFactory {
             .create(EchoStackApi::class.java)
     }
 
+    fun createCircleStackApi(baseUrl: String, tokenStore: TokenStore): CircleStackApi {
+        return createAuthedRetrofit(baseUrl, tokenStore)
+            .create(CircleStackApi::class.java)
+    }
+
 
     fun createAdminApi(baseUrl: String, tokenStore: TokenStore): AdminApi {
         return createAuthedRetrofit(baseUrl, tokenStore)

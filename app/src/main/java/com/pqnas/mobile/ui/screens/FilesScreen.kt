@@ -105,6 +105,7 @@ import com.pqnas.mobile.files.stageUriToTempFile
 import java.io.File
 import org.json.JSONObject
 import com.pqnas.mobile.echostack.EchoStackRepository
+import com.pqnas.mobile.circlestack.CircleStackRepository
 import androidx.compose.material.icons.filled.Lock
 
 
@@ -163,6 +164,7 @@ fun FilesScreen(
     var showAboutDialog by remember { mutableStateOf(false) }
     var dropZoneAvailable by remember { mutableStateOf(false) }
     var echoStackAvailable by remember { mutableStateOf(false) }
+    var circleStackAvailable by remember { mutableStateOf(false) }
     var appsChecked by remember { mutableStateOf(false) }
     var showDropZoneSheet by remember { mutableStateOf(false) }
     var dropZones by remember { mutableStateOf<List<DropZoneInfo>>(emptyList()) }
@@ -171,6 +173,7 @@ fun FilesScreen(
     var dropZoneStatus by remember { mutableStateOf("") }
     var dropZoneLatestUrl by remember { mutableStateOf("") }
     var showEchoStackScreen by remember { mutableStateOf(false) }
+    var showCircleStackScreen by remember { mutableStateOf(false) }
 
     var dropZoneName by remember { mutableStateOf("Drop Zone") }
     var dropZoneDestination by remember { mutableStateOf("") }
@@ -1332,6 +1335,7 @@ fun FilesScreen(
         if (showAppsSheet) {
             dropZoneAvailable = filesRepository.isServerAppAvailable("dropzone")
             echoStackAvailable = filesRepository.isServerAppAvailable("echostack")
+            circleStackAvailable = filesRepository.isServerAppAvailable("circlestack")
             appsChecked = true
         }
     }
@@ -1422,6 +1426,26 @@ fun FilesScreen(
         refreshWorkspaces()
         load(null)
     }
+
+    if (showCircleStackScreen) {
+        val circleStackRepository = remember(filesRepository) {
+            CircleStackRepository(filesRepository.createCircleStackApiInternal())
+        }
+        val circleStackImageLoader = remember(filesRepository, context) {
+            coil.ImageLoader.Builder(context)
+                .okHttpClient(filesRepository.createAuthedOkHttpClient())
+                .build()
+        }
+
+        CircleStackScreen(
+            repository = circleStackRepository,
+            baseUrl = filesRepository.baseUrlForDisplay(),
+            imageLoader = circleStackImageLoader,
+            onClose = { showCircleStackScreen = false }
+        )
+        return
+    }
+
     Box(
         modifier = Modifier.fillMaxSize()
     ) {
@@ -2143,6 +2167,38 @@ fun FilesScreen(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
 
+                    if (circleStackAvailable) {
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    showAppsSheet = false
+                                    showCircleStackScreen = true
+                                },
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.surfaceVariant
+                            )
+                        ) {
+                            Column(
+                                modifier = Modifier.padding(16.dp),
+                                verticalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                Text(
+                                    text = "Circle Stack",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+
+                                Text(
+                                    text = "Open your private social feed from this DNA-Nexus server.",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                    }
+
                     if (echoStackAvailable) {
                         Card(
                             modifier = Modifier
@@ -2208,7 +2264,7 @@ fun FilesScreen(
                         }
                     }
 
-                    if (appsChecked && !echoStackAvailable && !dropZoneAvailable) {
+                    if (appsChecked && !circleStackAvailable && !echoStackAvailable && !dropZoneAvailable) {
                         Text(
                             text = "No mobile apps are available on this server yet.",
                             style = MaterialTheme.typography.bodyMedium,
