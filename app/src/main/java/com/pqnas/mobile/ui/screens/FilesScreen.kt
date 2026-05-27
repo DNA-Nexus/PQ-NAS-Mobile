@@ -1439,8 +1439,10 @@ fun FilesScreen(
 
         CircleStackScreen(
             repository = circleStackRepository,
+            filesRepository = filesRepository,
             baseUrl = filesRepository.baseUrlForDisplay(),
             imageLoader = circleStackImageLoader,
+            onBeforeExternalPicker = onBeforeExternalPicker,
             onClose = { showCircleStackScreen = false }
         )
         return

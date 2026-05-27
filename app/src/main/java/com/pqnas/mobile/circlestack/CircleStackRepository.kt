@@ -23,11 +23,16 @@ class CircleStackRepository(
 
     suspend fun createPost(
         text: String,
-        visibility: String = "public"
+        visibility: String = "public",
+        mediaPath: String = ""
     ): Long {
         val cleanText = text.trim()
-        if (cleanText.isBlank()) {
-            throw IllegalArgumentException("Write something first.")
+        val cleanMediaPath = mediaPath
+            .replace("\\", "/")
+            .trim('/')
+
+        if (cleanText.isBlank() && cleanMediaPath.isBlank()) {
+            throw IllegalArgumentException("Write something or attach an image first.")
         }
 
         val cleanVisibility = when (visibility.trim().lowercase()) {
@@ -38,7 +43,8 @@ class CircleStackRepository(
         val response = api.createPost(
             CircleStackCreatePostRequest(
                 text = cleanText,
-                visibility = cleanVisibility
+                visibility = cleanVisibility,
+                media_path = cleanMediaPath
             )
         )
 

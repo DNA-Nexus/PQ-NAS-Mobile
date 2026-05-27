@@ -1,5 +1,11 @@
 package com.pqnas.mobile.ui.screens
 
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
+import android.provider.OpenableColumns
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -13,6 +19,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -47,9 +54,15 @@ import coil.request.ImageRequest
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.pqnas.mobile.api.CircleStackPostDto
+import com.pqnas.mobile.api.FileItemDto
 import com.pqnas.mobile.circlestack.CircleStackRepository
 import com.pqnas.mobile.circlestack.circleStackFriendlyMessage
+import com.pqnas.mobile.files.FilesRepository
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.io.File
+import java.net.URLEncoder
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -69,11 +82,14 @@ private val CircleReactionOptions = listOf("👍", "❤️", "😂", "😮", "�
 @Composable
 fun CircleStackScreen(
     repository: CircleStackRepository,
+    filesRepository: FilesRepository,
     baseUrl: String,
     imageLoader: ImageLoader,
+    onBeforeExternalPicker: () -> Unit = {},
     onClose: () -> Unit
 ) {
     val scope = rememberCoroutineScope()
+    val context = LocalContext.current
 
     var posts by remember { mutableStateOf<List<CircleStackPostDto>>(emptyList()) }
     var newText by remember { mutableStateOf("") }
@@ -82,7 +98,75 @@ fun CircleStackScreen(
     var status by remember { mutableStateOf("Loading Circle Stack...") }
     var loading by remember { mutableStateOf(false) }
     var creating by remember { mutableStateOf(false) }
+    var uploadingImage by remember { mutableStateOf(false) }
+    var pendingImageUri by remember { mutableStateOf<Uri?>(null) }
+    var pendingImageName by remember { mutableStateOf("") }
+    var pendingImageMime by remember { mutableStateOf<String?>(null) }
+
+    var selectedNasImagePath by remember { mutableStateOf("") }
+    var showNasImagePicker by remember { mutableStateOf(false) }
+    var nasPickerPath by remember { mutableStateOf<String?>(null) }
+    var nasPickerItems by remember { mutableStateOf<List<FileItemDto>>(emptyList()) }
+    var nasPickerLoading by remember { mutableStateOf(false) }
+    var nasPickerStatus by remember { mutableStateOf("") }
+
     var previewImageUrl by remember { mutableStateOf<String?>(null) }
+
+    fun loadNasImagePicker(path: String?) {
+        nasPickerPath = path?.trim('/')?.ifBlank { null }
+        nasPickerLoading = true
+        nasPickerStatus = "Loading..."
+
+        scope.launch {
+            runCatching {
+                filesRepository.list(nasPickerPath)
+            }.onSuccess { response ->
+                nasPickerPath = response.path.ifBlank { null }
+
+                nasPickerItems = response.items
+                    .filter { item ->
+                        !circleStackShouldHidePickerItem(item.name) &&
+                                (item.type == "dir" || circleStackIsImageFile(item.name))
+                    }
+                    .sortedWith(
+                        compareBy<FileItemDto> { if (it.type == "dir") 0 else 1 }
+                            .thenBy { it.name.lowercase(Locale.getDefault()) }
+                    )
+
+                nasPickerStatus = if (nasPickerItems.isEmpty()) {
+                    "No image files here."
+                } else {
+                    ""
+                }
+            }.onFailure { e ->
+                nasPickerItems = emptyList()
+                nasPickerStatus = circleStackFriendlyMessage("Load files", e)
+            }
+
+            nasPickerLoading = false
+        }
+    }
+
+    val imagePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocument()
+    ) { uri: Uri? ->
+        if (uri == null) return@rememberLauncherForActivityResult
+
+        runCatching {
+            context.contentResolver.takePersistableUriPermission(
+                uri,
+                Intent.FLAG_GRANT_READ_URI_PERMISSION
+            )
+        }
+
+        pendingImageUri = uri
+        pendingImageMime = context.contentResolver.getType(uri) ?: "image/jpeg"
+        pendingImageName = circleStackDisplayName(context, uri)
+            .ifBlank { circleStackFallbackImageName(pendingImageMime) }
+
+        composerExpanded = true
+        status = "Image attached: $pendingImageName"
+    }
 
     fun loadFeed() {
         scope.launch {
@@ -108,22 +192,75 @@ fun CircleStackScreen(
 
     fun createPost() {
         val text = newText.trim()
-        if (text.isBlank()) {
-            status = "Write something first."
+        val imageUri = pendingImageUri
+        val nasMediaPath = selectedNasImagePath.trim('/')
+
+        if (text.isBlank() && imageUri == null && nasMediaPath.isBlank()) {
+            status = "Write something or attach an image first."
             return
         }
 
         scope.launch {
             creating = true
-            status = "Publishing Circle Stack post..."
+            uploadingImage = imageUri != null
+            status = when {
+                nasMediaPath.isNotBlank() -> "Publishing Circle Stack post..."
+                imageUri != null -> "Importing image to DNA-Nexus..."
+                else -> "Publishing Circle Stack post..."
+            }
+
+            var stagedFile: File? = null
 
             runCatching {
+                val mediaPath = when {
+                    nasMediaPath.isNotBlank() -> {
+                        nasMediaPath
+                    }
+
+                    imageUri != null -> {
+                        val safeName = circleStackSafeUploadName(
+                            pendingImageName.ifBlank { circleStackFallbackImageName(pendingImageMime) },
+                            pendingImageMime
+                        )
+
+                        val targetPath =
+                            ".pqnas_circlestack/mobile_uploads/${System.currentTimeMillis()}_$safeName"
+
+                        runCatching { filesRepository.mkdir(".pqnas_circlestack") }
+                        runCatching { filesRepository.mkdir(".pqnas_circlestack/mobile_uploads") }
+
+                        stagedFile = stageCircleStackImageUri(
+                            context = context,
+                            uri = imageUri,
+                            fallbackName = safeName
+                        )
+
+                        filesRepository.uploadChunkedFromTempFile(
+                            path = targetPath,
+                            file = stagedFile!!,
+                            mimeType = pendingImageMime,
+                            overwrite = false
+                        )
+
+                        targetPath
+                    }
+
+                    else -> ""
+                }
+
+                status = "Publishing Circle Stack post..."
+
                 repository.createPost(
                     text = text,
-                    visibility = visibility
+                    visibility = visibility,
+                    mediaPath = mediaPath
                 )
             }.onSuccess {
                 newText = ""
+                selectedNasImagePath = ""
+                pendingImageUri = null
+                pendingImageName = ""
+                pendingImageMime = null
                 composerExpanded = false
                 status = "Posted."
                 loadFeed()
@@ -131,6 +268,8 @@ fun CircleStackScreen(
                 status = circleStackFriendlyMessage("Post", e)
             }
 
+            runCatching { stagedFile?.delete() }
+            uploadingImage = false
             creating = false
         }
     }
@@ -294,6 +433,79 @@ fun CircleStackScreen(
                             )
                         }
 
+                        if (selectedNasImagePath.isBlank() && pendingImageUri == null) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Button(
+                                    onClick = {
+                                        showNasImagePicker = true
+                                        loadNasImagePicker(null)
+                                    },
+                                    enabled = !creating,
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = CirclePanelSoft,
+                                        contentColor = CircleText
+                                    ),
+                                    modifier = Modifier.weight(1f)
+                                ) {
+                                    Text("Choose from DNA-Nexus")
+                                }
+
+                                TextButton(
+                                    onClick = {
+                                        onBeforeExternalPicker()
+                                        imagePickerLauncher.launch(arrayOf("image/*"))
+                                    },
+                                    enabled = !creating,
+                                    modifier = Modifier.weight(1f)
+                                ) {
+                                    Text("Import from phone", color = CircleAccentSoft)
+                                }
+                            }
+                        } else {
+                            Card(
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = CirclePanelSoft.copy(alpha = 0.55f)
+                                ),
+                                border = BorderStroke(1.dp, CircleLine.copy(alpha = 0.45f))
+                            ) {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 10.dp, vertical = 8.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    Text(
+                                        text = if (selectedNasImagePath.isNotBlank()) {
+                                            "DNA-Nexus image: /$selectedNasImagePath"
+                                        } else {
+                                            "Imported image: ${pendingImageName.ifBlank { "attached" }}"
+                                        },
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = CircleText,
+                                        modifier = Modifier.weight(1f)
+                                    )
+
+                                    TextButton(
+                                        onClick = {
+                                            selectedNasImagePath = ""
+                                            pendingImageUri = null
+                                            pendingImageName = ""
+                                            pendingImageMime = null
+                                        },
+                                        enabled = !creating
+                                    ) {
+                                        Text("Remove", color = CircleMuted)
+                                    }
+                                }
+                            }
+                        }
+
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(10.dp, Alignment.End),
@@ -326,7 +538,13 @@ fun CircleStackScreen(
                                     disabledContentColor = CircleMuted
                                 )
                             ) {
-                                Text(if (creating) "Posting..." else "Post")
+                                Text(
+                                    when {
+                                        uploadingImage -> "Uploading..."
+                                        creating -> "Posting..."
+                                        else -> "Post"
+                                    }
+                                )
                             }
                         }
                     }
@@ -412,6 +630,167 @@ fun CircleStackScreen(
                                 previewImageUrl = url
                             }
                         )
+                    }
+                }
+            }
+        }
+    }
+
+    if (showNasImagePicker) {
+        Dialog(
+            onDismissRequest = { showNasImagePicker = false }
+        ) {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(10.dp),
+                colors = CardDefaults.cardColors(containerColor = CirclePanel),
+                border = BorderStroke(1.dp, CircleLine)
+            ) {
+                Column(
+                    modifier = Modifier.padding(12.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    Text(
+                        text = "Choose image from DNA-Nexus",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = CircleText,
+                        fontWeight = FontWeight.Bold
+                    )
+
+                    Text(
+                        text = "Path: /${nasPickerPath.orEmpty()}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = CircleMuted
+                    )
+
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        TextButton(
+                            onClick = { loadNasImagePicker(null) },
+                            enabled = !nasPickerLoading
+                        ) {
+                            Text("Root", color = CircleAccentSoft)
+                        }
+
+                        TextButton(
+                            onClick = { loadNasImagePicker(circleStackParentPath(nasPickerPath)) },
+                            enabled = !nasPickerLoading && !nasPickerPath.isNullOrBlank()
+                        ) {
+                            Text("Up", color = CircleAccentSoft)
+                        }
+
+                        TextButton(
+                            onClick = { loadNasImagePicker(nasPickerPath) },
+                            enabled = !nasPickerLoading
+                        ) {
+                            Text("Refresh", color = CircleAccentSoft)
+                        }
+                    }
+
+                    if (nasPickerLoading) {
+                        LinearProgressIndicator(
+                            modifier = Modifier.fillMaxWidth(),
+                            color = CircleAccent,
+                            trackColor = CirclePanelSoft
+                        )
+                    }
+
+                    if (nasPickerStatus.isNotBlank()) {
+                        Text(
+                            text = nasPickerStatus,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = CircleMuted
+                        )
+                    }
+
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(360.dp),
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        items(
+                            items = nasPickerItems,
+                            key = { item -> "${item.type}:${nasPickerPath.orEmpty()}/${item.name}" }
+                        ) { item ->
+                            val itemPath = circleStackJoinPath(nasPickerPath, item.name)
+
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        if (item.type == "dir") {
+                                            loadNasImagePicker(itemPath)
+                                        } else {
+                                            selectedNasImagePath = itemPath
+                                            pendingImageUri = null
+                                            pendingImageName = ""
+                                            pendingImageMime = null
+                                            showNasImagePicker = false
+                                            composerExpanded = true
+                                            status = "Image selected from DNA-Nexus."
+                                        }
+                                    },
+                                colors = CardDefaults.cardColors(
+                                    containerColor = CirclePanelSoft.copy(alpha = 0.55f)
+                                ),
+                                border = BorderStroke(1.dp, CircleLine.copy(alpha = 0.32f))
+                            ) {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 10.dp, vertical = 9.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    if (item.type == "dir") {
+                                        Text(
+                                            text = "📁",
+                                            color = CircleText
+                                        )
+                                    } else {
+                                        AsyncImage(
+                                            model = ImageRequest.Builder(LocalContext.current)
+                                                .data(circleStackFileGetUrl(baseUrl, itemPath))
+                                                .crossfade(true)
+                                                .build(),
+                                            imageLoader = imageLoader,
+                                            contentDescription = "Image preview",
+                                            contentScale = ContentScale.Crop,
+                                            modifier = Modifier
+                                                .size(46.dp)
+                                                .background(CircleBg)
+                                        )
+                                    }
+
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        Text(
+                                            text = item.name,
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            color = CircleText
+                                        )
+
+                                        Text(
+                                            text = if (item.type == "dir") "Folder" else "/$itemPath",
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = CircleMuted
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.End
+                    ) {
+                        TextButton(onClick = { showNasImagePicker = false }) {
+                            Text("Close", color = CircleAccentSoft)
+                        }
                     }
                 }
             }
@@ -746,4 +1125,120 @@ private fun formatCircleEpoch(epoch: Long): String {
     if (epoch <= 0L) return ""
     return SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault())
         .format(Date(epoch * 1000L))
+}
+
+
+private fun circleStackDisplayName(context: Context, uri: Uri): String {
+    return runCatching {
+        context.contentResolver.query(
+            uri,
+            arrayOf(OpenableColumns.DISPLAY_NAME),
+            null,
+            null,
+            null
+        )?.use { cursor ->
+            val idx = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+            if (idx >= 0 && cursor.moveToFirst()) {
+                cursor.getString(idx).orEmpty()
+            } else {
+                ""
+            }
+        }.orEmpty()
+    }.getOrDefault("")
+}
+
+private fun circleStackFallbackImageName(mimeType: String?): String {
+    val ext = when (mimeType?.lowercase(Locale.getDefault())) {
+        "image/png" -> "png"
+        "image/webp" -> "webp"
+        "image/gif" -> "gif"
+        "image/heic" -> "heic"
+        "image/heif" -> "heif"
+        else -> "jpg"
+    }
+
+    return "circle_image.$ext"
+}
+
+private fun circleStackSafeUploadName(name: String, mimeType: String?): String {
+    val fallback = circleStackFallbackImageName(mimeType)
+    val raw = name.ifBlank { fallback }
+
+    val cleaned = raw
+        .replace(Regex("[\\\\/:*?\"<>|\\u0000-\\u001F]"), "_")
+        .trim()
+        .trim('.')
+        .ifBlank { fallback }
+        .take(140)
+
+    return if (cleaned.contains(".")) {
+        cleaned
+    } else {
+        val ext = fallback.substringAfterLast('.', "jpg")
+        "$cleaned.$ext"
+    }
+}
+
+private suspend fun stageCircleStackImageUri(
+    context: Context,
+    uri: Uri,
+    fallbackName: String
+): File = withContext(Dispatchers.IO) {
+    val dir = File(context.cacheDir, "circlestack_uploads").also {
+        it.mkdirs()
+    }
+
+    val safeName = circleStackSafeUploadName(fallbackName, context.contentResolver.getType(uri))
+    val out = File(dir, "${System.currentTimeMillis()}_$safeName")
+
+    context.contentResolver.openInputStream(uri)?.use { input ->
+        out.outputStream().use { output ->
+            input.copyTo(output)
+        }
+    } ?: throw IllegalStateException("Could not open selected image.")
+
+    if (!out.isFile || out.length() <= 0L) {
+        throw IllegalStateException("Selected image was empty.")
+    }
+
+    out
+}
+
+
+private fun circleStackIsImageFile(name: String): Boolean {
+    val ext = name.substringAfterLast('.', "").lowercase(Locale.getDefault())
+    return ext in setOf("png", "jpg", "jpeg", "gif", "webp", "bmp", "heic", "heif")
+}
+
+private fun circleStackJoinPath(parent: String?, name: String): String {
+    val cleanParent = parent.orEmpty().trim('/')
+    val cleanName = name.trim('/')
+    return if (cleanParent.isBlank()) cleanName else "$cleanParent/$cleanName"
+}
+
+private fun circleStackParentPath(path: String?): String? {
+    val clean = path.orEmpty().trim('/')
+    if (clean.isBlank()) return null
+    val parts = clean.split('/').filter { it.isNotBlank() }
+    if (parts.size <= 1) return null
+    return parts.dropLast(1).joinToString("/")
+}
+
+
+private fun circleStackShouldHidePickerItem(name: String): Boolean {
+    val clean = name.trim()
+    if (clean.isBlank()) return true
+
+    // Hide DNA-Nexus/private implementation folders from normal media picking:
+    // .pqnas_activity, .pqnas_circlestack, .trash-like internals, editor temp dirs, etc.
+    if (clean.startsWith(".")) return true
+
+    return false
+}
+
+private fun circleStackFileGetUrl(baseUrl: String, path: String): String {
+    val base = baseUrl.trim().trimEnd('/')
+    val cleanPath = path.trim('/')
+    val encoded = URLEncoder.encode(cleanPath, "UTF-8")
+    return "$base/api/v4/files/get?path=$encoded"
 }
