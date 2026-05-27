@@ -11,8 +11,16 @@ import retrofit2.HttpException
 class CircleStackRepository(
     private val api: CircleStackApi
 ) {
-    suspend fun feed(): List<CircleStackPostDto> {
-        val response = api.feed(limit = 100)
+    suspend fun feed(mode: String = "feed"): List<CircleStackPostDto> {
+        val cleanMode = when (mode.trim().lowercase()) {
+            "feed", "federated", "my_circle", "discover" -> mode.trim().lowercase()
+            else -> "feed"
+        }
+
+        val response = api.feed(
+            limit = 100,
+            mode = cleanMode
+        )
 
         if (!response.ok) {
             throw IllegalStateException(response.message ?: response.error ?: "Could not load Circle Stack")

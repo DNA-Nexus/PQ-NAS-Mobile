@@ -106,7 +106,8 @@ data class CircleStackPostReplyResponse(
 interface CircleStackApi {
     @GET("/api/v4/circlestack/feed")
     suspend fun feed(
-        @Query("limit") limit: Int = 100
+        @Query("limit") limit: Int = 100,
+        @Query("mode") mode: String? = null
     ): CircleStackFeedResponse
 
     @Headers("Content-Type: application/json")

@@ -79,6 +79,40 @@ private val CircleGood = Color(0xFF87E69B)
 private val CircleBad = Color(0xFFFF7A7A)
 private val CircleReactionOptions = listOf("👍", "❤️", "😂", "😮", "👏", "🔥")
 
+private enum class CircleStackFeedMode(
+    val apiValue: String,
+    val label: String,
+    val subtitle: String
+) {
+    Feed(
+        apiValue = "feed",
+        label = "Feed",
+        subtitle = "All visible Circle Stack posts"
+    ),
+    Federated(
+        apiValue = "federated",
+        label = "Federated",
+        subtitle = "Posts received from other DNA-Nexus servers"
+    ),
+    MyCircle(
+        apiValue = "my_circle",
+        label = "My circle",
+        subtitle = "People and posts closest to your own circle"
+    ),
+    Discover(
+        apiValue = "discover",
+        label = "Discover",
+        subtitle = "Extended circle and wider public discovery"
+    );
+
+    fun next(): CircleStackFeedMode = when (this) {
+        Feed -> Federated
+        Federated -> MyCircle
+        MyCircle -> Discover
+        Discover -> Feed
+    }
+}
+
 @Composable
 fun CircleStackScreen(
     repository: CircleStackRepository,
@@ -92,6 +126,7 @@ fun CircleStackScreen(
     val context = LocalContext.current
 
     var posts by remember { mutableStateOf<List<CircleStackPostDto>>(emptyList()) }
+    var feedMode by remember { mutableStateOf(CircleStackFeedMode.Feed) }
     var newText by remember { mutableStateOf("") }
     var composerExpanded by remember { mutableStateOf(false) }
     var visibility by remember { mutableStateOf("public") }
@@ -168,22 +203,22 @@ fun CircleStackScreen(
         status = "Image attached: $pendingImageName"
     }
 
-    fun loadFeed() {
+    fun loadFeed(mode: CircleStackFeedMode = feedMode) {
         scope.launch {
             loading = true
-            status = "Loading Circle Stack..."
+            status = "Loading ${mode.label}..."
 
             runCatching {
-                repository.feed()
+                repository.feed(mode = mode.apiValue)
             }.onSuccess { loaded ->
                 posts = loaded
                 status = if (loaded.isEmpty()) {
-                    "No Circle Stack posts yet."
+                    "No posts in ${mode.label}."
                 } else {
-                    "Ready."
+                    "${mode.label} ready."
                 }
             }.onFailure { e ->
-                status = circleStackFriendlyMessage("Load", e)
+                status = circleStackFriendlyMessage("Load ${mode.label}", e)
             }
 
             loading = false
@@ -263,7 +298,7 @@ fun CircleStackScreen(
                 pendingImageMime = null
                 composerExpanded = false
                 status = "Posted."
-                loadFeed()
+                loadFeed(feedMode)
             }.onFailure { e ->
                 status = circleStackFriendlyMessage("Post", e)
             }
@@ -284,7 +319,7 @@ fun CircleStackScreen(
                 repository.reactToPost(post.id, nextReaction)
             }.onSuccess {
                 status = "Reaction updated."
-                loadFeed()
+                loadFeed(feedMode)
             }.onFailure { e ->
                 status = circleStackFriendlyMessage("Reaction", e)
             }
@@ -305,7 +340,7 @@ fun CircleStackScreen(
                 repository.replyToPost(post.id, cleanReply)
             }.onSuccess {
                 status = "Reply sent."
-                loadFeed()
+                loadFeed(feedMode)
             }.onFailure { e ->
                 status = circleStackFriendlyMessage("Reply", e)
             }
@@ -571,12 +606,29 @@ fun CircleStackScreen(
                 )
 
                 TextButton(
-                    onClick = { loadFeed() },
+                    onClick = {
+                        val nextMode = feedMode.next()
+                        feedMode = nextMode
+                        loadFeed(nextMode)
+                    },
+                    enabled = !loading
+                ) {
+                    Text(feedMode.label, color = CircleAccent)
+                }
+
+                TextButton(
+                    onClick = { loadFeed(feedMode) },
                     enabled = !loading
                 ) {
                     Text("Refresh", color = CircleAccentSoft)
                 }
             }
+
+            Text(
+                text = feedMode.subtitle,
+                style = MaterialTheme.typography.bodySmall,
+                color = CircleMuted
+            )
 
             if (loading) {
                 LinearProgressIndicator(
