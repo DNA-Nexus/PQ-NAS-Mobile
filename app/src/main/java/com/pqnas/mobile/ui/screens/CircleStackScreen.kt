@@ -45,6 +45,7 @@ import coil.ImageLoader
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import com.pqnas.mobile.api.CircleStackPostDto
 import com.pqnas.mobile.circlestack.CircleStackRepository
 import com.pqnas.mobile.circlestack.circleStackFriendlyMessage
@@ -81,6 +82,7 @@ fun CircleStackScreen(
     var status by remember { mutableStateOf("Loading Circle Stack...") }
     var loading by remember { mutableStateOf(false) }
     var creating by remember { mutableStateOf(false) }
+    var previewImageUrl by remember { mutableStateOf<String?>(null) }
 
     fun loadFeed() {
         scope.launch {
@@ -405,6 +407,9 @@ fun CircleStackScreen(
                             },
                             onReply = { targetPost, replyText ->
                                 replyToPost(targetPost, replyText)
+                            },
+                            onOpenImage = { url ->
+                                previewImageUrl = url
                             }
                         )
                     }
@@ -412,8 +417,49 @@ fun CircleStackScreen(
             }
         }
     }
-}
 
+    previewImageUrl?.let { imageUrl ->
+        Dialog(
+            onDismissRequest = { previewImageUrl = null }
+        ) {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(10.dp),
+                colors = CardDefaults.cardColors(containerColor = CirclePanel),
+                border = BorderStroke(1.dp, CircleLine)
+            ) {
+                Column(
+                    modifier = Modifier.padding(10.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    AsyncImage(
+                        model = ImageRequest.Builder(LocalContext.current)
+                            .data(imageUrl)
+                            .crossfade(true)
+                            .build(),
+                        imageLoader = imageLoader,
+                        contentDescription = "Circle Stack image preview",
+                        contentScale = ContentScale.Fit,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(520.dp)
+                            .background(CircleBg)
+                    )
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.End
+                    ) {
+                        TextButton(onClick = { previewImageUrl = null }) {
+                            Text("Close", color = CircleAccentSoft)
+                        }
+                    }
+                }
+            }
+        }
+    }
+    }
 @Composable
 private fun CircleVisibilityButton(
     label: String,
@@ -439,7 +485,8 @@ private fun CirclePostCard(
     baseUrl: String,
     imageLoader: ImageLoader,
     onReact: (CircleStackPostDto, String) -> Unit,
-    onReply: (CircleStackPostDto, String) -> Unit
+    onReply: (CircleStackPostDto, String) -> Unit,
+    onOpenImage: (String) -> Unit
 ) {
     val context = LocalContext.current
     var reactionPickerExpanded by remember(post.id) { mutableStateOf(false) }
@@ -506,19 +553,34 @@ private fun CirclePostCard(
             if (post.media_url.isNotBlank()) {
                 val mediaUrl = circleStackFullUrl(baseUrl, post.media_url)
 
-                AsyncImage(
-                    model = ImageRequest.Builder(context)
-                        .data(mediaUrl)
-                        .crossfade(true)
-                        .build(),
-                    imageLoader = imageLoader,
-                    contentDescription = "Circle Stack media",
-                    contentScale = ContentScale.Crop,
+                Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(220.dp)
                         .background(CirclePanelSoft)
-                )
+                ) {
+                    AsyncImage(
+                        model = ImageRequest.Builder(context)
+                            .data(mediaUrl)
+                            .crossfade(true)
+                            .build(),
+                        imageLoader = imageLoader,
+                        contentDescription = "Circle Stack media",
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End
+                ) {
+                    TextButton(
+                        onClick = { onOpenImage(mediaUrl) }
+                    ) {
+                        Text("Open image", color = CircleAccentSoft)
+                    }
+                }
             }
 
             HorizontalDivider(color = CircleLine.copy(alpha = 0.45f))
