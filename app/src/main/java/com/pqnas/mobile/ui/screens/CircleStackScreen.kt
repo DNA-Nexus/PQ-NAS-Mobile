@@ -9,6 +9,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -45,6 +46,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -148,6 +151,7 @@ fun CircleStackScreen(
     var nasPickerStatus by remember { mutableStateOf("") }
 
     var previewImageUrl by remember { mutableStateOf<String?>(null) }
+    var previewImageUsesTrustedLoader by remember { mutableStateOf(true) }
 
     fun loadNasImagePicker(path: String?) {
         nasPickerPath = path?.trim('/')?.ifBlank { null }
@@ -701,6 +705,7 @@ fun CircleStackScreen(
                                     replyToPost(targetPost, replyText)
                                 },
                                 onOpenImage = { url ->
+                                    previewImageUsesTrustedLoader = true
                                     previewImageUrl = url
                                 }
                             )
@@ -712,7 +717,11 @@ fun CircleStackScreen(
                         ) { ev ->
                             CircleFederatedEventCard(
                                 event = ev,
-                                mode = feedMode
+                                mode = feedMode,
+                                onOpenImage = { url ->
+                                    previewImageUsesTrustedLoader = false
+                                    previewImageUrl = url
+                                }
                             )
                         }
                     }
@@ -897,18 +906,13 @@ fun CircleStackScreen(
                     modifier = Modifier.padding(10.dp),
                     verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    AsyncImage(
-                        model = ImageRequest.Builder(LocalContext.current)
-                            .data(imageUrl)
-                            .crossfade(true)
-                            .build(),
+                    CircleZoomablePreviewImage(
+                        imageUrl = imageUrl,
                         imageLoader = imageLoader,
-                        contentDescription = "Circle Stack image preview",
-                        contentScale = ContentScale.Fit,
+                        useTrustedImageLoader = previewImageUsesTrustedLoader,
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(520.dp)
-                            .background(CircleBg)
                     )
 
                     Row(
@@ -944,9 +948,85 @@ private fun CircleVisibilityButton(
 }
 
 @Composable
+private fun CircleZoomablePreviewImage(
+    imageUrl: String,
+    imageLoader: ImageLoader,
+    useTrustedImageLoader: Boolean,
+    modifier: Modifier = Modifier
+) {
+    val context = LocalContext.current
+
+    var scale by remember(imageUrl) { mutableStateOf(1f) }
+    var offsetX by remember(imageUrl) { mutableStateOf(0f) }
+    var offsetY by remember(imageUrl) { mutableStateOf(0f) }
+
+    Box(
+        modifier = modifier
+            .background(CircleBg)
+            .pointerInput(imageUrl) {
+                detectTransformGestures { _, pan, zoom, _ ->
+                    val nextScale = (scale * zoom).coerceIn(1f, 5f)
+                    scale = nextScale
+
+                    if (nextScale > 1f) {
+                        offsetX += pan.x
+                        offsetY += pan.y
+                    } else {
+                        offsetX = 0f
+                        offsetY = 0f
+                    }
+                }
+            }
+    ) {
+        val imageModifier = Modifier
+            .fillMaxSize()
+            .graphicsLayer(
+                scaleX = scale,
+                scaleY = scale,
+                translationX = offsetX,
+                translationY = offsetY
+            )
+
+        if (useTrustedImageLoader) {
+            AsyncImage(
+                model = ImageRequest.Builder(context)
+                    .data(imageUrl)
+                    .crossfade(true)
+                    .build(),
+                imageLoader = imageLoader,
+                contentDescription = "Circle Stack image preview",
+                contentScale = ContentScale.Fit,
+                modifier = imageModifier
+            )
+        } else {
+            AsyncImage(
+                model = ImageRequest.Builder(context)
+                    .data(imageUrl)
+                    .crossfade(true)
+                    .build(),
+                contentDescription = "Circle Stack federated image preview",
+                contentScale = ContentScale.Fit,
+                modifier = imageModifier
+            )
+        }
+
+        Text(
+            text = if (scale <= 1.01f) "Pinch to zoom" else "Drag image • ${"%.1f".format(scale)}x",
+            style = MaterialTheme.typography.labelSmall,
+            color = CircleText,
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .background(CircleBg.copy(alpha = 0.72f))
+                .padding(horizontal = 8.dp, vertical = 4.dp)
+        )
+    }
+}
+
+@Composable
 private fun CircleFederatedEventCard(
     event: CircleStackFederatedEventDto,
-    mode: CircleStackFeedMode
+    mode: CircleStackFeedMode,
+    onOpenImage: (String) -> Unit
 ) {
     val context = LocalContext.current
     val displayName = event.actor_display_name
@@ -1034,18 +1114,33 @@ private fun CircleFederatedEventCard(
                 val previewUrl = circleStackFederatedPreviewUrl(event)
 
                 if (previewUrl.isNotBlank()) {
-                    AsyncImage(
-                        model = ImageRequest.Builder(context)
-                            .data(previewUrl)
-                            .crossfade(true)
-                            .build(),
-                        contentDescription = "Federated Circle Stack media",
-                        contentScale = ContentScale.Crop,
+                    Box(
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(220.dp)
                             .background(CirclePanelSoft)
-                    )
+                            .clickable { onOpenImage(previewUrl) }
+                    ) {
+                        AsyncImage(
+                            model = ImageRequest.Builder(context)
+                                .data(previewUrl)
+                                .crossfade(true)
+                                .build(),
+                            contentDescription = "Federated Circle Stack media",
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier.fillMaxSize()
+                        )
+
+                        Text(
+                            text = "Tap to zoom",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = CircleText,
+                            modifier = Modifier
+                                .align(Alignment.BottomEnd)
+                                .background(CircleBg.copy(alpha = 0.72f))
+                                .padding(horizontal = 8.dp, vertical = 4.dp)
+                        )
+                    }
                 } else {
                     Text(
                         text = "Media exists on origin DNA-Nexus, but no preview URL was available.",
@@ -1145,6 +1240,7 @@ private fun CirclePostCard(
                         .fillMaxWidth()
                         .height(220.dp)
                         .background(CirclePanelSoft)
+                        .clickable { onOpenImage(mediaUrl) }
                 ) {
                     AsyncImage(
                         model = ImageRequest.Builder(context)
@@ -1155,6 +1251,16 @@ private fun CirclePostCard(
                         contentDescription = "Circle Stack media",
                         contentScale = ContentScale.Crop,
                         modifier = Modifier.fillMaxSize()
+                    )
+
+                    Text(
+                        text = "Tap to zoom",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = CircleText,
+                        modifier = Modifier
+                            .align(Alignment.BottomEnd)
+                            .background(CircleBg.copy(alpha = 0.72f))
+                            .padding(horizontal = 8.dp, vertical = 4.dp)
                     )
                 }
 
