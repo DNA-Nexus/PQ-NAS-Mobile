@@ -3022,7 +3022,6 @@ fun FilesScreen(
         if (showSharesManager) {
             SharesManagerScreen(
                 filesRepository = filesRepository,
-                fileScope = currentScope,
                 onClose = {
                     showSharesManager = false
                     refreshCurrent()

@@ -53,6 +53,7 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import com.pqnas.mobile.api.CircleStackFederatedEventDto
 import com.pqnas.mobile.api.CircleStackPostDto
 import com.pqnas.mobile.api.FileItemDto
 import com.pqnas.mobile.circlestack.CircleStackRepository
@@ -126,6 +127,7 @@ fun CircleStackScreen(
     val context = LocalContext.current
 
     var posts by remember { mutableStateOf<List<CircleStackPostDto>>(emptyList()) }
+    var federatedEvents by remember { mutableStateOf<List<CircleStackFederatedEventDto>>(emptyList()) }
     var feedMode by remember { mutableStateOf(CircleStackFeedMode.Feed) }
     var newText by remember { mutableStateOf("") }
     var composerExpanded by remember { mutableStateOf(false) }
@@ -209,10 +211,19 @@ fun CircleStackScreen(
             status = "Loading ${mode.label}..."
 
             runCatching {
-                repository.feed(mode = mode.apiValue)
-            }.onSuccess { loaded ->
-                posts = loaded
-                status = if (loaded.isEmpty()) {
+                if (mode == CircleStackFeedMode.Feed) {
+                    val loaded = repository.feed(mode = "feed")
+                    posts = loaded
+                    federatedEvents = emptyList()
+                    loaded.size
+                } else {
+                    val loaded = repository.federatedFeed(mode = mode.apiValue)
+                    posts = emptyList()
+                    federatedEvents = loaded
+                    loaded.size
+                }
+            }.onSuccess { count ->
+                status = if (count <= 0) {
                     "No posts in ${mode.label}."
                 } else {
                     "${mode.label} ready."
@@ -638,7 +649,13 @@ fun CircleStackScreen(
                 )
             }
 
-            if (posts.isEmpty() && !loading) {
+            val emptyForMode = if (feedMode == CircleStackFeedMode.Feed) {
+                posts.isEmpty()
+            } else {
+                federatedEvents.isEmpty()
+            }
+
+            if (emptyForMode && !loading) {
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -653,7 +670,11 @@ fun CircleStackScreen(
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = "No posts yet. Write the first Circle Stack post above.",
+                            text = if (feedMode == CircleStackFeedMode.Feed) {
+                                "No posts yet. Write the first Circle Stack post above."
+                            } else {
+                                "No ${feedMode.label} events yet."
+                            },
                             color = CircleMuted,
                             modifier = Modifier.padding(18.dp)
                         )
@@ -664,24 +685,36 @@ fun CircleStackScreen(
                     modifier = Modifier.weight(1f),
                     verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    items(
-                        items = posts,
-                        key = { it.id }
-                    ) { post ->
-                        CirclePostCard(
-                            post = post,
-                            baseUrl = baseUrl,
-                            imageLoader = imageLoader,
-                            onReact = { targetPost, reaction ->
-                                reactToPost(targetPost, reaction)
-                            },
-                            onReply = { targetPost, replyText ->
-                                replyToPost(targetPost, replyText)
-                            },
-                            onOpenImage = { url ->
-                                previewImageUrl = url
-                            }
-                        )
+                    if (feedMode == CircleStackFeedMode.Feed) {
+                        items(
+                            items = posts,
+                            key = { it.id }
+                        ) { post ->
+                            CirclePostCard(
+                                post = post,
+                                baseUrl = baseUrl,
+                                imageLoader = imageLoader,
+                                onReact = { targetPost, reaction ->
+                                    reactToPost(targetPost, reaction)
+                                },
+                                onReply = { targetPost, replyText ->
+                                    replyToPost(targetPost, replyText)
+                                },
+                                onOpenImage = { url ->
+                                    previewImageUrl = url
+                                }
+                            )
+                        }
+                    } else {
+                        items(
+                            items = federatedEvents,
+                            key = { ev -> ev.id }
+                        ) { ev ->
+                            CircleFederatedEventCard(
+                                event = ev,
+                                mode = feedMode
+                            )
+                        }
                     }
                 }
             }
@@ -907,6 +940,111 @@ private fun CircleVisibilityButton(
             text = if (selected) "● $label" else label,
             fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal
         )
+    }
+}
+
+@Composable
+private fun CircleFederatedEventCard(
+    event: CircleStackFederatedEventDto,
+    mode: CircleStackFeedMode
+) {
+    val displayName = event.actor_display_name
+        .ifBlank { circleStackPayloadString(event, "owner_display_name") }
+        .ifBlank { event.origin_label }
+        .ifBlank { event.actor_fp_short }
+        .ifBlank { "Remote user" }
+
+    val textPreview = event.text_preview
+        .ifBlank { circleStackPayloadString(event, "text_preview") }
+
+    val typeLabel = when (event.event_type) {
+        "circle.post.created" -> "Federated post"
+        "circle.reply.created" -> "Federated reply"
+        "circle.reaction.created" -> "Federated reaction"
+        else -> event.event_type.ifBlank { "Federated event" }
+    }
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = CirclePanel),
+        border = BorderStroke(1.dp, CircleLine.copy(alpha = 0.8f))
+    ) {
+        Column(
+            modifier = Modifier.padding(14.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.Top
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = displayName,
+                        style = MaterialTheme.typography.titleMedium,
+                        color = CircleText,
+                        fontWeight = FontWeight.Bold
+                    )
+
+                    Text(
+                        text = formatCircleEpoch(
+                            if (event.created_epoch > 0L) event.created_epoch else event.received_epoch
+                        ),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = CircleMuted
+                    )
+                }
+
+                Text(
+                    text = mode.label.uppercase(Locale.getDefault()),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = CircleAccent,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
+            Text(
+                text = typeLabel,
+                style = MaterialTheme.typography.labelMedium,
+                color = CircleAccentSoft,
+                fontWeight = FontWeight.Bold
+            )
+
+            if (textPreview.isNotBlank()) {
+                Text(
+                    text = textPreview,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = CircleText
+                )
+            } else if (event.reaction.isNotBlank()) {
+                Text(
+                    text = "${event.actor_fp_short.ifBlank { displayName }} reacted ${event.reaction}",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = CircleText
+                )
+            } else {
+                Text(
+                    text = "No text preview in this federated event.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = CircleMuted
+                )
+            }
+
+            if (circleStackPayloadBoolean(event, "has_media")) {
+                Text(
+                    text = "Media exists on origin DNA-Nexus. Remote media preview is not implemented yet.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = CircleMuted
+                )
+            }
+
+            HorizontalDivider(color = CircleLine.copy(alpha = 0.45f))
+
+            Text(
+                text = "Origin: ${event.origin_nas.take(12).ifBlank { "unknown" }}",
+                style = MaterialTheme.typography.bodySmall,
+                color = CircleMuted
+            )
+        }
     }
 }
 
@@ -1157,6 +1295,25 @@ private fun CirclePostCard(
                 }
             }
         }
+    }
+}
+
+private fun circleStackPayloadString(
+    event: CircleStackFederatedEventDto,
+    key: String
+): String {
+    return (event.payload[key] as? String).orEmpty()
+}
+
+private fun circleStackPayloadBoolean(
+    event: CircleStackFederatedEventDto,
+    key: String
+): Boolean {
+    return when (val v = event.payload[key]) {
+        is Boolean -> v
+        is Number -> v.toInt() != 0
+        is String -> v.equals("true", ignoreCase = true) || v == "1"
+        else -> false
     }
 }
 

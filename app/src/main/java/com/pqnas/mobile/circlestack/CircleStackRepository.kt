@@ -2,6 +2,7 @@ package com.pqnas.mobile.circlestack
 
 import com.pqnas.mobile.api.CircleStackApi
 import com.pqnas.mobile.api.CircleStackCreatePostRequest
+import com.pqnas.mobile.api.CircleStackFederatedEventDto
 import com.pqnas.mobile.api.CircleStackPostDto
 import com.pqnas.mobile.api.CircleStackPostReactionRequest
 import com.pqnas.mobile.api.CircleStackPostReplyRequest
@@ -27,6 +28,50 @@ class CircleStackRepository(
         }
 
         return response.posts
+    }
+
+    suspend fun federatedFeed(mode: String = "federated"): List<CircleStackFederatedEventDto> {
+        val cleanMode = when (mode.trim().lowercase()) {
+            "federated", "my_circle", "discover" -> mode.trim().lowercase()
+            else -> "federated"
+        }
+
+        val origins = runCatching {
+            api.federatedOrigins().items
+        }.getOrDefault(emptyList())
+
+        val knownOrigins = origins
+            .filter { it.enabled }
+            .map { it.origin_nas.trim() }
+            .filter { it.isNotBlank() }
+            .toSet()
+
+        val mutedOrigins = origins
+            .filter { it.my_muted || it.my_hidden }
+            .map { it.origin_nas.trim() }
+            .filter { it.isNotBlank() }
+            .toSet()
+
+        val response = api.federatedFeed(limit = 50)
+
+        if (!response.ok) {
+            throw IllegalStateException(response.message ?: response.error ?: "Could not load federated Circle Stack")
+        }
+
+        val filtered = response.events.filter { ev ->
+            val origin = ev.origin_nas.trim()
+            (origin.isBlank() || origin !in mutedOrigins) &&
+                    (cleanMode != "my_circle" || (origin.isNotBlank() && origin in knownOrigins))
+        }
+
+        if (cleanMode != "discover") {
+            return filtered
+        }
+
+        val known = filtered.filter { it.origin_nas.trim() in knownOrigins }
+        val widerPublic = filtered.filter { it.origin_nas.trim() !in knownOrigins }.take(5)
+
+        return known + widerPublic
     }
 
     suspend fun createPost(

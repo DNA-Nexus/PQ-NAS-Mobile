@@ -59,6 +59,48 @@ data class CircleStackFeedResponse(
     val message: String? = null
 )
 
+data class CircleStackFederatedEventDto(
+    val id: Long = 0L,
+    val event_id: String = "",
+    val event_type: String = "",
+    val actor_display_name: String = "",
+    val actor_fp: String = "",
+    val actor_fp_short: String = "",
+    val origin_label: String = "",
+    val origin_nas: String = "",
+    val created_epoch: Long = 0L,
+    val received_epoch: Long = 0L,
+    val source: String = "",
+    val post_id: Long = 0L,
+    val reply_id: Long = 0L,
+    val target_type: String = "",
+    val reaction: String = "",
+    val text_preview: String = "",
+    val payload: Map<String, Any?> = emptyMap()
+)
+
+data class CircleStackFederatedFeedResponse(
+    val ok: Boolean = false,
+    val count: Long = 0L,
+    val events: List<CircleStackFederatedEventDto> = emptyList(),
+    val error: String? = null,
+    val message: String? = null
+)
+
+data class CircleStackFederatedOriginDto(
+    val origin_nas: String = "",
+    val enabled: Boolean = true,
+    val my_muted: Boolean = false,
+    val my_hidden: Boolean = false
+)
+
+data class CircleStackFederatedOriginsResponse(
+    val ok: Boolean = false,
+    val items: List<CircleStackFederatedOriginDto> = emptyList(),
+    val error: String? = null,
+    val message: String? = null
+)
+
 data class CircleStackCreatePostRequest(
     val text: String,
     val visibility: String = "public",
@@ -109,6 +151,14 @@ interface CircleStackApi {
         @Query("limit") limit: Int = 100,
         @Query("mode") mode: String? = null
     ): CircleStackFeedResponse
+
+    @GET("/api/v4/circlestack/federated/feed")
+    suspend fun federatedFeed(
+        @Query("limit") limit: Int = 50
+    ): CircleStackFederatedFeedResponse
+
+    @GET("/api/v4/circlestack/federated/origins")
+    suspend fun federatedOrigins(): CircleStackFederatedOriginsResponse
 
     @Headers("Content-Type: application/json")
     @POST("/api/v4/circlestack/posts/create")

@@ -53,7 +53,6 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.pqnas.mobile.api.ShareItemDto
-import com.pqnas.mobile.files.FileScope
 import com.pqnas.mobile.files.FilesRepository
 import kotlinx.coroutines.launch
 import retrofit2.HttpException
@@ -78,7 +77,6 @@ private val SHARE_FILTERS = listOf(
 @Composable
 fun SharesManagerScreen(
     filesRepository: FilesRepository,
-    fileScope: FileScope,
     onClose: () -> Unit
 ) {
     val scope = rememberCoroutineScope()
@@ -101,10 +99,7 @@ fun SharesManagerScreen(
             loading = true
             status = "Loading shares..."
             try {
-                val resp = when (fileScope) {
-                    is FileScope.User -> filesRepository.getShares()
-                    is FileScope.Workspace -> filesRepository.getShares(fileScope.workspaceId)
-                }
+                val resp = filesRepository.getShares()
 
                 if (!resp.ok) {
                     throw IllegalStateException("Share list failed")
