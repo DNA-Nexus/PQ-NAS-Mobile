@@ -948,6 +948,7 @@ private fun CircleFederatedEventCard(
     event: CircleStackFederatedEventDto,
     mode: CircleStackFeedMode
 ) {
+    val context = LocalContext.current
     val displayName = event.actor_display_name
         .ifBlank { circleStackPayloadString(event, "owner_display_name") }
         .ifBlank { event.origin_label }
@@ -1030,11 +1031,28 @@ private fun CircleFederatedEventCard(
             }
 
             if (circleStackPayloadBoolean(event, "has_media")) {
-                Text(
-                    text = "Media exists on origin DNA-Nexus. Remote media preview is not implemented yet.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = CircleMuted
-                )
+                val previewUrl = circleStackFederatedPreviewUrl(event)
+
+                if (previewUrl.isNotBlank()) {
+                    AsyncImage(
+                        model = ImageRequest.Builder(context)
+                            .data(previewUrl)
+                            .crossfade(true)
+                            .build(),
+                        contentDescription = "Federated Circle Stack media",
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(220.dp)
+                            .background(CirclePanelSoft)
+                    )
+                } else {
+                    Text(
+                        text = "Media exists on origin DNA-Nexus, but no preview URL was available.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = CircleMuted
+                    )
+                }
             }
 
             HorizontalDivider(color = CircleLine.copy(alpha = 0.45f))
@@ -1296,6 +1314,80 @@ private fun CirclePostCard(
             }
         }
     }
+}
+
+private fun circleStackMapValue(
+    map: Map<*, *>,
+    key: String
+): Any? {
+    return map[key]
+}
+
+@Suppress("UNCHECKED_CAST")
+private fun circleStackPayloadMap(
+    event: CircleStackFederatedEventDto,
+    key: String
+): Map<*, *> {
+    return event.payload[key] as? Map<*, *> ?: emptyMap<Any, Any?>()
+}
+
+@Suppress("UNCHECKED_CAST")
+private fun circleStackPayloadList(
+    event: CircleStackFederatedEventDto,
+    key: String
+): List<Any?> {
+    return event.payload[key] as? List<Any?> ?: emptyList()
+}
+
+private fun circleStackStringValue(value: Any?): String {
+    return value as? String ?: ""
+}
+
+private fun circleStackFirstMediaRefId(event: CircleStackFederatedEventDto): String {
+    val directRefs = circleStackPayloadList(event, "media_refs")
+    for (ref in directRefs) {
+        val refMap = ref as? Map<*, *> ?: continue
+        val refId = circleStackStringValue(refMap["ref_id"])
+        if (refId.isNotBlank()) return refId
+    }
+
+    val mediaPreview = circleStackPayloadMap(event, "media_preview")
+    val previewRefs = mediaPreview["refs"] as? List<*> ?: emptyList<Any?>()
+    for (ref in previewRefs) {
+        val refMap = ref as? Map<*, *> ?: continue
+        val refId = circleStackStringValue(refMap["ref_id"])
+        if (refId.isNotBlank()) return refId
+    }
+
+    return ""
+}
+
+private fun circleStackFederatedPreviewUrl(event: CircleStackFederatedEventDto): String {
+    val origin = circleStackPayloadMap(event, "origin")
+
+    val baseUrl = circleStackStringValue(origin["preview_base_url"])
+        .trim()
+        .trimEnd('/')
+
+    val endpoint = circleStackStringValue(origin["preview_endpoint"])
+        .trim()
+        .ifBlank { "/api/v4/circlestack/federation/media-preview" }
+        .let { if (it.startsWith("/")) it else "/$it" }
+
+    val refId = circleStackFirstMediaRefId(event)
+
+    if (baseUrl.isBlank() || refId.isBlank()) {
+        return ""
+    }
+
+    val eventId = event.event_id.trim()
+    if (eventId.isBlank()) {
+        return ""
+    }
+
+    val encodedEventId = URLEncoder.encode(eventId, "UTF-8")
+    val encodedRef = URLEncoder.encode(refId, "UTF-8")
+    return "$baseUrl$endpoint?event_id=$encodedEventId&ref_id=$encodedRef"
 }
 
 private fun circleStackPayloadString(
