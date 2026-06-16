@@ -64,10 +64,26 @@ data class AppAvailabilityResponse(
     val mobile: Boolean = false,
     val error: String? = null
 )
+data class DropZoneBrandingDto(
+    val company_name: String = "",
+    val kicker: String = "",
+    val title: String = "",
+    val description: String = "",
+    val button_text: String = "",
+    val footer_text: String = "",
+    val logo_url: String = "",
+    val primary_color: String = "",
+    val background_color: String = "",
+    val panel_color: String = "",
+    val text_color: String = "",
+    val button_text_color: String = ""
+)
+
 data class DropZoneInfo(
     val id: String = "",
     val name: String = "",
     val destination_path: String = "",
+    val url: String = "",
     val created_epoch: Long = 0L,
     val expires_epoch: Long = 0L,
     val last_used_epoch: Long = 0L,
@@ -75,8 +91,12 @@ data class DropZoneInfo(
     val max_total_bytes: Long = 0L,
     val bytes_uploaded: Long = 0L,
     val upload_count: Long = 0L,
+    val pending_upload_count: Long = 0L,
+    val has_pending_uploads: Boolean = false,
     val password_required: Boolean = false,
-    val disabled: Boolean = false
+    val disabled: Boolean = false,
+    val duplicate_policy: String = "version",
+    val branding: DropZoneBrandingDto = DropZoneBrandingDto()
 )
 
 data class DropZonesListResponse(
@@ -92,7 +112,9 @@ data class DropZoneCreateRequest(
     val password: String = "",
     val expires_in_seconds: Long = 7L * 24L * 60L * 60L,
     val max_file_bytes: Long = 0L,
-    val max_total_bytes: Long = 0L
+    val max_total_bytes: Long = 0L,
+    val duplicate_policy: String = "version",
+    val branding: DropZoneBrandingDto = DropZoneBrandingDto()
 )
 
 data class DropZoneCreateResponse(
@@ -102,6 +124,22 @@ data class DropZoneCreateResponse(
     val full_url: String = "",
     val expires_epoch: Long = 0L,
     val destination_path: String = "",
+    val error: String? = null,
+    val message: String? = null
+)
+
+data class DropZoneUpdateRequest(
+    val id: String,
+    val name: String = "Drop Zone",
+    val max_file_bytes: Long = 0L,
+    val max_total_bytes: Long = 0L,
+    val duplicate_policy: String = "version",
+    val branding: DropZoneBrandingDto = DropZoneBrandingDto()
+)
+
+data class DropZoneUpdateResponse(
+    val ok: Boolean = false,
+    val id: String = "",
     val error: String? = null,
     val message: String? = null
 )
@@ -264,6 +302,12 @@ interface FilesApi {
     suspend fun createDropZone(
         @Body request: DropZoneCreateRequest
     ): DropZoneCreateResponse
+
+    @Headers("Content-Type: application/json")
+    @POST("/api/v4/dropzones/update")
+    suspend fun updateDropZone(
+        @Body request: DropZoneUpdateRequest
+    ): DropZoneUpdateResponse
 
     @Headers("Content-Type: application/json")
     @POST("/api/v4/dropzones/disable")

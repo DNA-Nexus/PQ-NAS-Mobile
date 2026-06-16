@@ -14,8 +14,10 @@ import okhttp3.ResponseBody
 import java.io.File
 import kotlinx.coroutines.CancellationException
 import retrofit2.HttpException
+import com.pqnas.mobile.api.DropZoneBrandingDto
 import com.pqnas.mobile.api.DropZoneCreateRequest
 import com.pqnas.mobile.api.DropZoneDisableRequest
+import com.pqnas.mobile.api.DropZoneUpdateRequest
 import com.pqnas.mobile.api.FileLockStatusBatchRequest
 import com.pqnas.mobile.api.FileNotesResolveRequest
 import com.pqnas.mobile.api.FileNoteSaveRequest
@@ -191,7 +193,9 @@ class FilesRepository(
         password: String = "",
         expiresInSeconds: Long = 7L * 24L * 60L * 60L,
         maxFileBytes: Long = 0L,
-        maxTotalBytes: Long = 0L
+        maxTotalBytes: Long = 0L,
+        duplicatePolicy: String = "version",
+        branding: DropZoneBrandingDto = DropZoneBrandingDto()
     ) =
         filesApi.createDropZone(
             DropZoneCreateRequest(
@@ -200,7 +204,28 @@ class FilesRepository(
                 password = password,
                 expires_in_seconds = expiresInSeconds,
                 max_file_bytes = maxFileBytes,
-                max_total_bytes = maxTotalBytes
+                max_total_bytes = maxTotalBytes,
+                duplicate_policy = duplicatePolicy,
+                branding = branding
+            )
+        )
+
+    suspend fun updateDropZone(
+        id: String,
+        name: String = "Drop Zone",
+        maxFileBytes: Long = 0L,
+        maxTotalBytes: Long = 0L,
+        duplicatePolicy: String = "version",
+        branding: DropZoneBrandingDto = DropZoneBrandingDto()
+    ) =
+        filesApi.updateDropZone(
+            DropZoneUpdateRequest(
+                id = id,
+                name = name,
+                max_file_bytes = maxFileBytes,
+                max_total_bytes = maxTotalBytes,
+                duplicate_policy = duplicatePolicy,
+                branding = branding
             )
         )
 

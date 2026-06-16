@@ -76,6 +76,7 @@ import com.pqnas.mobile.api.FileItemDto
 import com.pqnas.mobile.R
 import com.pqnas.mobile.BuildConfig
 import com.pqnas.mobile.api.MeStorageResponse
+import com.pqnas.mobile.api.DropZoneBrandingDto
 import com.pqnas.mobile.api.DropZoneInfo
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import com.pqnas.mobile.files.FileTypeIcons
@@ -178,6 +179,22 @@ fun FilesScreen(
     var dropZoneName by remember { mutableStateOf("Drop Zone") }
     var dropZoneDestination by remember { mutableStateOf("") }
     var dropZonePassword by remember { mutableStateOf("") }
+    var dropZoneExpiresInSeconds by remember { mutableStateOf(7L * 24L * 60L * 60L) }
+    var dropZoneMaxFileBytes by remember { mutableStateOf("") }
+    var dropZoneMaxTotalBytes by remember { mutableStateOf("") }
+    var dropZoneDuplicatePolicy by remember { mutableStateOf("version") }
+    var dropZoneBrandingCompanyName by remember { mutableStateOf("") }
+    var dropZoneBrandingKicker by remember { mutableStateOf("Secure upload") }
+    var dropZoneBrandingTitle by remember { mutableStateOf("Send files securely") }
+    var dropZoneBrandingDescription by remember { mutableStateOf("Use this page to upload files directly to DNA-Nexus.") }
+    var dropZoneBrandingButtonText by remember { mutableStateOf("Upload files") }
+    var dropZoneBrandingFooterText by remember { mutableStateOf("Powered by DNA-Nexus") }
+    var dropZoneBrandingLogoUrl by remember { mutableStateOf("") }
+    var dropZoneBrandingPrimaryColor by remember { mutableStateOf("#ff9f1a") }
+    var dropZoneBrandingBackgroundColor by remember { mutableStateOf("#070a10") }
+    var dropZoneBrandingPanelColor by remember { mutableStateOf("#15161d") }
+    var dropZoneBrandingTextColor by remember { mutableStateOf("#f4f4f6") }
+    var dropZoneBrandingButtonTextColor by remember { mutableStateOf("#000000") }
 
     var infoItem by remember { mutableStateOf<FileItemDto?>(null) }
     var infoNoteText by remember { mutableStateOf("") }
@@ -1375,7 +1392,24 @@ fun FilesScreen(
                     name = dropZoneName,
                     destinationPath = dropZoneDestination,
                     password = dropZonePassword,
-                    expiresInSeconds = 7L * 24L * 60L * 60L
+                    expiresInSeconds = dropZoneExpiresInSeconds,
+                    maxFileBytes = parseDropZoneLimitBytes(dropZoneMaxFileBytes),
+                    maxTotalBytes = parseDropZoneLimitBytes(dropZoneMaxTotalBytes),
+                    duplicatePolicy = dropZoneDuplicatePolicy,
+                    branding = DropZoneBrandingDto(
+                        company_name = dropZoneBrandingCompanyName,
+                        kicker = dropZoneBrandingKicker,
+                        title = dropZoneBrandingTitle,
+                        description = dropZoneBrandingDescription,
+                        button_text = dropZoneBrandingButtonText,
+                        footer_text = dropZoneBrandingFooterText,
+                        logo_url = dropZoneBrandingLogoUrl,
+                        primary_color = dropZoneBrandingPrimaryColor,
+                        background_color = dropZoneBrandingBackgroundColor,
+                        panel_color = dropZoneBrandingPanelColor,
+                        text_color = dropZoneBrandingTextColor,
+                        button_text_color = dropZoneBrandingButtonTextColor
+                    )
                 )
             }.onSuccess { r ->
                 if (r.ok) {
@@ -1390,6 +1424,39 @@ fun FilesScreen(
             }
 
             dropZoneCreating = false
+        }
+    }
+
+    fun updateDropZoneFromSheet(
+        id: String,
+        name: String,
+        maxFileBytesText: String,
+        maxTotalBytesText: String,
+        duplicatePolicy: String,
+        branding: DropZoneBrandingDto
+    ) {
+        scope.launch {
+            dropZoneStatus = "Updating Drop Zone..."
+
+            runCatching {
+                filesRepository.updateDropZone(
+                    id = id,
+                    name = name,
+                    maxFileBytes = parseDropZoneLimitBytes(maxFileBytesText),
+                    maxTotalBytes = parseDropZoneLimitBytes(maxTotalBytesText),
+                    duplicatePolicy = duplicatePolicy,
+                    branding = branding
+                )
+            }.onSuccess { r ->
+                if (r.ok) {
+                    dropZoneStatus = "Drop Zone updated."
+                    refreshDropZones()
+                } else {
+                    dropZoneStatus = r.message ?: r.error ?: "Could not update Drop Zone."
+                }
+            }.onFailure { e ->
+                dropZoneStatus = friendlyHttpMessage("Update Drop Zone", e)
+            }
         }
     }
 
@@ -2293,12 +2360,54 @@ fun FilesScreen(
                 name = dropZoneName,
                 destination = dropZoneDestination,
                 password = dropZonePassword,
+                expiresInSeconds = dropZoneExpiresInSeconds,
+                maxFileBytesText = dropZoneMaxFileBytes,
+                maxTotalBytesText = dropZoneMaxTotalBytes,
+                duplicatePolicy = dropZoneDuplicatePolicy,
+                brandingCompanyName = dropZoneBrandingCompanyName,
+                brandingKicker = dropZoneBrandingKicker,
+                brandingTitle = dropZoneBrandingTitle,
+                brandingDescription = dropZoneBrandingDescription,
+                brandingButtonText = dropZoneBrandingButtonText,
+                brandingFooterText = dropZoneBrandingFooterText,
+                brandingLogoUrl = dropZoneBrandingLogoUrl,
+                brandingPrimaryColor = dropZoneBrandingPrimaryColor,
+                brandingBackgroundColor = dropZoneBrandingBackgroundColor,
+                brandingPanelColor = dropZoneBrandingPanelColor,
+                brandingTextColor = dropZoneBrandingTextColor,
+                brandingButtonTextColor = dropZoneBrandingButtonTextColor,
                 onNameChange = { dropZoneName = it },
                 onDestinationChange = { dropZoneDestination = it },
                 onPasswordChange = { dropZonePassword = it },
+                onExpiresInSecondsChange = { dropZoneExpiresInSeconds = it },
+                onMaxFileBytesTextChange = { dropZoneMaxFileBytes = it },
+                onMaxTotalBytesTextChange = { dropZoneMaxTotalBytes = it },
+                onDuplicatePolicyChange = { dropZoneDuplicatePolicy = it },
+                onBrandingCompanyNameChange = { dropZoneBrandingCompanyName = it },
+                onBrandingKickerChange = { dropZoneBrandingKicker = it },
+                onBrandingTitleChange = { dropZoneBrandingTitle = it },
+                onBrandingDescriptionChange = { dropZoneBrandingDescription = it },
+                onBrandingButtonTextChange = { dropZoneBrandingButtonText = it },
+                onBrandingFooterTextChange = { dropZoneBrandingFooterText = it },
+                onBrandingLogoUrlChange = { dropZoneBrandingLogoUrl = it },
+                onBrandingPrimaryColorChange = { dropZoneBrandingPrimaryColor = it },
+                onBrandingBackgroundColorChange = { dropZoneBrandingBackgroundColor = it },
+                onBrandingPanelColorChange = { dropZoneBrandingPanelColor = it },
+                onBrandingTextColorChange = { dropZoneBrandingTextColor = it },
+                onBrandingButtonTextColorChange = { dropZoneBrandingButtonTextColor = it },
                 onRefresh = { refreshDropZones() },
                 onCreate = { createDropZoneFromSheet() },
                 onCopyLatest = { copyLatestDropZoneLink() },
+                onUpdate = { id, name, maxFileBytesText, maxTotalBytesText, duplicatePolicy, branding ->
+                    updateDropZoneFromSheet(
+                        id = id,
+                        name = name,
+                        maxFileBytesText = maxFileBytesText,
+                        maxTotalBytesText = maxTotalBytesText,
+                        duplicatePolicy = duplicatePolicy,
+                        branding = branding
+                    )
+                },
                 onDisable = { id -> disableDropZoneFromSheet(id) },
                 onClose = { showDropZoneSheet = false }
             )
@@ -3521,6 +3630,38 @@ private fun formatBytes(bytes: Long): String {
     val digitGroups = (ln(bytes.toDouble()) / ln(1024.0)).toInt()
     val value = bytes / 1024.0.pow(digitGroups.toDouble())
     return String.format(Locale.US, "%.1f %s", value, units[digitGroups - 1])
+}
+
+private fun parseDropZoneLimitBytes(raw: String): Long {
+    val value = raw.trim()
+    if (value.isBlank()) return 0L
+
+    val compact = value
+        .lowercase(Locale.US)
+        .replace(",", ".")
+        .replace(" ", "")
+
+    val numberText = compact.takeWhile { it.isDigit() || it == '.' }
+    if (numberText.isBlank()) return 0L
+
+    val number = numberText.toDoubleOrNull() ?: return 0L
+    if (number <= 0.0) return 0L
+
+    val suffix = compact.drop(numberText.length)
+
+    val multiplier = when {
+        suffix.startsWith("tib") || suffix.startsWith("tb") || suffix == "t" -> 1024.0 * 1024.0 * 1024.0 * 1024.0
+        suffix.startsWith("gib") || suffix.startsWith("gb") || suffix == "g" -> 1024.0 * 1024.0 * 1024.0
+        suffix.startsWith("mib") || suffix.startsWith("mb") || suffix == "m" -> 1024.0 * 1024.0
+        suffix.startsWith("kib") || suffix.startsWith("kb") || suffix == "k" -> 1024.0
+        suffix == "b" || suffix.startsWith("byte") -> 1.0
+        suffix.isBlank() -> 1024.0 * 1024.0
+        else -> return 0L
+    }
+
+    return (number * multiplier)
+        .toLong()
+        .coerceAtLeast(0L)
 }
 
 private fun formatUnixTime(unixSeconds: Long): String {
