@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import com.pqnas.mobile.R
 import com.pqnas.mobile.auth.AuthRepository
 import com.pqnas.mobile.auth.PairQrPayload
+import com.pqnas.mobile.security.PinnedTls
 import kotlinx.coroutines.launch
 
 @Composable
@@ -106,7 +107,11 @@ fun PairConfirmScreen(
                 )
 
                 Text(
-                    text = "TLS identity: ${payload.tlsPinSha256.take(24)}…",
+                    text = if (PinnedTls.usesPublicCaTrust(payload.tlsPinSha256)) {
+                        "TLS trust: Android system CA + hostname"
+                    } else {
+                        "TLS identity: ${payload.tlsPinSha256.take(24)}…"
+                    },
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

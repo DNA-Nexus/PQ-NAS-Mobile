@@ -15,6 +15,20 @@ import javax.net.ssl.X509TrustManager
 object PinnedTls {
     private const val SPKI_SHA256_PREFIX = "sha256/"
 
+    /**
+     * Public CA trust mode.
+     *
+     * Use this when DNA-Nexus is exposed through Cloudflare, an operator reverse
+     * proxy, or another managed HTTPS edge where SPKI pins may rotate outside
+     * the NAS owner's control.
+     *
+     * Security model:
+     * - Android default trust store validates the certificate chain.
+     * - OkHttp validates the hostname against the configured origin.
+     * - Pairing still requires the QR origin to match the user-selected server.
+     */
+    const val PUBLIC_CA_TRUST = "public_ca"
+
     fun normalizeSpkiSha256Pin(raw: String): String? {
         val cleaned = raw.trim().replace(" ", "+")
         if (!cleaned.startsWith(SPKI_SHA256_PREFIX)) return null
@@ -31,11 +45,37 @@ object PinnedTls {
         return SPKI_SHA256_PREFIX + Base64.encodeToString(decoded, Base64.NO_WRAP)
     }
 
-    fun applyTo(builder: OkHttpClient.Builder, tlsPinSha256: String) {
-        val normalizedPin = normalizeSpkiSha256Pin(tlsPinSha256)
-            ?: throw IllegalArgumentException("Malformed server TLS pin")
+    fun normalizePairTrust(raw: String): String? {
+        val cleaned = raw.trim()
+        val mode = cleaned.lowercase()
+            .replace("-", "_")
+            .replace(" ", "_")
 
-        val trustManager = SpkiPinTrustManager(normalizedPin)
+        if (mode == PUBLIC_CA_TRUST ||
+            mode == "system_ca" ||
+            mode == "android_ca" ||
+            mode == "default_ca"
+        ) {
+            return PUBLIC_CA_TRUST
+        }
+
+        return normalizeSpkiSha256Pin(cleaned)
+    }
+
+    fun usesPublicCaTrust(raw: String): Boolean =
+        normalizePairTrust(raw) == PUBLIC_CA_TRUST
+
+    fun applyTo(builder: OkHttpClient.Builder, tlsPinSha256: String) {
+        val normalizedTrust = normalizePairTrust(tlsPinSha256)
+            ?: throw IllegalArgumentException("Malformed server TLS trust setting")
+
+        if (normalizedTrust == PUBLIC_CA_TRUST) {
+            // Leave OkHttp on the Android platform defaults:
+            // normal CA chain validation + hostname verification.
+            return
+        }
+
+        val trustManager = SpkiPinTrustManager(normalizedTrust)
         val sslContext = SSLContext.getInstance("TLS")
         sslContext.init(null, arrayOf<TrustManager>(trustManager), SecureRandom())
 

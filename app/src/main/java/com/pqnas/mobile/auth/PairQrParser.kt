@@ -29,7 +29,7 @@ object PairQrParser {
             ?: uri.getQueryParameter("pin")
             ?: ""
 
-        val tlsPinSha256 = PinnedTls.normalizeSpkiSha256Pin(rawTlsPin) ?: return null
+        val tlsPinSha256 = PinnedTls.normalizePairTrust(rawTlsPin) ?: return null
 
         if (pairToken.isBlank() || origin.isBlank()) return null
 
