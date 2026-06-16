@@ -17,6 +17,8 @@ import retrofit2.HttpException
 import com.pqnas.mobile.api.DropZoneBrandingDto
 import com.pqnas.mobile.api.DropZoneCreateRequest
 import com.pqnas.mobile.api.DropZoneDisableRequest
+import com.pqnas.mobile.api.DropZoneRenewRequest
+import com.pqnas.mobile.api.DropZoneClearHistoryRequest
 import com.pqnas.mobile.api.DropZoneUpdateRequest
 import com.pqnas.mobile.api.FileLockStatusBatchRequest
 import com.pqnas.mobile.api.FileNotesResolveRequest
@@ -226,6 +228,24 @@ class FilesRepository(
                 max_total_bytes = maxTotalBytes,
                 duplicate_policy = duplicatePolicy,
                 branding = branding
+            )
+        )
+
+    suspend fun renewDropZone(
+        id: String,
+        expiresInSeconds: Long = 7L * 24L * 60L * 60L
+    ) =
+        filesApi.renewDropZone(
+            DropZoneRenewRequest(
+                id = id,
+                expires_in_seconds = expiresInSeconds
+            )
+        )
+
+    suspend fun clearDropZoneHistory(id: String) =
+        filesApi.clearDropZoneHistory(
+            DropZoneClearHistoryRequest(
+                id = id
             )
         )
 

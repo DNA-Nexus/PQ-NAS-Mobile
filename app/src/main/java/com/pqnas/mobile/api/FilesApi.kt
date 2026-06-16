@@ -144,6 +144,31 @@ data class DropZoneUpdateResponse(
     val message: String? = null
 )
 
+data class DropZoneRenewRequest(
+    val id: String,
+    val expires_in_seconds: Long = 7L * 24L * 60L * 60L
+)
+
+data class DropZoneRenewResponse(
+    val ok: Boolean = false,
+    val id: String = "",
+    val expires_epoch: Long = 0L,
+    val error: String? = null,
+    val message: String? = null
+)
+
+data class DropZoneClearHistoryRequest(
+    val id: String
+)
+
+data class DropZoneClearHistoryResponse(
+    val ok: Boolean = false,
+    val id: String = "",
+    val deleted_count: Long = 0L,
+    val error: String? = null,
+    val message: String? = null
+)
+
 data class DropZoneDisableRequest(
     val id: String,
     val disabled: Boolean = true
@@ -308,6 +333,18 @@ interface FilesApi {
     suspend fun updateDropZone(
         @Body request: DropZoneUpdateRequest
     ): DropZoneUpdateResponse
+
+    @Headers("Content-Type: application/json")
+    @POST("/api/v4/dropzones/renew")
+    suspend fun renewDropZone(
+        @Body request: DropZoneRenewRequest
+    ): DropZoneRenewResponse
+
+    @Headers("Content-Type: application/json")
+    @POST("/api/v4/dropzones/clear-history")
+    suspend fun clearDropZoneHistory(
+        @Body request: DropZoneClearHistoryRequest
+    ): DropZoneClearHistoryResponse
 
     @Headers("Content-Type: application/json")
     @POST("/api/v4/dropzones/disable")

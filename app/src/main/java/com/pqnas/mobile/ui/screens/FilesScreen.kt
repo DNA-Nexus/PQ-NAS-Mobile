@@ -1460,6 +1460,45 @@ fun FilesScreen(
         }
     }
 
+    fun renewDropZoneFromSheet(id: String, expiresInSeconds: Long) {
+        scope.launch {
+            dropZoneStatus = "Renewing Drop Zone..."
+            try {
+                val resp = filesRepository.renewDropZone(
+                    id = id,
+                    expiresInSeconds = expiresInSeconds
+                )
+
+                if (resp.ok) {
+                    dropZoneStatus = "Drop Zone renewed."
+                    refreshDropZones()
+                } else {
+                    dropZoneStatus = resp.message ?: resp.error ?: "Could not renew Drop Zone."
+                }
+            } catch (e: Exception) {
+                dropZoneStatus = "Could not renew Drop Zone: ${e.message ?: "unknown error"}"
+            }
+        }
+    }
+
+    fun clearDropZoneHistoryFromSheet(id: String) {
+        scope.launch {
+            dropZoneStatus = "Clearing upload history..."
+            try {
+                val resp = filesRepository.clearDropZoneHistory(id)
+
+                if (resp.ok) {
+                    dropZoneStatus = "Upload history cleared (${resp.deleted_count} entries)."
+                    refreshDropZones()
+                } else {
+                    dropZoneStatus = resp.message ?: resp.error ?: "Could not clear upload history."
+                }
+            } catch (e: Exception) {
+                dropZoneStatus = "Could not clear upload history: ${e.message ?: "unknown error"}"
+            }
+        }
+    }
+
     fun disableDropZoneFromSheet(id: String) {
         scope.launch {
             dropZoneStatus = ""
@@ -2409,6 +2448,12 @@ fun FilesScreen(
                     )
                 },
                 onDisable = { id -> disableDropZoneFromSheet(id) },
+                onRenew = { id, expiresInSeconds ->
+                    renewDropZoneFromSheet(id, expiresInSeconds)
+                },
+                onClearHistory = { id ->
+                    clearDropZoneHistoryFromSheet(id)
+                },
                 onClose = { showDropZoneSheet = false }
             )
         }

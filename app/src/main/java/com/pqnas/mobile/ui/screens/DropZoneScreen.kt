@@ -1,4 +1,5 @@
 package com.pqnas.mobile.ui.screens
+import androidx.compose.material3.OutlinedButton
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -151,9 +152,13 @@ fun DropZoneScreen(
         branding: DropZoneBrandingDto
     ) -> Unit,
     onDisable: (String) -> Unit,
+    onRenew: (String, Long) -> Unit,
+    onClearHistory: (String) -> Unit,
     onClose: () -> Unit
 ) {
     var disableCandidate by remember { mutableStateOf<DropZoneInfo?>(null) }
+    var renewCandidate by remember { mutableStateOf<DropZoneInfo?>(null) }
+    var clearHistoryCandidate by remember { mutableStateOf<DropZoneInfo?>(null) }
     var showCreateForm by remember { mutableStateOf(false) }
     var editDraft by remember { mutableStateOf<DzEditDraft?>(null) }
 
@@ -288,6 +293,12 @@ fun DropZoneScreen(
                         },
                         onDisable = {
                             disableCandidate = zone
+                        },
+                        onRenew = {
+                            renewCandidate = zone
+                        },
+                        onClearHistory = {
+                            clearHistoryCandidate = zone
                         }
                     )
                 }
@@ -319,6 +330,48 @@ fun DropZoneScreen(
                 }
             }
         }
+    }
+
+    renewCandidate?.let { zone ->
+        DropZoneRenewDialog(
+            zoneName = zone.name.ifBlank { "Drop Zone" },
+            onDismiss = { renewCandidate = null },
+            onRenew = { seconds ->
+                renewCandidate = null
+                onRenew(zone.id, seconds)
+            }
+        )
+    }
+
+    clearHistoryCandidate?.let { zone ->
+        AlertDialog(
+            onDismissRequest = { clearHistoryCandidate = null },
+            containerColor = DzPanel,
+            titleContentColor = DzText,
+            textContentColor = DzMuted,
+            title = { Text("Clear upload history?") },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(zone.name.ifBlank { "Drop Zone" })
+                    Text("This clears the Drop Zone upload history list. Uploaded files are not deleted.")
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        clearHistoryCandidate = null
+                        onClearHistory(zone.id)
+                    }
+                ) {
+                    Text("Clear")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { clearHistoryCandidate = null }) {
+                    Text("Cancel")
+                }
+            }
+        )
     }
 
     disableCandidate?.let { zone ->
@@ -426,9 +479,49 @@ private fun DropZoneHeader(
 }
 
 @Composable
+private fun DropZoneRenewDialog(
+    zoneName: String,
+    onDismiss: () -> Unit,
+    onRenew: (Long) -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        containerColor = DzPanel,
+        titleContentColor = DzText,
+        textContentColor = DzMuted,
+        title = { Text("Renew Drop Zone") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(zoneName)
+                Text("Choose how long the public upload link should stay active from now.")
+            }
+        },
+        confirmButton = {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                TextButton(onClick = { onRenew(7L * 24L * 60L * 60L) }) {
+                    Text("Renew 7 days")
+                }
+                TextButton(onClick = { onRenew(30L * 24L * 60L * 60L) }) {
+                    Text("Renew 30 days")
+                }
+                TextButton(onClick = { onRenew(90L * 24L * 60L * 60L) }) {
+                    Text("Renew 90 days")
+                }
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel")
+            }
+        }
+    )
+}
+
+@Composable
 private fun DropZoneCollapsedCreateCard(
     onOpen: () -> Unit
 ) {
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
@@ -828,8 +921,21 @@ private fun DropZoneExistingHeader(
 private fun DropZoneExistingCard(
     zone: DropZoneInfo,
     onEdit: () -> Unit,
-    onDisable: () -> Unit
-) {
+    onDisable: () -> Unit,
+    onRenew: () -> Unit,
+    onClearHistory: () -> Unit) {
+    val zoneExpired = dropZoneIsExpired(zone)
+    val zoneStatusText = when {
+        zone.disabled -> "Disabled"
+        zoneExpired -> "Expired"
+        else -> "Active"
+    }
+    val zoneStatusColor = when {
+        zone.disabled -> DzMuted
+        zoneExpired -> DzBad
+        else -> DzGood
+    }
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
@@ -862,10 +968,10 @@ private fun DropZoneExistingCard(
                 }
 
                 Text(
-                    text = if (zone.disabled) "Disabled" else "Active",
+                    text = zoneStatusText,
                     style = MaterialTheme.typography.labelMedium,
                     fontWeight = FontWeight.Bold,
-                    color = if (zone.disabled) DzMuted else DzGood
+                    color = zoneStatusColor
                 )
             }
 
@@ -903,6 +1009,26 @@ private fun DropZoneExistingCard(
                 }
 
                 if (!zone.disabled) {
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    OutlinedButton(
+                        onClick = onRenew,
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text("Renew")
+                    }
+
+                    OutlinedButton(
+                        onClick = onClearHistory,
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text("Clear history")
+                    }
+                }
+
                     TextButton(
                         onClick = onDisable,
                         colors = ButtonDefaults.textButtonColors(
@@ -915,6 +1041,12 @@ private fun DropZoneExistingCard(
             }
         }
     }
+}
+
+private fun dropZoneIsExpired(zone: DropZoneInfo): Boolean {
+    val expires = zone.expires_epoch
+    if (expires <= 0L) return false
+    return expires <= (System.currentTimeMillis() / 1000L)
 }
 
 @Composable
