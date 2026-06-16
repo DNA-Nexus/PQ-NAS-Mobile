@@ -40,7 +40,9 @@ fun AppLockScreen(
             color = MaterialTheme.colorScheme.onBackground
         )
 
-        Card(
+        
+
+Card(
             modifier = Modifier.fillMaxWidth(),
             colors = CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.surface
@@ -62,10 +64,12 @@ fun AppLockScreen(
                     elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
                 ) {
                     Image(
-                        painter = painterResource(id = R.drawable.cpunk_about),
-                        contentDescription = "CPUNK DNA-Nexus mascot",
-                        modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Crop
+                        painter = painterResource(id = R.drawable.dna_nexus_logo_dark),
+                        contentDescription = "DNA-Nexus logo",
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(horizontal = 18.dp, vertical = 14.dp),
+                        contentScale = ContentScale.Fit
                     )
                 }
 
