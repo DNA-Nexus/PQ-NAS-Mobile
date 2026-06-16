@@ -1139,6 +1139,149 @@ fun FilesScreen(
         }
     }
 
+    fun uploadUrisSequentially(uris: List<Uri>) {
+        val selectedUris = uris
+            .filter { it.toString().isNotBlank() }
+            .distinctBy { it.toString() }
+
+        if (selectedUris.isEmpty()) {
+            status = "No files selected."
+            return
+        }
+
+        if (uploadInProgress) {
+            status = "Another upload is already running."
+            return
+        }
+
+        val pathSnapshot = currentPath
+        val scopeSnapshot = currentScope
+        val existingNames = items.map { it.name }.toMutableSet()
+
+        uploadJob = scope.launch {
+            var uploadedCount = 0
+            var skippedCount = 0
+            var failedCount = 0
+
+            try {
+                uploadInProgress = true
+                uploadCancelRequested = false
+                uploadBytesSent = 0L
+                uploadBytesTotal = 0L
+
+                selectedUris.forEachIndexed { index, uri ->
+                    if (uploadCancelRequested) {
+                        throw CancellationException("User cancelled upload")
+                    }
+
+                    var stagedFile: File? = null
+                    var safeFileName = ""
+
+                    try {
+                        val displayName = queryDisplayName(context, uri)?.trim()
+                        if (displayName.isNullOrBlank()) {
+                            failedCount += 1
+                            return@forEachIndexed
+                        }
+
+                        safeFileName = displayName
+                        val targetPath = buildItemPath(pathSnapshot, safeFileName)
+
+                        if (existingNames.contains(safeFileName)) {
+                            skippedCount += 1
+                            return@forEachIndexed
+                        }
+
+                        val mimeType = context.contentResolver.getType(uri) ?: "application/octet-stream"
+
+                        uploadFileName = "$safeFileName (${index + 1}/${selectedUris.size})"
+                        uploadBytesSent = 0L
+                        uploadBytesTotal = 0L
+                        status = "Preparing upload ${index + 1}/${selectedUris.size}: $safeFileName..."
+
+                        stagedFile = withContext(Dispatchers.IO) {
+                            stageUriToTempFile(
+                                context = context,
+                                uri = uri,
+                                fileNameHint = safeFileName
+                            )
+                        }
+
+                        val size = stagedFile!!.length()
+                        uploadBytesTotal = size
+
+                        var lastProgressUiUpdateAtMs = 0L
+                        var lastProgressUiBytes = -1L
+
+                        val onUploadProgress: (Long, Long) -> Unit = { sent, total ->
+                            val nowMs = System.currentTimeMillis()
+                            val bytesDelta = sent - lastProgressUiBytes
+                            val shouldUpdate =
+                                sent == total ||
+                                        lastProgressUiBytes < 0L ||
+                                        bytesDelta >= 256 * 1024L ||
+                                        (nowMs - lastProgressUiUpdateAtMs) >= 100L
+
+                            if (shouldUpdate) {
+                                lastProgressUiBytes = sent
+                                lastProgressUiUpdateAtMs = nowMs
+                                mainThreadHandler.post {
+                                    uploadBytesSent = sent
+                                    uploadBytesTotal = total
+                                }
+                            }
+                        }
+
+                        status = "Uploading ${index + 1}/${selectedUris.size}: $safeFileName..."
+
+                        scopedOps.uploadTempFile(
+                            scope = scopeSnapshot,
+                            path = targetPath,
+                            file = stagedFile!!,
+                            mimeType = mimeType,
+                            overwrite = false,
+                            onProgress = onUploadProgress,
+                            isCancelled = { uploadCancelRequested }
+                        )
+
+                        uploadedCount += 1
+                        existingNames.add(safeFileName)
+                    } catch (e: CancellationException) {
+                        throw e
+                    } catch (e: Exception) {
+                        failedCount += 1
+                    } finally {
+                        stagedFile?.delete()
+                    }
+                }
+
+                status = "OK"
+
+                val parts = mutableListOf<String>()
+                if (uploadedCount > 0) parts.add("uploaded $uploadedCount")
+                if (skippedCount > 0) parts.add("skipped $skippedCount existing")
+                if (failedCount > 0) parts.add("failed $failedCount")
+
+                val summary = if (parts.isEmpty()) {
+                    "No files uploaded."
+                } else {
+                    "Multi upload complete: ${parts.joinToString(", ")}."
+                }
+
+                snackbarHostState.showSnackbar(summary)
+
+                if (uploadedCount > 0) {
+                    load(pathSnapshot)
+                }
+            } catch (e: CancellationException) {
+                status = "Upload cancelled."
+                snackbarHostState.showSnackbar("Upload cancelled")
+            } finally {
+                clearUploadProgressState()
+            }
+        }
+    }
+
     // PQNAS_INCOMING_DESTINATION_PICKER_V1: destination helpers for Android Sharesheet uploads.
     fun defaultIncomingSharePhoneUploadsPath(): String {
         val month = SimpleDateFormat("yyyy-MM", Locale.US).format(Date())
@@ -1335,6 +1478,13 @@ fun FilesScreen(
     ) { uri: Uri? ->
         if (uri == null) return@rememberLauncherForActivityResult
         uploadUri(uri, overwrite = false)
+    }
+
+    val uploadMultipleDocumentsLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenMultipleDocuments()
+    ) { uris: List<Uri> ->
+        if (uris.isEmpty()) return@rememberLauncherForActivityResult
+        uploadUrisSequentially(uris)
     }
 
     LaunchedEffect(incomingShareNonce, incomingShareManifestPath) {
@@ -2544,6 +2694,23 @@ fun FilesScreen(
                         showCreateMenu = false
                         onBeforeExternalPicker()
                         uploadDocumentLauncher.launch(arrayOf("*/*"))
+                    }
+                )
+
+                ListItem(
+                    headlineContent = { Text("Upload multiple files") },
+                    supportingContent = { Text("Choose several files from this phone") },
+                    leadingContent = {
+                        Text(
+                            text = "↑↑",
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    },
+                    modifier = Modifier.clickable {
+                        showCreateMenu = false
+                        onBeforeExternalPicker()
+                        uploadMultipleDocumentsLauncher.launch(arrayOf("*/*"))
                     }
                 )
 
