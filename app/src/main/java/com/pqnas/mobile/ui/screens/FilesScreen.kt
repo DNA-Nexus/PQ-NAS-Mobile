@@ -1,4 +1,5 @@
 package com.pqnas.mobile.ui.screens
+import com.pqnas.mobile.api.DropZoneUploadDto
 
 import android.content.ClipData
 import android.content.ClipboardManager
@@ -172,6 +173,11 @@ fun FilesScreen(
     var dropZoneLoading by remember { mutableStateOf(false) }
     var dropZoneCreating by remember { mutableStateOf(false) }
     var dropZoneStatus by remember { mutableStateOf("") }
+    var dropZoneHistoryOpen by remember { mutableStateOf(false) }
+    var dropZoneHistoryTitle by remember { mutableStateOf("") }
+    var dropZoneHistoryLoading by remember { mutableStateOf(false) }
+    var dropZoneHistoryStatus by remember { mutableStateOf("") }
+    var dropZoneHistoryUploads by remember { mutableStateOf<List<DropZoneUploadDto>>(emptyList()) }
     var dropZoneLatestUrl by remember { mutableStateOf("") }
     var showEchoStackScreen by remember { mutableStateOf(false) }
     var showCircleStackScreen by remember { mutableStateOf(false) }
@@ -1499,6 +1505,43 @@ fun FilesScreen(
         }
     }
 
+    fun closeDropZoneHistoryFromSheet() {
+        dropZoneHistoryOpen = false
+        dropZoneHistoryTitle = ""
+        dropZoneHistoryStatus = ""
+        dropZoneHistoryUploads = emptyList()
+        dropZoneHistoryLoading = false
+    }
+
+    fun showDropZoneHistoryFromSheet(id: String, title: String) {
+        dropZoneHistoryOpen = true
+        dropZoneHistoryTitle = title.ifBlank { "Drop Zone" }
+        dropZoneHistoryStatus = ""
+        dropZoneHistoryUploads = emptyList()
+        dropZoneHistoryLoading = true
+
+        scope.launch {
+            try {
+                val resp = filesRepository.listDropZoneUploads(id)
+
+                if (resp.ok) {
+                    dropZoneHistoryUploads = resp.uploads
+                    dropZoneHistoryStatus = if (resp.uploads.isEmpty()) {
+                        "No uploads in history."
+                    } else {
+                        "${resp.uploads.size} upload(s)"
+                    }
+                } else {
+                    dropZoneHistoryStatus = resp.message ?: resp.error ?: "Could not load upload history."
+                }
+            } catch (e: Exception) {
+                dropZoneHistoryStatus = "Could not load upload history: ${e.message ?: "unknown error"}"
+            } finally {
+                dropZoneHistoryLoading = false
+            }
+        }
+    }
+
     fun disableDropZoneFromSheet(id: String) {
         scope.launch {
             dropZoneStatus = ""
@@ -2453,6 +2496,20 @@ fun FilesScreen(
                 },
                 onClearHistory = { id ->
                     clearDropZoneHistoryFromSheet(id)
+                },
+                historyOpen = dropZoneHistoryOpen,
+                historyTitle = dropZoneHistoryTitle,
+                historyUploads = dropZoneHistoryUploads,
+                historyLoading = dropZoneHistoryLoading,
+                historyStatus = dropZoneHistoryStatus,
+                onViewHistory = { zone ->
+                    showDropZoneHistoryFromSheet(
+                        id = zone.id,
+                        title = zone.name.ifBlank { "Drop Zone" }
+                    )
+                },
+                onCloseHistory = {
+                    closeDropZoneHistoryFromSheet()
                 },
                 onClose = { showDropZoneSheet = false }
             )

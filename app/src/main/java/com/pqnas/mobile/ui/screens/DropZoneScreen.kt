@@ -1,4 +1,7 @@
 package com.pqnas.mobile.ui.screens
+import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.PaddingValues
+import com.pqnas.mobile.api.DropZoneUploadDto
 import androidx.compose.material3.OutlinedButton
 
 import androidx.compose.foundation.background
@@ -154,6 +157,13 @@ fun DropZoneScreen(
     onDisable: (String) -> Unit,
     onRenew: (String, Long) -> Unit,
     onClearHistory: (String) -> Unit,
+    historyOpen: Boolean,
+    historyTitle: String,
+    historyUploads: List<DropZoneUploadDto>,
+    historyLoading: Boolean,
+    historyStatus: String,
+    onViewHistory: (DropZoneInfo) -> Unit,
+    onCloseHistory: () -> Unit,
     onClose: () -> Unit
 ) {
     var disableCandidate by remember { mutableStateOf<DropZoneInfo?>(null) }
@@ -299,6 +309,9 @@ fun DropZoneScreen(
                         },
                         onClearHistory = {
                             clearHistoryCandidate = zone
+                        },
+                        onHistory = {
+                            onViewHistory(zone)
                         }
                     )
                 }
@@ -371,6 +384,16 @@ fun DropZoneScreen(
                     Text("Cancel")
                 }
             }
+        )
+    }
+
+    if (historyOpen) {
+        DropZoneHistoryDialog(
+            title = historyTitle.ifBlank { "Drop Zone history" },
+            uploads = historyUploads,
+            loading = historyLoading,
+            status = historyStatus,
+            onDismiss = onCloseHistory
         )
     }
 
@@ -917,10 +940,36 @@ private fun DropZoneExistingHeader(
     }
 }
 
+
+
+@Composable
+private fun DropZoneActionButton(
+    text: String,
+    onClick: () -> Unit
+) {
+    TextButton(
+        onClick = onClick,
+        modifier = Modifier
+            .defaultMinSize(minWidth = 0.dp, minHeight = 32.dp)
+            .height(32.dp),
+        contentPadding = PaddingValues(horizontal = 6.dp, vertical = 0.dp),
+        colors = ButtonDefaults.textButtonColors(
+            contentColor = DzOrangeSoft
+        )
+    ) {
+        Text(
+            text = text,
+            style = MaterialTheme.typography.labelMedium,
+            maxLines = 1
+        )
+    }
+}
+
 @Composable
 private fun DropZoneExistingCard(
     zone: DropZoneInfo,
     onEdit: () -> Unit,
+    onHistory: () -> Unit,
     onDisable: () -> Unit,
     onRenew: () -> Unit,
     onClearHistory: () -> Unit) {
@@ -995,52 +1044,184 @@ private fun DropZoneExistingCard(
 
             HorizontalDivider(color = DzPanelLine.copy(alpha = 0.8f))
 
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(0.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                TextButton(
-                    onClick = onEdit,
-                    colors = ButtonDefaults.textButtonColors(
-                        contentColor = DzOrangeSoft
-                    )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(4.dp, Alignment.CenterHorizontally),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text("Edit")
-                }
+                    DropZoneActionButton(
+                        text = "Edit",
+                        onClick = onEdit
+                    )
 
-                if (!zone.disabled) {
+                    DropZoneActionButton(
+                        text = "New uploads",
+                        onClick = onHistory
+                    )
+
+                    DropZoneActionButton(
+                        text = "Renew",
+                        onClick = onRenew
+                    )
+                }
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.spacedBy(4.dp, Alignment.CenterHorizontally),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    OutlinedButton(
-                        onClick = onRenew,
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Text("Renew")
-                    }
+                    DropZoneActionButton(
+                        text = "Clear new",
+                        onClick = onClearHistory
+                    )
 
-                    OutlinedButton(
-                        onClick = onClearHistory,
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Text("Clear history")
-                    }
-                }
-
-                    TextButton(
-                        onClick = onDisable,
-                        colors = ButtonDefaults.textButtonColors(
-                            contentColor = DzOrangeSoft
+                    if (!zone.disabled) {
+                        DropZoneActionButton(
+                            text = "Disable",
+                            onClick = onDisable
                         )
-                    ) {
-                        Text("Disable")
                     }
                 }
             }
         }
     }
+}
+
+@Composable
+private fun DropZoneHistoryDialog(
+    title: String,
+    uploads: List<DropZoneUploadDto>,
+    loading: Boolean,
+    status: String,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        containerColor = DzPanel,
+        titleContentColor = DzText,
+        textContentColor = DzMuted,
+        title = { Text("${title} · New uploads") },
+        text = {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(360.dp)
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                if (loading) {
+                    LinearProgressIndicator(
+                        modifier = Modifier.fillMaxWidth(),
+                        color = DzOrange,
+                        trackColor = DzPanelSoft
+                    )
+                }
+
+                if (status.isNotBlank()) {
+                    Text(
+                        text = status,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = DzMuted
+                    )
+                }
+
+                if (!loading && uploads.isEmpty()) {
+                    Text(
+                        text = "No new uploads waiting.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = DzMuted
+                    )
+                }
+
+                uploads.forEach { upload ->
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(
+                            containerColor = DzPanelSoft
+                        ),
+                        border = androidx.compose.foundation.BorderStroke(
+                            1.dp,
+                            DzPanelLine.copy(alpha = 0.8f)
+                        )
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(12.dp),
+                            verticalArrangement = Arrangement.spacedBy(5.dp)
+                        ) {
+                            Text(
+                                text = upload.stored_filename
+                                    .ifBlank { upload.original_filename }
+                                    .ifBlank { "Uploaded file" },
+                                style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.SemiBold,
+                                color = DzText
+                            )
+
+                            Text(
+                                text = buildString {
+                                    append(formatDzBytes(upload.size_bytes))
+                                    if (upload.created_epoch > 0L) {
+                                        append(" • ")
+                                        append(formatDzEpoch(upload.created_epoch))
+                                    }
+                                    if (upload.uploader_name.isNotBlank()) {
+                                        append(" • ")
+                                        append(upload.uploader_name)
+                                    }
+                                },
+                                style = MaterialTheme.typography.bodySmall,
+                                color = DzMuted
+                            )
+
+                            if (upload.stored_path.isNotBlank()) {
+                                Text(
+                                    text = upload.stored_path,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = DzMuted
+                                )
+                            }
+
+                            if (upload.uploader_message.isNotBlank()) {
+                                Text(
+                                    text = upload.uploader_message,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = DzMuted
+                                )
+                            }
+
+                            if (upload.scan_status.isNotBlank() &&
+                                upload.scan_status != "not_scanned"
+                            ) {
+                                Text(
+                                    text = "Scan: ${upload.scan_status}",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = DzMuted
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Close", color = DzOrangeSoft)
+            }
+        }
+    )
+}
+
+private fun formatDzEpoch(epoch: Long): String {
+    if (epoch <= 0L) return ""
+    return java.text.SimpleDateFormat(
+        "yyyy-MM-dd HH:mm",
+        Locale.getDefault()
+    ).format(java.util.Date(epoch * 1000L))
 }
 
 private fun dropZoneIsExpired(zone: DropZoneInfo): Boolean {

@@ -169,6 +169,26 @@ data class DropZoneClearHistoryResponse(
     val message: String? = null
 )
 
+data class DropZoneUploadDto(
+    val id: String = "",
+    val original_filename: String = "",
+    val stored_filename: String = "",
+    val stored_path: String = "",
+    val size_bytes: Long = 0L,
+    val created_epoch: Long = 0L,
+    val uploader_name: String = "",
+    val uploader_message: String = "",
+    val scan_status: String = ""
+)
+
+data class DropZoneUploadsResponse(
+    val ok: Boolean = false,
+    val id: String = "",
+    val uploads: List<DropZoneUploadDto> = emptyList(),
+    val error: String? = null,
+    val message: String? = null
+)
+
 data class DropZoneDisableRequest(
     val id: String,
     val disabled: Boolean = true
@@ -321,6 +341,11 @@ interface FilesApi {
     suspend fun getMyStorage(): MeStorageResponse
     @GET("/api/v4/dropzones/list")
     suspend fun listDropZones(): DropZonesListResponse
+
+    @GET("/api/v4/dropzones/uploads")
+    suspend fun listDropZoneUploads(
+        @Query("id") id: String
+    ): DropZoneUploadsResponse
 
     @Headers("Content-Type: application/json")
     @POST("/api/v4/dropzones/create")

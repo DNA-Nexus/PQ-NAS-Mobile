@@ -189,6 +189,9 @@ class FilesRepository(
     suspend fun listDropZones() =
         filesApi.listDropZones()
 
+    suspend fun listDropZoneUploads(id: String) =
+        filesApi.listDropZoneUploads(id)
+
     suspend fun createDropZone(
         name: String = "Drop Zone",
         destinationPath: String = "",
