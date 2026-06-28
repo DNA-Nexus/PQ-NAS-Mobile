@@ -23,6 +23,10 @@ import com.pqnas.mobile.api.DropZoneUpdateRequest
 import com.pqnas.mobile.api.FileLockStatusBatchRequest
 import com.pqnas.mobile.api.FileNotesResolveRequest
 import com.pqnas.mobile.api.FileNoteSaveRequest
+import com.pqnas.mobile.api.WorkspaceMessageAttachmentRequest
+import com.pqnas.mobile.api.WorkspaceMessageDeleteRequest
+import com.pqnas.mobile.api.WorkspaceMessageMuteRequest
+import com.pqnas.mobile.api.WorkspaceMessagePostRequest
 
 class FilesRepository(
     private val tokenStore: TokenStore,
@@ -167,6 +171,69 @@ class FilesRepository(
 
     internal fun createWorkspaceFilesApiInternal() =
         workspaceFilesApi
+
+    // PQNAS_ANDROID_WORKSPACE_MESSAGES_LINKS_V1: workspace message board repository helpers.
+    suspend fun listWorkspaceMessages(
+        workspaceId: String,
+        afterId: Long = 0L,
+        limit: Int = 100
+    ) = workspaceFilesApi.listWorkspaceMessages(
+        workspaceId = workspaceId,
+        afterId = afterId,
+        limit = limit
+    )
+
+    suspend fun postWorkspaceMessage(
+        workspaceId: String,
+        body: String,
+        attachments: List<WorkspaceMessageAttachmentRequest> = emptyList()
+    ) = workspaceFilesApi.postWorkspaceMessage(
+        WorkspaceMessagePostRequest(
+            workspace_id = workspaceId,
+            body = body,
+            attachments = attachments
+        )
+    )
+
+    suspend fun deleteWorkspaceMessage(
+        workspaceId: String,
+        messageId: Long
+    ) = workspaceFilesApi.deleteWorkspaceMessage(
+        WorkspaceMessageDeleteRequest(
+            workspace_id = workspaceId,
+            message_id = messageId
+        )
+    )
+
+    suspend fun muteWorkspaceMessageAuthor(
+        workspaceId: String,
+        messageId: Long,
+        muted: Boolean = true,
+        reason: String = ""
+    ) = workspaceFilesApi.muteWorkspaceMessage(
+        WorkspaceMessageMuteRequest(
+            workspace_id = workspaceId,
+            message_id = messageId,
+            target_all = false,
+            muted = muted,
+            reason = reason
+        )
+    )
+
+    suspend fun muteWorkspaceMessageBoard(
+        workspaceId: String,
+        muted: Boolean = true,
+        reason: String = ""
+    ) = workspaceFilesApi.muteWorkspaceMessage(
+        WorkspaceMessageMuteRequest(
+            workspace_id = workspaceId,
+            message_id = 0L,
+            target_all = true,
+            muted = muted,
+            reason = reason
+        )
+    )
+
 
     internal fun createEchoStackApiInternal() =
         echoStackApi

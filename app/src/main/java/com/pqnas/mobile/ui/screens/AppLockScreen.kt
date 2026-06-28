@@ -57,7 +57,7 @@ Card(
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(170.dp),
+                        .height(270.dp),
                     colors = CardDefaults.cardColors(
                         containerColor = MaterialTheme.colorScheme.surfaceVariant
                     ),

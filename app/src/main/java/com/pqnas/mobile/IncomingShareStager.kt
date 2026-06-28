@@ -50,17 +50,34 @@ object IncomingShareStager {
 
         val sharedText = intent.getCharSequenceExtra(Intent.EXTRA_TEXT)?.toString()
         if (!sharedText.isNullOrBlank()) {
-            val textFile = uniqueFile(dir, "shared_text.txt")
-            textFile.writeText(sharedText, Charsets.UTF_8)
+            // PQNAS_ANDROID_INCOMING_URL_SHORTCUTS_V1:
+            // Browser/app Sharesheet URL shares should become portable .url shortcut files,
+            // not generic shared_text.txt files. Destination selection still happens later
+            // in FilesScreen, so this works for user storage and writable workspaces.
+            val cleanText = sharedText.trim()
+            val isUrlShortcut = isSafeHttpUrlForIncomingShortcut(cleanText)
+            val preferredName = if (isUrlShortcut) {
+                incomingUrlShortcutFileName(cleanText)
+            } else {
+                "shared_text.txt"
+            }
+            val textFile = uniqueFile(dir, preferredName)
+            val storedText = if (isUrlShortcut) {
+                "[InternetShortcut]\nURL=$cleanText\n"
+            } else {
+                sharedText
+            }
+
+            textFile.writeText(storedText, Charsets.UTF_8)
 
             items.put(
                 JSONObject()
                     .put("kind", "file")
                     .put("name", textFile.name)
-                    .put("original_name", "shared_text.txt")
+                    .put("original_name", preferredName)
                     .put("path", textFile.absolutePath)
                     .put("source_uri", "")
-                    .put("mime", "text/plain")
+                    .put("mime", if (isUrlShortcut) "application/x-mswinurl" else "text/plain")
                     .put("bytes", textFile.length())
             )
             count += 1
@@ -192,3 +209,42 @@ object IncomingShareStager {
         error("could not allocate unique file name for $preferredName")
     }
 }
+
+// PQNAS_ANDROID_INCOMING_URL_HELPERS_FIX_V2
+private fun isSafeHttpUrlForIncomingShortcut(value: String): Boolean {
+    val trimmed = value.trim()
+    if (trimmed.isBlank()) return false
+
+    val uri = Uri.parse(trimmed)
+    val scheme = uri.scheme?.lowercase() ?: return false
+    if (scheme != "http" && scheme != "https") return false
+
+    val host = uri.host ?: return false
+    return host.isNotBlank()
+}
+
+private fun incomingUrlShortcutFileName(value: String): String {
+    val uri = Uri.parse(value.trim())
+
+    val host = uri.host
+        ?.trim()
+        ?.takeIf { it.isNotBlank() }
+        ?: "shared_link"
+
+    val pathTail = uri.lastPathSegment
+        ?.trim()
+        ?.takeIf { it.isNotBlank() }
+        ?: "link"
+
+    val rawBase = "$host-$pathTail"
+
+    val safeBase = rawBase
+        .replace(Regex("""[\\/:*?"<>|\u0000-\u001F]"""), "_")
+        .trim()
+        .trim('.')
+        .take(80)
+        .ifBlank { "shared_link" }
+
+    return "$safeBase.url"
+}
+
