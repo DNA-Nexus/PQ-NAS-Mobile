@@ -28,6 +28,8 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.pqnas.mobile.admin.AdminRepository
 import com.pqnas.mobile.api.ApiFactory
 import com.pqnas.mobile.ui.screens.AdminScreen
+import com.pqnas.mobile.contacts.ContactsRepository
+import com.pqnas.mobile.ui.screens.ContactsScreen
 
 class MainActivity : FragmentActivity() {
     // PQNAS_INCOMING_ANDROID_SHARE_V1
@@ -99,7 +101,7 @@ class MainActivity : FragmentActivity() {
                 DisposableEffect(lifecycleOwner, authLoaded, screen) {
                     val observer = object : DefaultLifecycleObserver {
                         override fun onStop(owner: LifecycleOwner) {
-                            if (authLoaded && (screen == "files" || screen == "admin")) {
+                            if (authLoaded && (screen == "files" || screen == "admin" || screen == "contacts")) {
                                 val pickerHandoffAgeMs =
                                     System.currentTimeMillis() - externalPickerLaunchedAtMs.longValue
 
@@ -214,7 +216,7 @@ class MainActivity : FragmentActivity() {
                 }
 
                 LaunchedEffect(authLoaded, screen, appUnlocked) {
-                    if (authLoaded && (screen == "files" || screen == "admin") && !appUnlocked) {
+                    if (authLoaded && (screen == "files" || screen == "admin" || screen == "contacts") && !appUnlocked) {
                         requestAppUnlock()
                     }
                 }
@@ -280,6 +282,36 @@ class MainActivity : FragmentActivity() {
                     }
 
 
+                    "contacts" -> {
+                        if (!appUnlocked) {
+                            AppLockScreen(
+                                status = appLockStatus,
+                                onUnlock = {
+                                    requestAppUnlock(force = true)
+                                },
+                                onLogout = {
+                                    logoutToServerScreen()
+                                }
+                            )
+                        } else {
+                            val contactsRepository = remember(tokenStore, baseUrl) {
+                                ContactsRepository(
+                                    ApiFactory.createContactsApi(
+                                        baseUrl = baseUrl,
+                                        tokenStore = tokenStore
+                                    )
+                                )
+                            }
+
+                            ContactsScreen(
+                                repository = contactsRepository,
+                                onClose = {
+                                    screen = "files"
+                                }
+                            )
+                        }
+                    }
+
                     "admin" -> {
                         if (!appUnlocked) {
                             AppLockScreen(
@@ -332,6 +364,9 @@ class MainActivity : FragmentActivity() {
                                 filesRepository = filesRepository,
                                 onLogout = {
                                     logoutToServerScreen()
+                                },
+                                onOpenContacts = {
+                                    screen = "contacts"
                                 },
                                 onOpenAdmin = if (isAdmin) {
                                     { screen = "admin" }

@@ -69,6 +69,11 @@ object ApiFactory {
             .create(CircleStackApi::class.java)
     }
 
+    fun createContactsApi(baseUrl: String, tokenStore: TokenStore): ContactsApi {
+        return createAuthedRetrofit(baseUrl, tokenStore)
+            .create(ContactsApi::class.java)
+    }
+
 
     fun createAdminApi(baseUrl: String, tokenStore: TokenStore): AdminApi {
         return createAuthedRetrofit(baseUrl, tokenStore)

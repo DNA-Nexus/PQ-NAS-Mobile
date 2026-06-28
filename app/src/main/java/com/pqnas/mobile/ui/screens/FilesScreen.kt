@@ -116,6 +116,7 @@ import androidx.compose.material.icons.filled.Lock
 fun FilesScreen(
     filesRepository: FilesRepository,
     onLogout: (() -> Unit)? = null,
+    onOpenContacts: (() -> Unit)? = null,
     onOpenAdmin: (() -> Unit)? = null,
     onBeforeExternalPicker: () -> Unit = {},
     incomingShareManifestPath: String? = null,
@@ -167,6 +168,7 @@ fun FilesScreen(
     var dropZoneAvailable by remember { mutableStateOf(false) }
     var echoStackAvailable by remember { mutableStateOf(false) }
     var circleStackAvailable by remember { mutableStateOf(false) }
+    var contactsAvailable by remember { mutableStateOf(false) }
     var appsChecked by remember { mutableStateOf(false) }
     var showDropZoneSheet by remember { mutableStateOf(false) }
     var dropZones by remember { mutableStateOf<List<DropZoneInfo>>(emptyList()) }
@@ -181,6 +183,9 @@ fun FilesScreen(
     var dropZoneLatestUrl by remember { mutableStateOf("") }
     var showEchoStackScreen by remember { mutableStateOf(false) }
     var showCircleStackScreen by remember { mutableStateOf(false) }
+    // PQNAS_ANDROID_WORKSPACE_MESSAGES_LINKS_V1
+    var showWorkspaceMessagesSheet by remember { mutableStateOf(false) }
+    var showWorkspaceUrlLinkDialog by remember { mutableStateOf(false) }
 
     var dropZoneName by remember { mutableStateOf("Drop Zone") }
     var dropZoneDestination by remember { mutableStateOf("") }
@@ -1509,6 +1514,7 @@ fun FilesScreen(
             dropZoneAvailable = filesRepository.isServerAppAvailable("dropzone")
             echoStackAvailable = filesRepository.isServerAppAvailable("echostack")
             circleStackAvailable = filesRepository.isServerAppAvailable("circlestack")
+            contactsAvailable = onOpenContacts != null && filesRepository.isServerAppAvailable("contacts")
             appsChecked = true
         }
     }
@@ -1833,6 +1839,31 @@ fun FilesScreen(
                     load(null)
                 }
             )
+
+            // PQNAS_ANDROID_WORKSPACE_MESSAGES_LINKS_V1: workspace-only quick actions.
+            (currentScope as? FileScope.Workspace)?.let { activeWorkspace ->
+                Spacer(Modifier.height(8.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    Button(
+                        onClick = { showWorkspaceMessagesSheet = true },
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text("Messages")
+                    }
+
+                    Button(
+                        enabled = scopedOps.canWrite(activeWorkspace),
+                        onClick = { showWorkspaceUrlLinkDialog = true },
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text("Save URL")
+                    }
+                }
+            }
+
 
             Spacer(Modifier.height(8.dp))
 
@@ -2468,6 +2499,38 @@ fun FilesScreen(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
 
+                    if (contactsAvailable && onOpenContacts != null) {
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    showAppsSheet = false
+                                    onOpenContacts()
+                                },
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.surfaceVariant
+                            )
+                        ) {
+                            Column(
+                                modifier = Modifier.padding(16.dp),
+                                verticalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                Text(
+                                    text = "Contacts",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+
+                                Text(
+                                    text = "Open your private address book and lightweight customer registry.",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                    }
+
                     if (circleStackAvailable) {
                         Card(
                             modifier = Modifier
@@ -2565,7 +2628,7 @@ fun FilesScreen(
                         }
                     }
 
-                    if (appsChecked && !circleStackAvailable && !echoStackAvailable && !dropZoneAvailable) {
+                    if (appsChecked && !contactsAvailable && !circleStackAvailable && !echoStackAvailable && !dropZoneAvailable) {
                         Text(
                             text = "No mobile apps are available on this server yet.",
                             style = MaterialTheme.typography.bodyMedium,
@@ -2742,6 +2805,26 @@ fun FilesScreen(
                         newTextFileDialogOpen = true
                     }
                 )
+
+
+                // PQNAS_ANDROID_WORKSPACE_MESSAGES_LINKS_V1: save a URL shortcut into the current workspace.
+                if (currentScope is FileScope.Workspace && scopedOps.canWrite(currentScope)) {
+                    ListItem(
+                        headlineContent = { Text("Save URL link") },
+                        supportingContent = { Text("Create a .url shortcut in this workspace") },
+                        leadingContent = {
+                            Text(
+                                text = "🔗",
+                                style = MaterialTheme.typography.titleMedium
+                            )
+                        },
+                        modifier = Modifier.clickable {
+                            showCreateMenu = false
+                            showWorkspaceUrlLinkDialog = true
+                        }
+                    )
+                }
+
             }
         }
     }
@@ -3418,6 +3501,59 @@ fun FilesScreen(
                 }
             )
         }
+
+        // PQNAS_ANDROID_WORKSPACE_MESSAGES_LINKS_V1: workspace message drawer.
+        if (showWorkspaceMessagesSheet) {
+            val activeWorkspace = currentScope as? FileScope.Workspace
+            if (activeWorkspace != null) {
+                WorkspaceMessagesSheet(
+                    filesRepository = filesRepository,
+                    workspace = activeWorkspace,
+                    onClose = { showWorkspaceMessagesSheet = false }
+                )
+            }
+        }
+
+        // PQNAS_ANDROID_WORKSPACE_MESSAGES_LINKS_V1: save URL shortcut into workspace.
+        if (showWorkspaceUrlLinkDialog) {
+            val activeWorkspace = currentScope as? FileScope.Workspace
+            if (activeWorkspace != null) {
+                WorkspaceUrlLinkDialog(
+                    currentPath = currentPath,
+                    onDismiss = { showWorkspaceUrlLinkDialog = false },
+                    onSave = { title, url ->
+                        val targetName = workspaceUrlLinkFileName(title, url)
+                        val targetPath = normalizeRelPath(buildItemPath(currentPath, targetName))
+                        scope.launch {
+                            try {
+                                // PQNAS_ANDROID_SAVE_URL_USE_UPLOAD_V1:
+                                // Create a new .url shortcut through the normal file upload path.
+                                // writeText is for editing/overwriting existing text files and may return
+                                // "item not found" when the shortcut does not exist yet.
+                                val shortcutBody = workspaceUrlShortcutContent(title, url)
+                                    .toRequestBody(null)
+
+                                scopedOps.upload(
+                                    scope = activeWorkspace,
+                                    path = targetPath,
+                                    body = shortcutBody,
+                                    overwrite = false
+                                )
+                                showWorkspaceUrlLinkDialog = false
+                                status = "Saved URL link: $targetName"
+                                snackbarHostState.showSnackbar(status)
+                                load(currentPath)
+                            } catch (e: Exception) {
+                                val msg = friendlyHttpMessage("Save URL link", e)
+                                status = msg
+                                snackbarHostState.showSnackbar(msg)
+                            }
+                        }
+                    }
+                )
+            }
+        }
+
         if (textEditorPath != null && textEditorName != null) {
             TextEditorScreen(
                 filesRepository = filesRepository,
@@ -3857,7 +3993,8 @@ private fun isProbablyTextFile(name: String): Boolean {
         "toml", "ini", "conf", "log",
         "c", "cc", "cpp", "cxx", "h", "hh", "hpp", "hxx",
         "py", "sh", "bash", "zsh", "sql", "csv", "tsv",
-        "java", "go", "rs", "rb", "php", "lua", "swift", "kt"
+        "java", "go", "rs", "rb", "php", "lua", "swift", "kt",
+        "url", "webloc", "desktop"
     )
 }
 private fun isProbablyVideoFile(name: String): Boolean {
@@ -4127,3 +4264,4 @@ private fun SettingsAboutSection() {
     }
 }
 
+// PQNAS_ANDROID_SAVE_URL_USE_UPLOAD_V1
