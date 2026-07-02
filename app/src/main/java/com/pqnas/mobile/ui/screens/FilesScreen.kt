@@ -100,6 +100,7 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import com.pqnas.mobile.api.WorkspaceListItemDto
 import com.pqnas.mobile.files.FileScope
+import com.pqnas.mobile.ui.theme.PqnasAppTheme
 import com.pqnas.mobile.files.FileListCache
 import com.pqnas.mobile.files.ScopedFilesOps
 import com.pqnas.mobile.files.listWorkspaces
@@ -119,6 +120,8 @@ fun FilesScreen(
     onLogout: (() -> Unit)? = null,
     onOpenContacts: (() -> Unit)? = null,
     onOpenAdmin: (() -> Unit)? = null,
+    appTheme: PqnasAppTheme = PqnasAppTheme.Dark,
+    onAppThemeChange: (PqnasAppTheme) -> Unit = {},
     onBeforeExternalPicker: () -> Unit = {},
     incomingShareManifestPath: String? = null,
     incomingShareNonce: Int = 0,
@@ -2555,6 +2558,11 @@ fun FilesScreen(
                 )
 
 
+                ThemeAppearanceSection(
+                    selectedTheme = appTheme,
+                    onThemeSelected = onAppThemeChange
+                )
+
                 SettingsStorageSection(
                     storage = myStorage,
                     storageStatus = storageStatus
@@ -3750,6 +3758,60 @@ private fun shareExpiryLabel(expiresSec: Long?): String {
         else -> "${expiresSec}s"
     }
 }
+@Composable
+private fun ThemeAppearanceSection(
+    selectedTheme: PqnasAppTheme,
+    onThemeSelected: (PqnasAppTheme) -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
+        )
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Text(
+                text = "Theme",
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+
+            PqnasAppTheme.values().forEach { option ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { onThemeSelected(option) }
+                        .padding(vertical = 2.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    RadioButton(
+                        selected = selectedTheme == option,
+                        onClick = { onThemeSelected(option) }
+                    )
+
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = option.label,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Text(
+                            text = option.description,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
 @Composable
 private fun SettingsStorageSection(
     storage: MeStorageResponse?,

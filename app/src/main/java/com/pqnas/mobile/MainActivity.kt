@@ -22,6 +22,7 @@ import com.pqnas.mobile.ui.screens.PairConfirmScreen
 import com.pqnas.mobile.ui.screens.ScanPairQrScreen
 import com.pqnas.mobile.ui.screens.ServerSetupScreen
 import com.pqnas.mobile.ui.theme.PQNASTheme
+import com.pqnas.mobile.ui.theme.PqnasThemeStore
 import kotlinx.coroutines.launch
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
@@ -57,8 +58,11 @@ class MainActivity : FragmentActivity() {
         )
 
         setContent {
-            PQNASTheme {
-                val context = LocalContext.current
+            val context = LocalContext.current
+            val themeStore = remember { PqnasThemeStore(context) }
+            var appTheme by remember { mutableStateOf(themeStore.loadTheme()) }
+
+            PQNASTheme(appTheme = appTheme) {
                 val tokenStore = remember { TokenStore(context) }
                 val lifecycleOwner = LocalLifecycleOwner.current
                 val authRepository = remember { AuthRepository(tokenStore) }
@@ -379,6 +383,11 @@ class MainActivity : FragmentActivity() {
 
                             FilesScreen(
                                 filesRepository = filesRepository,
+                                appTheme = appTheme,
+                                onAppThemeChange = { nextTheme ->
+                                    appTheme = nextTheme
+                                    themeStore.saveTheme(nextTheme)
+                                },
                                 onLogout = {
                                     logoutToServerScreen()
                                 },
