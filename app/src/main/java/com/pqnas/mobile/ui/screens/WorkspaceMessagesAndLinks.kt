@@ -2,16 +2,22 @@ package com.pqnas.mobile.ui.screens
 
 // PQNAS_ANDROID_WORKSPACE_MESSAGES_LINKS_V1: Android workspace messages + URL shortcut UI.
 
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -34,7 +40,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import com.pqnas.mobile.api.WorkspaceMessageDto
 import com.pqnas.mobile.files.FileScope
@@ -54,6 +63,7 @@ internal fun WorkspaceMessagesSheet(
     onClose: () -> Unit
 ) {
     val scope = rememberCoroutineScope()
+    val focusManager = LocalFocusManager.current
     var reloadNonce by remember { mutableIntStateOf(0) }
     var loading by remember { mutableStateOf(false) }
     var status by remember { mutableStateOf("") }
@@ -88,10 +98,48 @@ internal fun WorkspaceMessagesSheet(
         loading = false
     }
 
+    fun sendDraft() {
+        val body = draft.trim()
+        if (sending || body.isBlank()) return
+
+        // Hide the software keyboard before sending. This avoids the Android back
+        // button dismissing the whole bottom sheet when the keyboard is open.
+        focusManager.clearFocus()
+
+        scope.launch {
+            sending = true
+            status = "Sending..."
+            runCatching {
+                filesRepository.postWorkspaceMessage(
+                    workspaceId = workspace.workspaceId,
+                    body = body
+                )
+            }.onSuccess { response ->
+                if (response.ok) {
+                    draft = ""
+                    response.message?.let { savedMessage ->
+                        messages = (messages + savedMessage)
+                            .distinctBy { it.id }
+                            .sortedBy { it.id }
+                    }
+                    status = "Message sent. Local list now has ${messages.size} messages."
+                    reload()
+                } else {
+                    status = response.error ?: "Send failed."
+                }
+            }.onFailure { e ->
+                status = workspaceMessageFailureText("Send message", e)
+            }
+            sending = false
+        }
+    }
+
     ModalBottomSheet(onDismissRequest = onClose) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
+                .verticalScroll(rememberScrollState())
+                .imePadding()
                 .padding(18.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
@@ -120,6 +168,8 @@ internal fun WorkspaceMessagesSheet(
                         status.startsWith("No ") ||
                         status.startsWith("Loading") ||
                         status.startsWith("Sending") ||
+                        status.startsWith("Contact card") ||
+                        status.endsWith("copied.") ||
                         status.startsWith("Message sent") ||
                         status.startsWith("Message deleted")
                     ) {
@@ -156,6 +206,7 @@ internal fun WorkspaceMessagesSheet(
                     items(messages, key = { it.id }) { message ->
                         WorkspaceMessageRow(
                             message = message,
+                            onStatus = { status = it },
                             onDelete = {
                                 scope.launch {
                                     status = "Deleting message..."
@@ -180,11 +231,19 @@ internal fun WorkspaceMessagesSheet(
             if (workspace.canWrite) {
                 OutlinedTextField(
                     value = draft,
-                    onValueChange = { draft = it.take(4000) },
+                    onValueChange = { value ->
+                        val nextDraft = value.take(4000)
+                        draft = nextDraft
+                        if (parseWorkspaceContactCardText(nextDraft) != null) {
+                            status = "Contact card detected. Send to share it with workspace members."
+                        }
+                    },
                     label = { Text("New message") },
                     placeholder = { Text("Write a note visible to workspace members...") },
                     minLines = 3,
                     maxLines = 6,
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
+                    keyboardActions = KeyboardActions(onSend = { sendDraft() }),
                     modifier = Modifier.fillMaxWidth()
                 )
 
@@ -197,35 +256,7 @@ internal fun WorkspaceMessagesSheet(
                     }
                     Button(
                         enabled = !sending && draft.trim().isNotBlank(),
-                        onClick = {
-                            val body = draft.trim()
-                            scope.launch {
-                                sending = true
-                                status = "Sending..."
-                                runCatching {
-                                    filesRepository.postWorkspaceMessage(
-                                        workspaceId = workspace.workspaceId,
-                                        body = body
-                                    )
-                                }.onSuccess { response ->
-                                    if (response.ok) {
-                                        draft = ""
-                                        response.message?.let { savedMessage ->
-                                            messages = (messages + savedMessage)
-                                                .distinctBy { it.id }
-                                                .sortedBy { it.id }
-                                        }
-                                        status = "Message sent. Local list now has ${messages.size} messages."
-                                        reload()
-                                    } else {
-                                        status = response.error ?: "Send failed."
-                                    }
-                                }.onFailure { e ->
-                                    status = workspaceMessageFailureText("Send message", e)
-                                }
-                                sending = false
-                            }
-                        }
+                        onClick = { sendDraft() }
                     ) {
                         Text(if (sending) "Sending..." else "Send")
                     }
@@ -254,8 +285,14 @@ internal fun WorkspaceMessagesSheet(
 @Composable
 private fun WorkspaceMessageRow(
     message: WorkspaceMessageDto,
+    onStatus: (String) -> Unit,
     onDelete: () -> Unit
 ) {
+    val context = LocalContext.current
+    val parsedContactCard = remember(message.body) {
+        parseWorkspaceContactCardText(message.body)
+    }
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
@@ -286,11 +323,26 @@ private fun WorkspaceMessageRow(
                 )
             }
 
-            Text(
-                text = message.body,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurface
-            )
+            if (parsedContactCard != null) {
+                WorkspaceContactMessageBody(
+                    parsed = parsedContactCard,
+                    onCopy = { label, value, success ->
+                        copyWorkspaceContactValue(
+                            context = context,
+                            label = label,
+                            value = value,
+                            success = success,
+                            onStatus = onStatus
+                        )
+                    }
+                )
+            } else {
+                Text(
+                    text = message.body,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            }
 
             if (message.attachments.isNotEmpty()) {
                 HorizontalDivider()
@@ -316,6 +368,294 @@ private fun WorkspaceMessageRow(
         }
     }
 }
+
+
+private data class ParsedWorkspaceContactCard(
+    val before: String,
+    val after: String,
+    val card: WorkspaceContactCardData
+)
+
+private data class WorkspaceContactCardData(
+    val name: String = "",
+    val company: String = "",
+    val title: String = "",
+    val email: String = "",
+    val phone: String = "",
+    val mobile: String = "",
+    val website: String = "",
+    val address: String = "",
+    val tags: String = "",
+    val identity: String = ""
+)
+
+// PQNAS_ANDROID_CONTACT_CARD_RENDER_V1:
+// Parse only the explicit DNA-Nexus contact-card envelope. The message body is
+// still rendered as plain Compose Text, not HTML, so workspace messages cannot
+// inject markup or execute scripts through contact fields.
+private fun parseWorkspaceContactCardText(text: String): ParsedWorkspaceContactCard? {
+    val raw = text
+    val start = raw.indexOf("[DNA-NEXUS-CONTACT]")
+    val end = raw.indexOf("[/DNA-NEXUS-CONTACT]")
+    if (start < 0 || end < 0 || end <= start) return null
+
+    val before = raw.substring(0, start).trim()
+    val body = raw
+        .substring(start + "[DNA-NEXUS-CONTACT]".length, end)
+        .trim()
+    val after = raw
+        .substring(end + "[/DNA-NEXUS-CONTACT]".length)
+        .trim()
+
+    var card = WorkspaceContactCardData()
+
+    body.lineSequence().forEach { line ->
+        val idx = line.indexOf(":")
+        if (idx <= 0) return@forEach
+
+        val key = line.substring(0, idx).trim().lowercase(Locale.US)
+        val value = line.substring(idx + 1).trim()
+        if (key.isBlank() || value.isBlank()) return@forEach
+
+        card = when (key) {
+            "name" -> card.copy(name = value)
+            "company" -> card.copy(company = value)
+            "title" -> card.copy(title = value)
+            "email" -> card.copy(email = value)
+            "phone" -> card.copy(phone = value)
+            "mobile" -> card.copy(mobile = value)
+            "website" -> card.copy(website = value)
+            "address" -> card.copy(address = value)
+            "tags" -> card.copy(tags = value)
+            "identity" -> card.copy(identity = value)
+            else -> card
+        }
+    }
+
+    if (
+        card.name.isBlank() &&
+        card.company.isBlank() &&
+        card.email.isBlank() &&
+        card.phone.isBlank() &&
+        card.mobile.isBlank()
+    ) {
+        return null
+    }
+
+    return ParsedWorkspaceContactCard(
+        before = before,
+        after = after,
+        card = card
+    )
+}
+
+@Composable
+private fun WorkspaceContactMessageBody(
+    parsed: ParsedWorkspaceContactCard,
+    onCopy: (label: String, value: String, success: String) -> Unit
+) {
+    val card = parsed.card
+
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        if (parsed.before.isNotBlank()) {
+            Text(
+                text = parsed.before,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+        }
+
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant
+            )
+        ) {
+            Column(
+                modifier = Modifier.padding(12.dp),
+                verticalArrangement = Arrangement.spacedBy(7.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = card.name.ifBlank {
+                                card.company.ifBlank {
+                                    card.email.ifBlank { "Contact card" }
+                                }
+                            },
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+
+                        val meta = listOf(card.company, card.title)
+                            .filter { it.isNotBlank() }
+                            .joinToString(" • ")
+
+                        if (meta.isNotBlank()) {
+                            Text(
+                                text = meta,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+
+                    Text(
+                        text = "Contact",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+
+                WorkspaceContactLine("Email", card.email)
+                WorkspaceContactLine("Phone", card.phone)
+                WorkspaceContactLine("Mobile", card.mobile)
+                WorkspaceContactLine("Website", card.website)
+                WorkspaceContactLine("Address", card.address)
+                WorkspaceContactLine("Tags", card.tags)
+
+                if (card.identity.isNotBlank()) {
+                    Text(
+                        text = "Identity: ${card.identity}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+
+                HorizontalDivider()
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    TextButton(
+                        onClick = {
+                            onCopy(
+                                "Contact card",
+                                formatWorkspaceContactCardForClipboard(card),
+                                "Contact copied."
+                            )
+                        }
+                    ) {
+                        Text("Copy contact")
+                    }
+
+                    if (card.email.isNotBlank()) {
+                        TextButton(
+                            onClick = {
+                                onCopy("Email", card.email, "Email copied.")
+                            }
+                        ) {
+                            Text("Email")
+                        }
+                    }
+
+                    if (card.phone.isNotBlank() || card.mobile.isNotBlank()) {
+                        TextButton(
+                            onClick = {
+                                onCopy(
+                                    "Phone",
+                                    card.phone.ifBlank { card.mobile },
+                                    "Phone copied."
+                                )
+                            }
+                        ) {
+                            Text("Phone")
+                        }
+                    }
+                }
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    if (card.address.isNotBlank()) {
+                        TextButton(
+                            onClick = {
+                                onCopy("Address", card.address, "Address copied.")
+                            }
+                        ) {
+                            Text("Address")
+                        }
+                    }
+
+                    if (card.website.isNotBlank()) {
+                        TextButton(
+                            onClick = {
+                                onCopy("Website", card.website, "Website copied.")
+                            }
+                        ) {
+                            Text("Website")
+                        }
+                    }
+                }
+            }
+        }
+
+        if (parsed.after.isNotBlank()) {
+            Text(
+                text = parsed.after,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+        }
+    }
+}
+
+@Composable
+private fun WorkspaceContactLine(label: String, value: String) {
+    if (value.isBlank()) return
+
+    Text(
+        text = "$label: $value",
+        style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant
+    )
+}
+
+private fun formatWorkspaceContactCardForClipboard(card: WorkspaceContactCardData): String =
+    listOf(
+        "[DNA-NEXUS-CONTACT]",
+        "Name: ${card.name}",
+        "Company: ${card.company}",
+        "Title: ${card.title}",
+        "Email: ${card.email}",
+        "Phone: ${card.phone}",
+        "Mobile: ${card.mobile}",
+        "Website: ${card.website}",
+        "Address: ${card.address}",
+        "Tags: ${card.tags}",
+        "Identity: ${card.identity}",
+        "[/DNA-NEXUS-CONTACT]"
+    ).filterNot { it.endsWith(": ") }.joinToString("\n")
+
+private fun copyWorkspaceContactValue(
+    context: Context,
+    label: String,
+    value: String,
+    success: String,
+    onStatus: (String) -> Unit
+) {
+    val clean = value.trim()
+    if (clean.isBlank()) {
+        onStatus("Nothing to copy.")
+        return
+    }
+
+    runCatching {
+        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        clipboard.setPrimaryClip(ClipData.newPlainText(label, clean))
+    }.onSuccess {
+        onStatus(success)
+    }.onFailure {
+        onStatus("Copy failed.")
+    }
+}
+
 
 @Composable
 internal fun WorkspaceUrlLinkDialog(
