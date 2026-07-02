@@ -72,6 +72,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.pqnas.mobile.api.FileItemDto
@@ -1921,7 +1922,7 @@ fun FilesScreen(
             ) {
                 Icon(
                     imageVector = Icons.Default.Add,
-                    contentDescription = "Add"
+                    contentDescription = stringResource(R.string.add)
                 )
             }
         }
@@ -1938,7 +1939,7 @@ fun FilesScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "DNA-Nexus Files",
+                    text = stringResource(R.string.dna_nexus_files),
                     style = MaterialTheme.typography.headlineSmall,
                     color = MaterialTheme.colorScheme.onBackground,
                     modifier = Modifier.weight(1f)
@@ -1949,7 +1950,7 @@ fun FilesScreen(
                 ) {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_apps_24),
-                        contentDescription = "Apps"
+                        contentDescription = stringResource(R.string.apps)
                     )
                 }
 
@@ -1958,7 +1959,7 @@ fun FilesScreen(
                 ) {
                     Icon(
                         imageVector = Icons.Default.Settings,
-                        contentDescription = "Settings and info"
+                        contentDescription = stringResource(R.string.settings_and_info)
                     )
                 }
             }
@@ -1966,7 +1967,7 @@ fun FilesScreen(
             Spacer(Modifier.height(8.dp))
 
             Text(
-                text = "Path: ${currentPath ?: "/"}",
+                text = stringResource(R.string.path_label, currentPath ?: "/"),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -2006,7 +2007,7 @@ fun FilesScreen(
                         onClick = { showWorkspaceMessagesSheet = true },
                         modifier = Modifier.weight(1f)
                     ) {
-                        Text("Messages")
+                        Text(stringResource(R.string.messages))
                     }
 
                     Button(
@@ -2014,7 +2015,7 @@ fun FilesScreen(
                         onClick = { showWorkspaceUrlLinkDialog = true },
                         modifier = Modifier.weight(1f)
                     ) {
-                        Text("Save URL")
+                        Text(stringResource(R.string.save_url))
                     }
                 }
             }
@@ -2520,11 +2521,11 @@ fun FilesScreen(
                 TextButton(
                     onClick = { showAboutDialog = false }
                 ) {
-                    Text("Close")
+                    Text(stringResource(R.string.close))
                 }
             },
             title = {
-                Text("About DNA-Nexus Files")
+                Text(stringResource(R.string.about_dna_nexus_files))
             },
             text = {
                 Column(
@@ -2552,7 +2553,7 @@ fun FilesScreen(
                 verticalArrangement = Arrangement.spacedBy(14.dp)
             ) {
                 Text(
-                    text = "Settings & info",
+                    text = stringResource(R.string.settings_info_title),
                     style = MaterialTheme.typography.headlineSmall,
                     color = MaterialTheme.colorScheme.onSurface
                 )
@@ -2576,7 +2577,7 @@ fun FilesScreen(
                         },
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text("Admin tools")
+                        Text(stringResource(R.string.admin_tools))
                     }
                 }
 
@@ -2595,7 +2596,7 @@ fun FilesScreen(
                     },
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text(if (favoritesOnly) "Show all items" else "Show favorites only")
+                    Text(stringResource(if (favoritesOnly) R.string.show_all_items else R.string.show_favorites_only))
                 }
 
                 Button(
@@ -2605,7 +2606,7 @@ fun FilesScreen(
                     },
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("Refresh")
+                    Text(stringResource(R.string.refresh))
                 }
                 Button(
                     onClick = {
@@ -2614,7 +2615,7 @@ fun FilesScreen(
                     },
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("Share manager")
+                    Text(stringResource(R.string.share_manager))
                 }
                 if (onLogout != null) {
                     Button(
@@ -2628,7 +2629,7 @@ fun FilesScreen(
                             contentColor = MaterialTheme.colorScheme.onSurface
                         )
                     ) {
-                        Text("Logout")
+                        Text(stringResource(R.string.logout))
                     }
                 }
             }
@@ -2648,13 +2649,13 @@ fun FilesScreen(
                     verticalArrangement = Arrangement.spacedBy(14.dp)
                 ) {
                     Text(
-                        text = "Apps",
+                        text = stringResource(R.string.apps),
                         style = MaterialTheme.typography.headlineSmall,
                         color = MaterialTheme.colorScheme.onSurface
                     )
 
                     Text(
-                        text = "Available DNA-Nexus mobile tools on this server.",
+                        text = stringResource(R.string.apps_available_mobile_tools),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -2676,14 +2677,14 @@ fun FilesScreen(
                                 verticalArrangement = Arrangement.spacedBy(6.dp)
                             ) {
                                 Text(
-                                    text = "Contacts",
+                                    text = stringResource(R.string.contacts),
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
 
                                 Text(
-                                    text = "Open your private address book and lightweight customer registry.",
+                                    text = stringResource(R.string.contacts_desc),
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
@@ -2708,14 +2709,14 @@ fun FilesScreen(
                                 verticalArrangement = Arrangement.spacedBy(6.dp)
                             ) {
                                 Text(
-                                    text = "Circle Stack",
+                                    text = stringResource(R.string.circle_stack),
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
 
                                 Text(
-                                    text = "Open your private social feed from this DNA-Nexus server.",
+                                    text = stringResource(R.string.circle_stack_desc),
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
@@ -2740,14 +2741,14 @@ fun FilesScreen(
                                 verticalArrangement = Arrangement.spacedBy(6.dp)
                             ) {
                                 Text(
-                                    text = "Echo Stack",
+                                    text = stringResource(R.string.echo_stack),
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
 
                                 Text(
-                                    text = "Save bookmarks and archived web pages.",
+                                    text = stringResource(R.string.echo_stack_desc),
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
@@ -2773,14 +2774,14 @@ fun FilesScreen(
                                 verticalArrangement = Arrangement.spacedBy(6.dp)
                             ) {
                                 Text(
-                                    text = "Drop Zone",
+                                    text = stringResource(R.string.drop_zone),
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
 
                                 Text(
-                                    text = "Create secure upload links for outsiders.",
+                                    text = stringResource(R.string.drop_zone_desc),
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
@@ -2790,7 +2791,7 @@ fun FilesScreen(
 
                     if (appsChecked && !contactsAvailable && !circleStackAvailable && !echoStackAvailable && !dropZoneAvailable) {
                         Text(
-                            text = "No mobile apps are available on this server yet.",
+                            text = stringResource(R.string.no_mobile_apps_available),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -3759,6 +3760,26 @@ private fun shareExpiryLabel(expiresSec: Long?): String {
     }
 }
 @Composable
+private fun themeLabel(theme: PqnasAppTheme): String {
+    return when (theme) {
+        PqnasAppTheme.Dark -> stringResource(R.string.theme_dark_label)
+        PqnasAppTheme.Bright -> stringResource(R.string.theme_bright_label)
+        PqnasAppTheme.CpunkOrange -> stringResource(R.string.theme_cpunk_orange_label)
+        PqnasAppTheme.WinClassic -> stringResource(R.string.theme_win_classic_label)
+    }
+}
+
+@Composable
+private fun themeDescription(theme: PqnasAppTheme): String {
+    return when (theme) {
+        PqnasAppTheme.Dark -> stringResource(R.string.theme_dark_desc)
+        PqnasAppTheme.Bright -> stringResource(R.string.theme_bright_desc)
+        PqnasAppTheme.CpunkOrange -> stringResource(R.string.theme_cpunk_orange_desc)
+        PqnasAppTheme.WinClassic -> stringResource(R.string.theme_win_classic_desc)
+    }
+}
+
+@Composable
 private fun ThemeAppearanceSection(
     selectedTheme: PqnasAppTheme,
     onThemeSelected: (PqnasAppTheme) -> Unit
@@ -3776,7 +3797,7 @@ private fun ThemeAppearanceSection(
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Text(
-                text = "Theme",
+                text = stringResource(R.string.theme),
                 style = MaterialTheme.typography.titleSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -3801,7 +3822,7 @@ private fun ThemeAppearanceSection(
                             color = MaterialTheme.colorScheme.onSurface
                         )
                         Text(
-                            text = option.description,
+                            text = themeDescription(option),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -3830,7 +3851,7 @@ private fun SettingsStorageSection(
             verticalArrangement = Arrangement.spacedBy(6.dp)
         ) {
             Text(
-                text = "Storage",
+                text = stringResource(R.string.storage),
                 style = MaterialTheme.typography.titleSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -3852,7 +3873,7 @@ private fun SettingsStorageSection(
 
                     if (!allocated) {
                         Text(
-                            text = "Storage not allocated yet",
+                            text = stringResource(R.string.storage_not_allocated),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.error
                         )
@@ -3871,14 +3892,14 @@ private fun SettingsStorageSection(
                         )
 
                         Text(
-                            text = "${storage.used_percent.toInt()}% used",
+                            text = stringResource(R.string.storage_usage, storage.used_percent.toInt()),
                             style = MaterialTheme.typography.bodyMedium,
                             color = accentColor
                         )
 
                         if (storage.partial) {
                             Text(
-                                text = "Usage is approximate",
+                                text = stringResource(R.string.storage_approximate),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -3896,7 +3917,7 @@ private fun SettingsStorageSection(
 
                 else -> {
                     Text(
-                        text = "Storage info not loaded",
+                        text = stringResource(R.string.storage_info_not_loaded),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
