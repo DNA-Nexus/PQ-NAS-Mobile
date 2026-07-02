@@ -9,6 +9,7 @@ import android.os.Handler
 import android.os.Looper
 
 import android.provider.OpenableColumns
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
@@ -715,6 +716,157 @@ fun FilesScreen(
         val parts = path.split("/").filter { it.isNotBlank() }
         if (parts.isEmpty()) return null
         return parts.dropLast(1).joinToString("/").ifBlank { null }
+    }
+
+    val shouldHandleFileBack =
+        showCreateMenu ||
+        shareDialogItem != null ||
+        showSettingsSheet ||
+        showAppsSheet ||
+        showSharesManager ||
+        showAboutDialog ||
+        showDropZoneSheet ||
+        dropZoneHistoryOpen ||
+        showEchoStackScreen ||
+        showCircleStackScreen ||
+        showWorkspaceMessagesSheet ||
+        showWorkspaceUrlLinkDialog ||
+        showIncomingShareDestinationDialog ||
+        pendingIncomingShareManifestPath != null ||
+        newFolderDialogOpen ||
+        newTextFileDialogOpen ||
+        infoItem != null ||
+        versionsItem != null ||
+        pendingDownloadItem != null ||
+        renameItem != null ||
+        pendingUploadUri != null ||
+        overwriteUploadTargetPath != null ||
+        overwriteUploadUri != null ||
+        moveCopyItem != null ||
+        deleteItem != null ||
+        imagePreviewStartIndex != null ||
+        audioPlayerStartIndex != null ||
+        videoPlayerStartIndex != null ||
+        textEditorName != null ||
+        textEditorPath != null ||
+        favoritesOnly ||
+        currentPath != null ||
+        currentScope != FileScope.User
+
+    // PQNAS_ANDROID_FILE_BACK_V1:
+    // Consume Android Back only while there is an in-app step to reverse.
+    // At the File Manager user-root with no dialogs/sheets/previews open this handler is
+    // disabled, so Android can close the app normally.
+    BackHandler(enabled = shouldHandleFileBack) {
+        when {
+            showCreateMenu -> showCreateMenu = false
+
+            showWorkspaceMessagesSheet -> showWorkspaceMessagesSheet = false
+            showWorkspaceUrlLinkDialog -> showWorkspaceUrlLinkDialog = false
+
+            showSettingsSheet -> showSettingsSheet = false
+            showAppsSheet -> showAppsSheet = false
+            showSharesManager -> showSharesManager = false
+            showAboutDialog -> showAboutDialog = false
+
+            showDropZoneSheet -> showDropZoneSheet = false
+            dropZoneHistoryOpen -> dropZoneHistoryOpen = false
+
+            showEchoStackScreen -> showEchoStackScreen = false
+            showCircleStackScreen -> showCircleStackScreen = false
+
+            showIncomingShareDestinationDialog || pendingIncomingShareManifestPath != null -> {
+                showIncomingShareDestinationDialog = false
+                pendingIncomingShareManifestPath = null
+            }
+
+            newFolderDialogOpen -> {
+                newFolderDialogOpen = false
+                newFolderName = ""
+            }
+
+            newTextFileDialogOpen -> {
+                newTextFileDialogOpen = false
+                newTextFileName = ""
+            }
+
+            shareDialogItem != null -> {
+                shareDialogItem = null
+                shareDialogUrl = ""
+                shareDialogStatus = ""
+                shareDialogExistingToken = null
+            }
+
+            infoItem != null -> {
+                infoItem = null
+                infoNoteText = ""
+                infoNoteOriginalText = ""
+                infoNoteStatus = ""
+                infoNoteLoading = false
+                infoNoteSaving = false
+            }
+
+            versionsItem != null -> versionsItem = null
+            pendingDownloadItem != null -> pendingDownloadItem = null
+
+            renameItem != null -> {
+                renameItem = null
+                renameText = ""
+            }
+
+            pendingUploadUri != null -> {
+                pendingUploadUri = null
+                pendingUploadName = null
+            }
+
+            overwriteUploadTargetPath != null || overwriteUploadUri != null -> {
+                overwriteUploadTargetPath = null
+                overwriteUploadUri = null
+            }
+
+            moveCopyItem != null -> {
+                moveCopyItem = null
+                moveCopyDestination = ""
+                moveCopyPickerPath = null
+                moveCopyPickerFolders = emptyList()
+                moveCopyPickerStatus = ""
+            }
+
+            deleteItem != null -> deleteItem = null
+
+            imagePreviewStartIndex != null -> {
+                imagePreviewStartIndex = null
+                imagePreviewItems = emptyList()
+            }
+
+            audioPlayerStartIndex != null -> {
+                audioPlayerStartIndex = null
+                audioPlayerItems = emptyList()
+            }
+
+            videoPlayerStartIndex != null -> {
+                videoPlayerStartIndex = null
+                videoPlayerItems = emptyList()
+            }
+
+            textEditorName != null || textEditorPath != null -> {
+                textEditorName = null
+                textEditorPath = null
+            }
+
+            favoritesOnly -> {
+                favoritesOnly = false
+                load(currentPath)
+            }
+
+            currentPath != null -> {
+                load(parentPath(currentPath))
+            }
+
+            currentScope != FileScope.User -> {
+                switchToUserScope()
+            }
+        }
     }
 
     fun openInfoDialog(item: FileItemDto) {

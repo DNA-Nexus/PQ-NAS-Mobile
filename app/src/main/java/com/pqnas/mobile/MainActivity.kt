@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.WindowManager
 import androidx.activity.compose.setContent
+import androidx.activity.compose.BackHandler
 import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricPrompt
 import androidx.core.content.ContextCompat
@@ -230,6 +231,22 @@ class MainActivity : FragmentActivity() {
                         }
                     }
                 }
+                // PQNAS_ANDROID_BACK_NAV_V1:
+                // Handle Android's system Back button for the app-level screens.
+                // Without this, screens stored as plain state can let the Activity finish
+                // instead of returning to the previous DNA-Nexus screen.
+                BackHandler(
+                    enabled = authLoaded && screen != "server" && screen != "files"
+                ) {
+                    screen = when (screen) {
+                        "pair_confirm" -> "scan_pair"
+                        "scan_pair" -> "server"
+                        "contacts" -> "files"
+                        "admin" -> "files"
+                        else -> "files"
+                    }
+                }
+
                 when (screen) {
                     "server" -> ServerSetupScreen(
                         onScanPair = { url ->
