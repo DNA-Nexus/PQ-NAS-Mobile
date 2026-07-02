@@ -889,7 +889,7 @@ fun FilesScreen(
                 val desc = resp.note?.description.orEmpty()
                 infoNoteText = desc
                 infoNoteOriginalText = desc
-                infoNoteStatus = if (desc.isBlank()) "No comment yet." else ""
+                infoNoteStatus = if (desc.isBlank()) context.getString(R.string.info_no_comment_yet) else ""
             } catch (e: Exception) {
                 infoNoteStatus = friendlyHttpMessage("Load comment", e)
             } finally {
@@ -923,7 +923,7 @@ fun FilesScreen(
         scope.launch {
             try {
                 infoNoteSaving = true
-                infoNoteStatus = "Saving comment..."
+                infoNoteStatus = context.getString(R.string.info_saving_comment)
 
                 scopedOps.saveFileNote(
                     scope = scopeSnapshot,
@@ -935,9 +935,9 @@ fun FilesScreen(
                 infoNoteText = cleanDescription
                 infoNoteOriginalText = cleanDescription
                 infoNoteStatus = if (cleanDescription.isBlank()) {
-                    "Comment cleared."
+                    context.getString(R.string.info_comment_cleared)
                 } else {
-                    "Comment saved."
+                    context.getString(R.string.info_comment_saved)
                 }
 
                 status = "OK"
@@ -957,11 +957,11 @@ fun FilesScreen(
     fun createFolder(name: String) {
         val trimmed = name.trim()
         if (trimmed.isBlank()) {
-            status = "Folder name cannot be empty"
+            status = context.getString(R.string.create_folder_name_empty)
             return
         }
         if (trimmed.contains("/")) {
-            status = "Folder name cannot contain /"
+            status = context.getString(R.string.create_folder_name_slash)
             return
         }
 
@@ -972,7 +972,7 @@ fun FilesScreen(
                 newFolderDialogOpen = false
                 newFolderName = ""
                 status = "OK"
-                snackbarHostState.showSnackbar("Created folder $trimmed")
+                snackbarHostState.showSnackbar(context.getString(R.string.create_folder_success, trimmed))
                 load(currentPath)
             } catch (e: Exception) {
                 val msg = friendlyHttpMessage("Create folder", e)
@@ -985,11 +985,11 @@ fun FilesScreen(
     fun createTextFile(name: String) {
         var trimmed = name.trim()
         if (trimmed.isBlank()) {
-            status = "File name cannot be empty"
+            status = context.getString(R.string.create_file_name_empty)
             return
         }
         if (trimmed.contains("/")) {
-            status = "File name cannot contain /"
+            status = context.getString(R.string.create_file_name_slash)
             return
         }
         if (!trimmed.contains(".")) {
@@ -1011,7 +1011,7 @@ fun FilesScreen(
                 newTextFileDialogOpen = false
                 newTextFileName = ""
                 status = "OK"
-                snackbarHostState.showSnackbar("Created file $trimmed")
+                snackbarHostState.showSnackbar(context.getString(R.string.create_file_success, trimmed))
                 load(currentPath)
             } catch (e: Exception) {
                 val msg = friendlyHttpMessage("Create text file", e)
@@ -1201,7 +1201,7 @@ fun FilesScreen(
                 uploadFileName = safeFileName
                 uploadBytesSent = 0L
                 uploadBytesTotal = 0L
-                status = "Preparing upload: $safeFileName..."
+                status = context.getString(R.string.upload_preparing_named, safeFileName)
 
                 stagedFile = withContext(Dispatchers.IO) {
                     stageUriToTempFile(
@@ -1233,7 +1233,7 @@ fun FilesScreen(
                     }
                 }
 
-                status = "Uploading $safeFileName..."
+                status = context.getString(R.string.upload_uploading_named, safeFileName)
 
                 scopedOps.uploadTempFile(
                     scope = currentScope,
@@ -1252,7 +1252,11 @@ fun FilesScreen(
 
                 status = "OK"
                 snackbarHostState.showSnackbar(
-                    if (overwrite) "Replaced $safeFileName" else "Uploaded $safeFileName"
+                    if (overwrite) {
+                        context.getString(R.string.upload_replaced_item, safeFileName)
+                    } else {
+                        context.getString(R.string.upload_uploaded_item, safeFileName)
+                    }
                 )
                 load(currentPath)
             } catch (e: CancellationException) {
@@ -1261,8 +1265,8 @@ fun FilesScreen(
                 pendingUploadUri = null
                 pendingUploadName = null
 
-                status = "Upload cancelled."
-                snackbarHostState.showSnackbar("Upload cancelled")
+                status = context.getString(R.string.upload_cancelled_status)
+                snackbarHostState.showSnackbar(context.getString(R.string.upload_cancelled_snackbar))
             } catch (e: Exception) {
                 val http = (e as? HttpException)?.code()
                 val msgText = e.message.orEmpty().lowercase(Locale.getDefault())
@@ -1311,7 +1315,7 @@ fun FilesScreen(
         }
 
         if (uploadInProgress) {
-            status = "Another upload is already running."
+            status = context.getString(R.string.upload_another_running)
             return
         }
 
@@ -1358,7 +1362,7 @@ fun FilesScreen(
                         uploadFileName = "$safeFileName (${index + 1}/${selectedUris.size})"
                         uploadBytesSent = 0L
                         uploadBytesTotal = 0L
-                        status = "Preparing upload ${index + 1}/${selectedUris.size}: $safeFileName..."
+                        status = context.getString(R.string.upload_multi_preparing, index + 1, selectedUris.size, safeFileName)
 
                         stagedFile = withContext(Dispatchers.IO) {
                             stageUriToTempFile(
@@ -1393,7 +1397,7 @@ fun FilesScreen(
                             }
                         }
 
-                        status = "Uploading ${index + 1}/${selectedUris.size}: $safeFileName..."
+                        status = context.getString(R.string.upload_multi_uploading, index + 1, selectedUris.size, safeFileName)
 
                         scopedOps.uploadTempFile(
                             scope = scopeSnapshot,
@@ -1419,14 +1423,14 @@ fun FilesScreen(
                 status = "OK"
 
                 val parts = mutableListOf<String>()
-                if (uploadedCount > 0) parts.add("uploaded $uploadedCount")
-                if (skippedCount > 0) parts.add("skipped $skippedCount existing")
-                if (failedCount > 0) parts.add("failed $failedCount")
+                if (uploadedCount > 0) parts.add(context.getString(R.string.upload_multi_part_uploaded, uploadedCount))
+                if (skippedCount > 0) parts.add(context.getString(R.string.upload_multi_part_skipped, skippedCount))
+                if (failedCount > 0) parts.add(context.getString(R.string.upload_multi_part_failed, failedCount))
 
                 val summary = if (parts.isEmpty()) {
-                    "No files uploaded."
+                    context.getString(R.string.upload_multi_none)
                 } else {
-                    "Multi upload complete: ${parts.joinToString(", ")}."
+                    context.getString(R.string.upload_multi_complete, parts.joinToString(", "))
                 }
 
                 snackbarHostState.showSnackbar(summary)
@@ -1435,8 +1439,8 @@ fun FilesScreen(
                     load(pathSnapshot)
                 }
             } catch (e: CancellationException) {
-                status = "Upload cancelled."
-                snackbarHostState.showSnackbar("Upload cancelled")
+                status = context.getString(R.string.upload_cancelled_status)
+                snackbarHostState.showSnackbar(context.getString(R.string.upload_cancelled_snackbar))
             } finally {
                 clearUploadProgressState()
             }
@@ -1488,7 +1492,7 @@ fun FilesScreen(
         destinationPath: String?
     ) {
         if (uploadInProgress) {
-            status = "Another upload is already running. Try sharing again after it finishes."
+            status = context.getString(R.string.upload_incoming_another_running)
             scope.launch { snackbarHostState.showSnackbar(status) }
             onIncomingShareConsumed()
             return
@@ -1571,7 +1575,7 @@ fun FilesScreen(
                     uploadFileName = uploadName
                     uploadBytesSent = 0L
                     uploadBytesTotal = totalBytes
-                    status = "Uploading shared item ${index + 1}/${shareItems.length()}: $uploadName..."
+                    status = context.getString(R.string.upload_shared_item_progress, index + 1, shareItems.length(), uploadName)
 
                     val onUploadProgress: (Long, Long) -> Unit = { sent, total ->
                         val nowMs = System.currentTimeMillis()
@@ -1606,23 +1610,23 @@ fun FilesScreen(
                 }
 
                 if (uploadedCount <= 0) {
-                    throw IllegalStateException("Incoming share had no files to upload.")
+                    throw IllegalStateException(context.getString(R.string.upload_incoming_no_files))
                 }
 
                 status = "OK"
                 snackbarHostState.showSnackbar(
                     if (uploadedCount == 1) {
-                        "Uploaded shared item"
+                        context.getString(R.string.upload_shared_one)
                     } else {
-                        "Uploaded $uploadedCount shared items"
+                        context.getString(R.string.upload_shared_many, uploadedCount)
                     }
                 )
                 currentScope = scopeSnapshot
                 currentPath = pathSnapshot
                 load(pathSnapshot)
             } catch (e: CancellationException) {
-                status = "Incoming share upload cancelled."
-                snackbarHostState.showSnackbar("Upload cancelled")
+                status = context.getString(R.string.upload_incoming_cancelled)
+                snackbarHostState.showSnackbar(context.getString(R.string.upload_cancelled_snackbar))
             } catch (e: Exception) {
                 val msg = friendlyHttpMessage("Incoming share upload", e)
                 status = msg
@@ -2054,14 +2058,14 @@ fun FilesScreen(
                         Text(
                             text = uploadFileName?.let {
                                 when {
-                                    uploadBytesTotal <= 0L -> "Preparing $it..."
-                                    uploadBytesSent >= uploadBytesTotal -> "Finalizing $it..."
-                                    else -> "Uploading $it"
+                                    uploadBytesTotal <= 0L -> stringResource(R.string.upload_preparing_item, it)
+                                    uploadBytesSent >= uploadBytesTotal -> stringResource(R.string.upload_finalizing_item, it)
+                                    else -> stringResource(R.string.upload_uploading_item, it)
                                 }
                             } ?: when {
-                                uploadBytesTotal <= 0L -> "Preparing upload..."
-                                uploadBytesSent >= uploadBytesTotal -> "Finalizing upload..."
-                                else -> "Uploading..."
+                                uploadBytesTotal <= 0L -> stringResource(R.string.upload_preparing)
+                                uploadBytesSent >= uploadBytesTotal -> stringResource(R.string.upload_finalizing)
+                                else -> stringResource(R.string.upload_uploading)
                             },
                             style = MaterialTheme.typography.titleSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -2081,9 +2085,9 @@ fun FilesScreen(
 
                         Text(
                             text = if (uploadBytesTotal <= 0L) {
-                                "Gathering file... please wait"
+                                stringResource(R.string.upload_gathering_file)
                             } else if (uploadBytesSent >= uploadBytesTotal) {
-                                "Processing on server... please wait"
+                                stringResource(R.string.upload_processing_server)
                             } else {
                                 "${((uploadBytesSent * 100) / uploadBytesTotal).coerceIn(0, 100)}% • ${
                                     formatBytes(uploadBytesSent)
@@ -2103,11 +2107,11 @@ fun FilesScreen(
                                 enabled = !uploadCancelRequested,
                                 onClick = {
                                     uploadCancelRequested = true
-                                    status = "Cancelling upload..."
+                                    status = context.getString(R.string.upload_cancelling_status)
                                     uploadJob?.cancel(CancellationException("User cancelled upload"))
                                 }
                             ) {
-                                Text(if (uploadCancelRequested) "Cancelling..." else "Cancel upload")
+                                Text(if (uploadCancelRequested) stringResource(R.string.upload_cancelling) else stringResource(R.string.upload_cancel_button))
                             }
                         }
                     }
@@ -2147,9 +2151,9 @@ fun FilesScreen(
                     ) {
                         Text(
                             text = when {
-                                (listLoading || startupEmptyStateGrace) -> "Loading files..."
-                                favoritesOnly -> "No favorites here"
-                                else -> "No files here"
+                                (listLoading || startupEmptyStateGrace) -> stringResource(R.string.file_list_loading_title)
+                                favoritesOnly -> stringResource(R.string.file_list_no_favorites_title)
+                                else -> stringResource(R.string.file_list_no_files_title)
                             },
                             style = MaterialTheme.typography.titleMedium,
                             color = MaterialTheme.colorScheme.onSurface
@@ -2158,11 +2162,11 @@ fun FilesScreen(
                         Text(
                             text = when {
                                 (listLoading || startupEmptyStateGrace) ->
-                                    "Contacting DNA-Nexus server..."
+                                    stringResource(R.string.file_list_contacting_server)
                                 favoritesOnly ->
-                                    "This folder has no favorite items."
+                                    stringResource(R.string.file_list_no_favorites_desc)
                                 else ->
-                                    "This folder is empty or could not be loaded."
+                                    stringResource(R.string.file_list_empty_or_failed_desc)
                             },
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -2304,7 +2308,7 @@ fun FilesScreen(
                 onIncomingShareConsumed()
             },
             title = {
-                Text("Upload shared items to DNA-Nexus")
+                Text(stringResource(R.string.incoming_share_title))
             },
             text = {
                 // PQNAS_INCOMING_DESTINATION_PICKER_UNIFIED_STYLE_V1
@@ -2330,7 +2334,7 @@ fun FilesScreen(
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Text(
-                        text = "Choose where this Android share should be uploaded.",
+                        text = stringResource(R.string.incoming_share_choose_destination),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier
@@ -2340,7 +2344,7 @@ fun FilesScreen(
                     )
 
                     ListItem(
-                        headlineContent = { Text("Phone Uploads") },
+                        headlineContent = { Text(stringResource(R.string.incoming_share_phone_uploads)) },
                         supportingContent = { Text("/$phoneUploadsPath") },
                         leadingContent = {
                             RadioButton(
@@ -2357,7 +2361,7 @@ fun FilesScreen(
                     )
 
                     ListItem(
-                        headlineContent = { Text("Current location") },
+                        headlineContent = { Text(stringResource(R.string.incoming_share_current_location)) },
                         supportingContent = { Text(currentDestinationLabel) },
                         leadingContent = {
                             RadioButton(
@@ -2374,8 +2378,8 @@ fun FilesScreen(
                     )
 
                     ListItem(
-                        headlineContent = { Text("My Files root") },
-                        supportingContent = { Text("Upload directly to /") },
+                        headlineContent = { Text(stringResource(R.string.incoming_share_my_files_root)) },
+                        supportingContent = { Text(stringResource(R.string.incoming_share_upload_root_desc)) },
                         leadingContent = {
                             RadioButton(
                                 selected = incomingShareDestinationMode == "my_files_root",
@@ -2396,7 +2400,7 @@ fun FilesScreen(
                         )
 
                         Text(
-                            text = "Workspace roots",
+                            text = stringResource(R.string.incoming_share_workspace_roots),
                             style = MaterialTheme.typography.titleSmall,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -2410,7 +2414,7 @@ fun FilesScreen(
                             val mode = "workspace:${ws.workspace_id}"
                             ListItem(
                                 headlineContent = { Text(ws.name.ifBlank { ws.workspace_id }) },
-                                supportingContent = { Text("Workspace root • ${ws.role}") },
+                                supportingContent = { Text(stringResource(R.string.incoming_share_workspace_root_role, ws.role)) },
                                 leadingContent = {
                                     RadioButton(
                                         selected = incomingShareDestinationMode == mode,
@@ -2433,7 +2437,7 @@ fun FilesScreen(
                     onClick = {
                         val manifestPath = pendingIncomingShareManifestPath
                         if (manifestPath.isNullOrBlank()) {
-                            status = "Incoming share is missing."
+                            status = context.getString(R.string.incoming_share_missing)
                             showIncomingShareDestinationDialog = false
                             return@TextButton
                         }
@@ -2463,7 +2467,7 @@ fun FilesScreen(
                                 val workspaceId = incomingShareDestinationMode.removePrefix("workspace:")
                                 val ws = workspaces.firstOrNull { it.workspace_id == workspaceId }
                                 if (ws == null) {
-                                    status = "Selected workspace is no longer available."
+                                    status = context.getString(R.string.incoming_share_workspace_missing)
                                     return@TextButton
                                 }
 
@@ -2476,7 +2480,7 @@ fun FilesScreen(
                             }
 
                             else -> {
-                                status = "Unknown upload destination."
+                                status = context.getString(R.string.incoming_share_unknown_destination)
                                 return@TextButton
                             }
                         }
@@ -2491,7 +2495,7 @@ fun FilesScreen(
                         )
                     }
                 ) {
-                    Text("Upload")
+                    Text(stringResource(R.string.incoming_share_upload_button))
                 }
             },
             dismissButton = {
@@ -2898,15 +2902,15 @@ fun FilesScreen(
                     .padding(bottom = 20.dp)
             ) {
                 Text(
-                    text = "Add to DNA-Nexus",
+                    text = stringResource(R.string.create_menu_title),
                     style = MaterialTheme.typography.headlineSmall,
                     color = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)
                 )
 
                 ListItem(
-                    headlineContent = { Text("Upload file") },
-                    supportingContent = { Text("Choose a file from this phone") },
+                    headlineContent = { Text(stringResource(R.string.create_upload_file)) },
+                    supportingContent = { Text(stringResource(R.string.create_upload_file_desc)) },
                     leadingContent = {
                         Text(
                             text = "↑",
@@ -2922,8 +2926,8 @@ fun FilesScreen(
                 )
 
                 ListItem(
-                    headlineContent = { Text("Upload multiple files") },
-                    supportingContent = { Text("Choose several files from this phone") },
+                    headlineContent = { Text(stringResource(R.string.create_upload_multiple)) },
+                    supportingContent = { Text(stringResource(R.string.create_upload_multiple_desc)) },
                     leadingContent = {
                         Text(
                             text = "↑↑",
@@ -2939,7 +2943,7 @@ fun FilesScreen(
                 )
 
                 ListItem(
-                    headlineContent = { Text("New folder") },
+                    headlineContent = { Text(stringResource(R.string.create_new_folder)) },
                     leadingContent = {
                         Text(
                             text = "📁",
@@ -2953,7 +2957,7 @@ fun FilesScreen(
                 )
 
                 ListItem(
-                    headlineContent = { Text("New text file") },
+                    headlineContent = { Text(stringResource(R.string.create_new_text_file)) },
                     leadingContent = {
                         Text(
                             text = "TXT",
@@ -2971,8 +2975,8 @@ fun FilesScreen(
                 // PQNAS_ANDROID_WORKSPACE_MESSAGES_LINKS_V1: save a URL shortcut into the current workspace.
                 if (currentScope is FileScope.Workspace && scopedOps.canWrite(currentScope)) {
                     ListItem(
-                        headlineContent = { Text("Save URL link") },
-                        supportingContent = { Text("Create a .url shortcut in this workspace") },
+                        headlineContent = { Text(stringResource(R.string.create_save_url_link)) },
+                        supportingContent = { Text(stringResource(R.string.create_save_url_link_desc)) },
                         leadingContent = {
                             Text(
                                 text = "🔗",
@@ -2996,18 +3000,18 @@ fun FilesScreen(
                 newFolderDialogOpen = false
                 newFolderName = ""
             },
-            title = { Text("New folder") },
+            title = { Text(stringResource(R.string.create_new_folder)) },
             text = {
                 OutlinedTextField(
                     value = newFolderName,
                     onValueChange = { newFolderName = it },
                     singleLine = true,
-                    label = { Text("Folder name") }
+                    label = { Text(stringResource(R.string.create_folder_name)) }
                 )
             },
             confirmButton = {
                 TextButton(onClick = { createFolder(newFolderName) }) {
-                    Text("Create")
+                    Text(stringResource(R.string.create_button))
                 }
             },
             dismissButton = {
@@ -3017,7 +3021,7 @@ fun FilesScreen(
                         newFolderName = ""
                     }
                 ) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.cancel))
                 }
             }
         )
@@ -3029,18 +3033,18 @@ fun FilesScreen(
                 newTextFileDialogOpen = false
                 newTextFileName = ""
             },
-            title = { Text("New text file") },
+            title = { Text(stringResource(R.string.create_new_text_file)) },
             text = {
                 OutlinedTextField(
                     value = newTextFileName,
                     onValueChange = { newTextFileName = it },
                     singleLine = true,
-                    label = { Text("File name") }
+                    label = { Text(stringResource(R.string.create_file_name)) }
                 )
             },
             confirmButton = {
                 TextButton(onClick = { createTextFile(newTextFileName) }) {
-                    Text("Create")
+                    Text(stringResource(R.string.create_button))
                 }
             },
             dismissButton = {
@@ -3050,7 +3054,7 @@ fun FilesScreen(
                         newTextFileName = ""
                     }
                 ) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.cancel))
                 }
             }
         )
@@ -3059,7 +3063,7 @@ fun FilesScreen(
     infoItem?.let { item ->
         AlertDialog(
             onDismissRequest = { closeInfoDialog() },
-            title = { Text("Info") },
+            title = { Text(stringResource(R.string.info_title)) },
             text = {
                 Column(
                     verticalArrangement = Arrangement.spacedBy(10.dp),
@@ -3074,20 +3078,20 @@ fun FilesScreen(
                         fontWeight = FontWeight.Bold
                     )
 
-                    Text("Type: ${if (item.type == "dir") "Folder" else "File"}")
-                    Text("Path: /$fullPath")
+                    Text(stringResource(R.string.info_type_value, stringResource(if (item.type == "dir") R.string.info_type_folder else R.string.info_type_file)))
+                    Text(stringResource(R.string.info_path_value, fullPath))
 
                     if (item.isFavorite) {
-                        Text("Favorite: yes")
+                        Text(stringResource(R.string.info_favorite_yes))
                     }
 
                     if (item.isShared) {
-                        Text("Shared: yes")
+                        Text(stringResource(R.string.info_shared_yes))
                     }
 
                     if (item.isLocked) {
                         Text(
-                            text = "Locked" + (item.locked_by_display?.let { " by $it" } ?: ""),
+                            text = item.locked_by_display?.let { stringResource(R.string.info_locked_by, it) } ?: stringResource(R.string.info_locked),
                             color = MaterialTheme.colorScheme.error
                         )
                     }
@@ -3095,7 +3099,7 @@ fun FilesScreen(
                     HorizontalDivider()
 
                     Text(
-                        text = "Comment",
+                        text = stringResource(R.string.info_comment_title),
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.Bold
                     )
@@ -3105,7 +3109,7 @@ fun FilesScreen(
                             LinearProgressIndicator(
                                 modifier = Modifier.fillMaxWidth()
                             )
-                            Text("Loading comment...")
+                            Text(stringResource(R.string.info_loading_comment))
                         }
 
                         canEditComment -> {
@@ -3114,13 +3118,13 @@ fun FilesScreen(
                                 onValueChange = { infoNoteText = it },
                                 minLines = 3,
                                 maxLines = 8,
-                                label = { Text("File comment") },
-                                placeholder = { Text("Add a note about this file...") },
+                                label = { Text(stringResource(R.string.info_file_comment_label)) },
+                                placeholder = { Text(stringResource(R.string.info_file_comment_placeholder)) },
                                 modifier = Modifier.fillMaxWidth()
                             )
 
                             Text(
-                                text = "Stored on DNA-Nexus server and visible from desktop/mobile.",
+                                text = stringResource(R.string.info_comment_server_note),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -3128,7 +3132,7 @@ fun FilesScreen(
 
                         infoNoteText.isBlank() -> {
                             Text(
-                                text = "No comment yet.",
+                                text = stringResource(R.string.info_no_comment_yet),
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
@@ -3160,7 +3164,7 @@ fun FilesScreen(
                                 infoNoteText.trim() != infoNoteOriginalText.trim(),
                         onClick = { saveInfoComment(item, infoNoteText) }
                     ) {
-                        Text(if (infoNoteSaving) "Saving..." else "Save")
+                        Text(if (infoNoteSaving) stringResource(R.string.info_saving) else stringResource(R.string.info_save))
                     }
                 }
             },
@@ -3171,7 +3175,7 @@ fun FilesScreen(
                             enabled = !infoNoteLoading && !infoNoteSaving,
                             onClick = { saveInfoComment(item, "") }
                         ) {
-                            Text("Clear")
+                            Text(stringResource(R.string.info_clear))
                         }
                     }
 
@@ -3189,20 +3193,20 @@ fun FilesScreen(
                 renameItem = null
                 renameText = ""
             },
-            title = { Text("Rename") },
+            title = { Text(stringResource(R.string.rename_title)) },
             text = {
                 OutlinedTextField(
                     value = renameText,
                     onValueChange = { renameText = it },
                     singleLine = true,
-                    label = { Text("New name") }
+                    label = { Text(stringResource(R.string.rename_new_name)) }
                 )
             },
             confirmButton = {
                 TextButton(
                     onClick = {
                         if (item.isLocked) {
-                            val msg = "${item.name} is locked. Unlock it before renaming."
+                            val msg = context.getString(R.string.rename_locked_message, item.name)
                             renameItem = null
                             renameText = ""
                             status = msg
@@ -3211,7 +3215,7 @@ fun FilesScreen(
                         }
                         val newName = renameText.trim()
                         if (newName.isBlank()) {
-                            status = "Name cannot be empty"
+                            status = context.getString(R.string.rename_empty_name)
                             return@TextButton
                         }
 
@@ -3229,7 +3233,7 @@ fun FilesScreen(
                                 renameItem = null
                                 renameText = ""
                                 status = "OK"
-                                snackbarHostState.showSnackbar("Renamed ${item.name} to $newName")
+                                snackbarHostState.showSnackbar(context.getString(R.string.rename_success, item.name, newName))
                                 load(currentPath)
                             } catch (e: Exception) {
                                 val msg = friendlyHttpMessage("Rename", e)
@@ -3239,7 +3243,7 @@ fun FilesScreen(
                         }
                     }
                 ) {
-                    Text("Save")
+                    Text(stringResource(R.string.rename_button))
                 }
             },
             dismissButton = {
@@ -3249,7 +3253,7 @@ fun FilesScreen(
                         renameText = ""
                     }
                 ) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.cancel))
                 }
             }
         )
@@ -3453,7 +3457,7 @@ fun FilesScreen(
                             overwriteUploadTargetPath = null
                             overwriteUploadUri = null
                             pendingUploadUri = null
-                            status = "Replacing ${pendingUploadName ?: "file"}..."
+                            status = context.getString(R.string.upload_replacing_item, pendingUploadName ?: context.getString(R.string.info_type_file).lowercase())
                             pendingUploadName = null
                             uploadUri(uri, overwrite = true)
                         } else {
@@ -3476,7 +3480,7 @@ fun FilesScreen(
                         pendingUploadName = null
                     }
                 ) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.cancel))
                 }
             }
         )

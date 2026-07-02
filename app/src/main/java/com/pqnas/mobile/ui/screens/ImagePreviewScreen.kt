@@ -1,5 +1,7 @@
 package com.pqnas.mobile.ui.screens
 
+import com.pqnas.mobile.R
+
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import androidx.activity.compose.BackHandler
@@ -37,6 +39,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.pqnas.mobile.api.FileItemDto
 import com.pqnas.mobile.files.FilesRepository
@@ -68,7 +71,7 @@ fun ImagePreviewScreen(
     }
 
     var bitmap by remember(currentIndex, images) { mutableStateOf<Bitmap?>(null) }
-    var status by remember(currentIndex, images) { mutableStateOf("Loading...") }
+    var status by remember(currentIndex, images) { mutableStateOf(context.getString(R.string.image_preview_loading)) }
     var loading by remember(currentIndex, images) { mutableStateOf(true) }
 
     var scale by remember(currentIndex, images) { mutableStateOf(1f) }
@@ -98,7 +101,7 @@ fun ImagePreviewScreen(
         loading = true
         bitmap?.takeIf { !it.isRecycled }?.recycle()
         bitmap = null
-        status = "Loading..."
+        status = context.getString(R.string.image_preview_loading)
         resetTransform()
 
         try {
@@ -112,7 +115,7 @@ fun ImagePreviewScreen(
             }
 
             if (bmp == null) {
-                status = "Failed to decode image"
+                status = context.getString(R.string.image_preview_decode_failed)
                 loading = false
             } else {
                 bitmap = bmp
@@ -142,7 +145,7 @@ fun ImagePreviewScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 TextButton(onClick = onClose) {
-                    Text("Close", color = Color.White)
+                    Text(stringResource(R.string.close), color = Color.White)
                 }
 
                 Spacer(modifier = Modifier.weight(1f))
@@ -243,7 +246,7 @@ fun ImagePreviewScreen(
                     },
                     enabled = currentIndex > 0
                 ) {
-                    Text("Prev", color = if (currentIndex > 0) Color.White else Color.Gray)
+                    Text(stringResource(R.string.image_preview_previous), color = if (currentIndex > 0) Color.White else Color.Gray)
                 }
 
                 TextButton(
@@ -251,7 +254,7 @@ fun ImagePreviewScreen(
                     enabled = !loading && bitmap != null
                 ) {
                     Text(
-                        "Reset zoom",
+                        stringResource(R.string.image_preview_reset_zoom),
                         color = if (!loading && bitmap != null) Color.White else Color.Gray
                     )
                 }
@@ -265,7 +268,7 @@ fun ImagePreviewScreen(
                     enabled = currentIndex < images.lastIndex
                 ) {
                     Text(
-                        "Next",
+                        stringResource(R.string.image_preview_next),
                         color = if (currentIndex < images.lastIndex) Color.White else Color.Gray
                     )
                 }

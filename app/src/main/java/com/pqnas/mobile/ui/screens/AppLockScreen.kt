@@ -17,6 +17,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import com.pqnas.mobile.R
@@ -35,7 +36,7 @@ fun AppLockScreen(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Text(
-            text = "DNA-Nexus is locked",
+            text = stringResource(R.string.app_lock_title),
             style = MaterialTheme.typography.headlineSmall,
             color = MaterialTheme.colorScheme.onBackground
         )
@@ -65,7 +66,7 @@ Card(
                 ) {
                     Image(
                         painter = painterResource(id = R.drawable.dna_nexus_logo_dark),
-                        contentDescription = "DNA-Nexus logo",
+                        contentDescription = stringResource(R.string.app_lock_logo_desc),
                         modifier = Modifier
                             .fillMaxSize()
                             .padding(horizontal = 18.dp, vertical = 14.dp),
@@ -74,7 +75,7 @@ Card(
                 }
 
                 Text(
-                    text = "Confirm it is you before opening your files.",
+                    text = stringResource(R.string.app_lock_description),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurface
                 )
@@ -91,7 +92,7 @@ Card(
                     onClick = onUnlock,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("Unlock")
+                    Text(stringResource(R.string.app_lock_unlock))
                 }
 
                 Button(
@@ -102,7 +103,7 @@ Card(
                         contentColor = MaterialTheme.colorScheme.onSurface
                     )
                 ) {
-                    Text("Logout")
+                    Text(stringResource(R.string.logout))
                 }
             }
         }

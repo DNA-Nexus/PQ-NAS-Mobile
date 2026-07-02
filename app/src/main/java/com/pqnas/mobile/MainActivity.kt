@@ -152,25 +152,25 @@ class MainActivity : FragmentActivity() {
                     if (canAuthenticate != BiometricManager.BIOMETRIC_SUCCESS) {
                         appLockStatus = when (canAuthenticate) {
                             BiometricManager.BIOMETRIC_ERROR_NO_HARDWARE ->
-                                "This device does not have biometric hardware. Use Logout or configure device security."
+                                context.getString(R.string.app_lock_no_biometric_hardware)
                             BiometricManager.BIOMETRIC_ERROR_HW_UNAVAILABLE ->
-                                "Biometric hardware is temporarily unavailable."
+                                context.getString(R.string.app_lock_biometric_hw_unavailable)
                             BiometricManager.BIOMETRIC_ERROR_NONE_ENROLLED ->
-                                "No biometric credential is enrolled. Add fingerprint/face unlock in Android settings."
+                                context.getString(R.string.app_lock_no_credential_enrolled)
                             BiometricManager.BIOMETRIC_ERROR_SECURITY_UPDATE_REQUIRED ->
-                                "A security update is required before biometric unlock can be used."
+                                context.getString(R.string.app_lock_security_update_required)
                             BiometricManager.BIOMETRIC_ERROR_UNSUPPORTED ->
-                                "This unlock method is not supported on this Android version."
+                                context.getString(R.string.app_lock_unsupported)
                             BiometricManager.BIOMETRIC_STATUS_UNKNOWN ->
-                                "Unlock status is unknown. Try again."
+                                context.getString(R.string.app_lock_status_unknown)
                             else ->
-                                "App unlock is not available on this device."
+                                context.getString(R.string.app_lock_unavailable)
                         }
                         return
                     }
 
                     unlockPromptActive = true
-                    appLockStatus = "Waiting for authentication..."
+                    appLockStatus = context.getString(R.string.app_lock_waiting_auth)
 
                     val executor = ContextCompat.getMainExecutor(this@MainActivity)
 
@@ -191,22 +191,22 @@ class MainActivity : FragmentActivity() {
                                 errString: CharSequence
                             ) {
                                 unlockPromptActive = false
-                                appLockStatus = "Unlock cancelled or failed: $errString"
+                                appLockStatus = context.getString(R.string.app_lock_cancelled_or_failed, errString)
                             }
 
                             override fun onAuthenticationFailed() {
-                                appLockStatus = "Authentication failed. Try again."
+                                appLockStatus = context.getString(R.string.app_lock_auth_failed)
                             }
                         }
                     )
 
                     val promptBuilder = BiometricPrompt.PromptInfo.Builder()
-                        .setTitle("Unlock DNA-Nexus")
-                        .setSubtitle("Confirm it is you before opening your files")
+                        .setTitle(context.getString(R.string.app_lock_prompt_title))
+                        .setSubtitle(context.getString(R.string.app_lock_prompt_subtitle))
                         .setAllowedAuthenticators(authenticators)
 
                     if (!AppUnlockPolicy.allowsDeviceCredential(authenticators)) {
-                        promptBuilder.setNegativeButtonText("Cancel")
+                        promptBuilder.setNegativeButtonText(context.getString(R.string.cancel))
                     }
 
                     prompt.authenticate(promptBuilder.build())
@@ -231,7 +231,7 @@ class MainActivity : FragmentActivity() {
 
                         if (unlockPromptActive && !appUnlocked) {
                             unlockPromptActive = false
-                            appLockStatus = "Unlock timed out. Tap Unlock to try again."
+                            appLockStatus = context.getString(R.string.app_lock_timeout)
                         }
                     }
                 }
