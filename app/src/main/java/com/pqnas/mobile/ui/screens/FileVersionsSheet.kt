@@ -1,5 +1,7 @@
 package com.pqnas.mobile.ui.screens
 
+import com.pqnas.mobile.R
+
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
@@ -49,6 +51,7 @@ import java.util.Date
 import java.util.Locale
 import kotlin.math.ln
 import kotlin.math.pow
+import androidx.compose.ui.res.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -67,7 +70,7 @@ fun FileVersionsSheet(
     }
 
     var versions by remember(relPath, fileScope) { mutableStateOf<List<FileVersionItemDto>>(emptyList()) }
-    var status by remember(relPath, fileScope) { mutableStateOf("Loading versions...") }
+    var status by remember(relPath, fileScope) { mutableStateOf(context.getString(R.string.versions_loading)) }
     var closeAfterRestore by remember { mutableStateOf(false) }
     var pendingRestore by remember { mutableStateOf<FileVersionItemDto?>(null) }
     var restoringVersionId by remember { mutableStateOf<String?>(null) }
@@ -76,19 +79,22 @@ fun FileVersionsSheet(
 
     val canRestore = scopedOps.canWrite(fileScope)
     val scopeLabel = when (fileScope) {
-        FileScope.User -> "Personal files"
-        is FileScope.Workspace -> "Workspace: ${fileScope.workspaceName.ifBlank { fileScope.workspaceId }}"
+        FileScope.User -> stringResource(R.string.versions_scope_personal)
+        is FileScope.Workspace -> stringResource(
+            R.string.versions_scope_workspace,
+            fileScope.workspaceName.ifBlank { fileScope.workspaceId }
+        )
     }
 
     fun loadVersions() {
         scope.launch {
-            status = "Loading versions..."
+            status = context.getString(R.string.versions_loading)
             try {
                 val resp = scopedOps.listVersions(fileScope, relPath)
                 versions = resp.entries.sortedByDescending { it.created_epoch ?: 0L }
-                status = if (versions.isEmpty()) "No preserved versions found." else ""
+                status = if (versions.isEmpty()) context.getString(R.string.versions_empty_preserved) else ""
             } catch (e: Exception) {
-                status = friendlyVersionsMessage("Load versions", e)
+                status = friendlyVersionsMessage(context, "Load versions", e)
             }
         }
     }
@@ -108,7 +114,7 @@ fun FileVersionsSheet(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Text(
-                text = "Versions",
+                text = stringResource(R.string.versions_title),
                 style = MaterialTheme.typography.headlineSmall,
                 color = MaterialTheme.colorScheme.onSurface
             )
@@ -143,7 +149,7 @@ fun FileVersionsSheet(
                     onCheckedChange = { closeAfterRestore = it }
                 )
                 Text(
-                    text = "Close after restore",
+                    text = stringResource(R.string.versions_close_after_restore),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurface
                 )
@@ -200,10 +206,11 @@ fun FileVersionsSheet(
                                             versionId = versionId,
                                             shouldFlag = !wasFlagged
                                         )
-                                        status = if (wasFlagged) "Flag removed." else "Version flagged."
+                                        status = if (wasFlagged) context.getString(R.string.versions_flag_removed) else context.getString(R.string.versions_flagged)
                                         loadVersions()
                                     } catch (e: Exception) {
                                         status = friendlyVersionsMessage(
+                                            context,
                                             if (wasFlagged) "Remove flag" else "Flag version",
                                             e
                                         )
@@ -214,9 +221,9 @@ fun FileVersionsSheet(
                             },
                             onCopySha = { sha ->
                                 if (copyToClipboard(context, "sha256", sha)) {
-                                    status = "SHA copied."
+                                    status = context.getString(R.string.versions_sha_copied)
                                 } else {
-                                    status = "Copy failed."
+                                    status = context.getString(R.string.versions_copy_failed)
                                 }
                             },
                             onRestore = {
@@ -236,18 +243,18 @@ fun FileVersionsSheet(
             onDismissRequest = {
                 if (restoringVersionId == null) pendingRestore = null
             },
-            title = { Text("Restore version") },
+            title = { Text(stringResource(R.string.versions_restore_title)) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text("Restore this preserved version and replace the current live file?")
+                    Text(stringResource(R.string.versions_restore_confirm))
                     Text(
-                        text = versionKindLabel(item),
+                        text = versionKindLabel(context, item),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     item.created_epoch?.let {
                         Text(
-                            text = "Created: ${formatVersionTime(item)}",
+                            text = stringResource(R.string.versions_created_value, formatVersionTime(item)),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -267,7 +274,7 @@ fun FileVersionsSheet(
                                     versionId = item.version_id
                                 )
 
-                                val msg = "Version restored. Current file replaced successfully."
+                                val msg = context.getString(R.string.versions_restored_success)
                                 status = msg
                                 onRestored(msg)
 
@@ -281,12 +288,12 @@ fun FileVersionsSheet(
                                 }
                             } catch (e: Exception) {
                                 restoringVersionId = null
-                                status = friendlyVersionsMessage("Restore version", e)
+                                status = friendlyVersionsMessage(context, "Restore version", e)
                             }
                         }
                     }
                 ) {
-                    Text(if (restoringVersionId == item.version_id) "Restoring..." else "Restore")
+                    Text(if (restoringVersionId == item.version_id) stringResource(R.string.versions_restoring) else stringResource(R.string.versions_restore))
                 }
             },
             dismissButton = {
@@ -294,7 +301,7 @@ fun FileVersionsSheet(
                     enabled = restoringVersionId == null,
                     onClick = { pendingRestore = null }
                 ) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.versions_cancel))
                 }
             }
         )
@@ -323,6 +330,8 @@ private fun VersionRow(
     onCopySha: (String) -> Unit,
     onRestore: () -> Unit
 ) {
+    val context = LocalContext.current
+
     val actor = item.actor_display
         ?.takeIf { it.isNotBlank() }
         ?: item.actor_name_snapshot?.takeIf { it.isNotBlank() }
@@ -344,31 +353,31 @@ private fun VersionRow(
             verticalArrangement = Arrangement.spacedBy(6.dp)
         ) {
             Text(
-                text = versionKindLabel(item),
+                text = versionKindLabel(context, item),
                 style = MaterialTheme.typography.titleSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontWeight = FontWeight.SemiBold
             )
 
             Text(
-                text = "Date: ${formatVersionTime(item)}",
+                text = stringResource(R.string.versions_date_value, formatVersionTime(item)),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
 
             Text(
-                text = "Actor: $actor",
+                text = stringResource(R.string.versions_actor_value, actor),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
 
             Text(
-                text = "Size: ${formatVersionBytes(item.bytes)}",
+                text = stringResource(R.string.versions_size_value, formatVersionBytes(item.bytes)),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
 
-            val flagText = versionFlagSummary(item)
+            val flagText = versionFlagSummary(context, item)
             if (flagText.isNotBlank()) {
                 Surface(
                     shape = RoundedCornerShape(999.dp),
@@ -394,7 +403,7 @@ private fun VersionRow(
 
             if (!item.version_id.isNullOrBlank()) {
                 Text(
-                    text = "Version ID: ${item.version_id}",
+                    text = stringResource(R.string.versions_id_value, item.version_id),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -415,7 +424,7 @@ private fun VersionRow(
                         enabled = canCompare && item.version_id.isNotBlank(),
                         onClick = onCompare
                     ) {
-                        Text("Compare")
+                        Text(stringResource(R.string.versions_compare))
                     }
 
                     TextButton(
@@ -424,9 +433,9 @@ private fun VersionRow(
                     ) {
                         Text(
                             when {
-                                isFlagging -> "Working..."
-                                item.flagged_by_me -> "⭐ Unflag"
-                                else -> "☆ Flag"
+                                isFlagging -> stringResource(R.string.versions_working)
+                                item.flagged_by_me -> stringResource(R.string.versions_unflag)
+                                else -> stringResource(R.string.versions_flag)
                             }
                         )
                     }
@@ -440,7 +449,7 @@ private fun VersionRow(
                         TextButton(
                             onClick = { onCopySha(sha) }
                         ) {
-                            Text("Copy SHA")
+                            Text(stringResource(R.string.versions_copy_sha))
                         }
                     }
 
@@ -450,9 +459,9 @@ private fun VersionRow(
                     ) {
                         Text(
                             when {
-                                isRestoring -> "Restoring..."
-                                !canRestore -> "Read only"
-                                else -> "Restore"
+                                isRestoring -> stringResource(R.string.versions_restoring)
+                                !canRestore -> stringResource(R.string.versions_read_only)
+                                else -> stringResource(R.string.versions_restore)
                             }
                         )
                     }
@@ -471,7 +480,7 @@ private fun isTextLikeVersionPath(path: String): Boolean {
     )
 }
 
-private fun versionFlagSummary(item: FileVersionItemDto): String {
+private fun versionFlagSummary(context: Context, item: FileVersionItemDto): String {
     val flags = item.flags
     val count = item.flag_count.takeIf { it > 0L } ?: flags.size.toLong()
     if (count <= 0L) return ""
@@ -485,23 +494,28 @@ private fun versionFlagSummary(item: FileVersionItemDto): String {
         }
 
     return when {
-        names.size == 1 -> "⭐ ${names[0]} flagged this version"
-        names.size == 2 -> "⭐ ${names[0]} and ${names[1]} flagged this version"
-        names.size > 2 -> "⭐ ${names[0]}, ${names[1]} and ${names.size - 2} more flagged this version"
-        else -> "⭐ Flagged by $count user${if (count == 1L) "" else "s"}"
+        names.size == 1 -> context.getString(R.string.versions_flagged_by_one, names[0])
+        names.size == 2 -> context.getString(R.string.versions_flagged_by_two, names[0], names[1])
+        names.size > 2 -> context.getString(
+            R.string.versions_flagged_by_many,
+            names[0],
+            names[1],
+            names.size - 2
+        )
+        else -> context.getString(R.string.versions_flagged_by_count, count)
     }
 }
 
-private fun versionKindLabel(item: FileVersionItemDto): String {
+private fun versionKindLabel(context: Context, item: FileVersionItemDto): String {
     if (item.is_deleted_event == true) {
-        return "Deleted file snapshot"
+        return context.getString(R.string.versions_kind_deleted_snapshot)
     }
 
     val raw = item.event_kind.orEmpty().lowercase(Locale.getDefault())
     return when {
-        raw.contains("overwrite_preserve") -> "Before overwrite"
-        raw.contains("delete_preserve") -> "Deleted file snapshot"
-        raw.isBlank() -> "Preserved version"
+        raw.contains("overwrite_preserve") -> context.getString(R.string.versions_kind_before_overwrite)
+        raw.contains("delete_preserve") -> context.getString(R.string.versions_kind_deleted_snapshot)
+        raw.isBlank() -> context.getString(R.string.versions_kind_preserved)
         else -> raw
             .replace('_', ' ')
             .replaceFirstChar { ch ->
@@ -543,6 +557,7 @@ private fun copyToClipboard(context: Context, label: String, text: String): Bool
 }
 
 private fun friendlyVersionsMessage(
+    context: Context,
     action: String,
     error: Throwable
 ): String {
@@ -554,15 +569,16 @@ private fun friendlyVersionsMessage(
             ?.toIntOrNull()
 
     return when (http) {
-        400 -> "$action failed: invalid request."
-        401 -> "Session expired. Please pair again."
-        403 -> "Access denied."
-        404 -> "Item or version not found."
-        409 -> "$action failed: conflicting file state."
-        500 -> "$action failed: server error."
+        400 -> context.getString(R.string.versions_error_invalid_request, action)
+        401 -> context.getString(R.string.versions_error_session_expired)
+        403 -> context.getString(R.string.versions_error_access_denied)
+        404 -> context.getString(R.string.versions_error_not_found)
+        409 -> context.getString(R.string.versions_error_conflict, action)
+        500 -> context.getString(R.string.versions_error_server, action)
         else -> {
-            val msg = error.message?.takeIf { it.isNotBlank() } ?: "unknown error"
-            "$action failed: $msg"
+            val msg = error.message?.takeIf { it.isNotBlank() }
+                ?: context.getString(R.string.versions_unknown_error)
+            context.getString(R.string.versions_error_unknown, action, msg)
         }
     }
 }

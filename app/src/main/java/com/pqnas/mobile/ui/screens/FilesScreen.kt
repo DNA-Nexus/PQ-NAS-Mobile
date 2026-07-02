@@ -909,7 +909,7 @@ fun FilesScreen(
 
     fun saveInfoComment(item: FileItemDto, description: String) {
         if (!scopedOps.canWrite(currentScope)) {
-            val msg = "You do not have write access here."
+            val msg = context.getString(R.string.move_copy_no_write_access)
             infoNoteStatus = msg
             status = msg
             scope.launch { snackbarHostState.showSnackbar(msg) }
@@ -1058,7 +1058,7 @@ fun FilesScreen(
         }
 
         if (mode == "Move" && item.isLocked) {
-            val msg = "${item.name} is locked. Unlock it before moving."
+            val msg = context.getString(R.string.move_locked_message, item.name)
             status = msg
             scope.launch { snackbarHostState.showSnackbar(msg) }
             return
@@ -1083,7 +1083,7 @@ fun FilesScreen(
         )
 
         if (toPath.isBlank()) {
-            val msg = "Destination cannot be empty."
+            val msg = context.getString(R.string.move_copy_destination_empty)
             status = msg
             scope.launch { snackbarHostState.showSnackbar(msg) }
             return
@@ -1092,13 +1092,13 @@ fun FilesScreen(
         if (mode == "Move" && fromPath == toPath) {
             moveCopyItem = null
             moveCopyDestination = ""
-            status = "Move cancelled: source and destination are the same."
+            status = context.getString(R.string.move_cancelled_same_destination)
             return
         }
 
         scope.launch {
             try {
-                status = if (mode == "Copy") "Copying ${item.name}..." else "Moving ${item.name}..."
+                status = if (mode == "Copy") context.getString(R.string.copying_item, item.name) else context.getString(R.string.moving_item, item.name)
 
                 if (mode == "Copy") {
                     scopedOps.copy(currentScope, fromPath, toPath)
@@ -1110,7 +1110,7 @@ fun FilesScreen(
                 moveCopyDestination = ""
                 status = "OK"
                 snackbarHostState.showSnackbar(
-                    if (mode == "Copy") "Copied ${item.name}" else "Moved ${item.name}"
+                    if (mode == "Copy") context.getString(R.string.copied_item, item.name) else context.getString(R.string.moved_item, item.name)
                 )
                 load(currentPath)
             } catch (e: Exception) {
@@ -2125,7 +2125,7 @@ fun FilesScreen(
                     enabled = currentPath != null,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("Up")
+                    Text(stringResource(R.string.up))
                 }
             }
 
@@ -2507,7 +2507,7 @@ fun FilesScreen(
                         onIncomingShareConsumed()
                     }
                 ) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.cancel))
                 }
             }
         )
@@ -2801,7 +2801,7 @@ fun FilesScreen(
                         onClick = { showAppsSheet = false },
                         modifier = Modifier.align(Alignment.End)
                     ) {
-                        Text("Close")
+                        Text(stringResource(R.string.close))
                     }
                 }
             }
@@ -3176,7 +3176,7 @@ fun FilesScreen(
                     }
 
                     TextButton(onClick = { closeInfoDialog() }) {
-                        Text("Close")
+                        Text(stringResource(R.string.close))
                     }
                 }
             }
@@ -3261,12 +3261,12 @@ fun FilesScreen(
                 moveCopyItem = null
                 moveCopyDestination = ""
             },
-            title = { Text("$moveCopyMode ${item.name}") },
+            title = { Text(stringResource(if (moveCopyMode == "Copy") R.string.copy_title else R.string.move_title, item.name)) },
             text = {
                 Column(
                     verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    Text("Choose destination folder.")
+                    Text(stringResource(R.string.copy_move_choose_destination))
 
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -3276,35 +3276,38 @@ fun FilesScreen(
                             enabled = !moveCopyPickerLoading,
                             onClick = { loadMoveCopyPicker(null) }
                         ) {
-                            Text("Root")
+                            Text(stringResource(R.string.root))
                         }
 
                         TextButton(
                             enabled = !moveCopyPickerLoading && !moveCopyPickerPath.isNullOrBlank(),
                             onClick = { loadMoveCopyPicker(parentPath(moveCopyPickerPath)) }
                         ) {
-                            Text("Up")
+                            Text(stringResource(R.string.up))
                         }
 
                         TextButton(
                             enabled = !moveCopyPickerLoading,
                             onClick = { loadMoveCopyPicker(moveCopyPickerPath) }
                         ) {
-                            Text("Refresh")
+                            Text(stringResource(R.string.refresh))
                         }
                     }
 
                     Text(
-                        text = "Current: /" + normalizeRelPath(moveCopyPickerPath),
+                        text = stringResource(R.string.copy_move_current, normalizeRelPath(moveCopyPickerPath)),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
 
                     Text(
-                        text = "Target: /" + normalizeRelPath(
-                            buildItemPath(
-                                if (moveCopyDestination.isBlank()) null else moveCopyDestination,
-                                item.name
+                        text = stringResource(
+                            R.string.copy_move_target,
+                            normalizeRelPath(
+                                buildItemPath(
+                                    if (moveCopyDestination.isBlank()) null else moveCopyDestination,
+                                    item.name
+                                )
                             )
                         ),
                         style = MaterialTheme.typography.bodySmall,
@@ -3317,13 +3320,13 @@ fun FilesScreen(
                         LinearProgressIndicator(
                             modifier = Modifier.fillMaxWidth()
                         )
-                        Text("Loading folders...")
+                        Text(stringResource(R.string.copy_move_loading_folders))
                     } else if (moveCopyPickerFolders.isEmpty()) {
                         Text(
                             text = if (moveCopyPickerStatus.isNotBlank()) {
                                 moveCopyPickerStatus
                             } else {
-                                "No subfolders here."
+                                stringResource(R.string.copy_move_no_subfolders)
                             },
                             color = if (moveCopyPickerStatus.isNotBlank()) {
                                 MaterialTheme.colorScheme.error
@@ -3372,7 +3375,7 @@ fun FilesScreen(
                         runMoveCopy(item, moveCopyMode, moveCopyDestination)
                     }
                 ) {
-                    Text(if (moveCopyMode == "Copy") "Copy here" else "Move here")
+                    Text(stringResource(if (moveCopyMode == "Copy") R.string.copy_here else R.string.move_here))
                 }
             },
             dismissButton = {
@@ -3382,18 +3385,23 @@ fun FilesScreen(
                         moveCopyDestination = ""
                     }
                 ) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.cancel))
                 }
             }
         )
     }
 
     deleteItem?.let { item ->
+        val trashItemType = stringResource(
+            if (item.type == "dir") R.string.trash_item_folder else R.string.trash_item_file
+        )
+        val trashMovedSnackbar = stringResource(R.string.trash_moved_snackbar, item.name)
+
         AlertDialog(
             onDismissRequest = { deleteItem = null },
-            title = { Text("Move to trash") },
+            title = { Text(stringResource(R.string.trash_title)) },
             text = {
-                Text("Move ${if (item.type == "dir") "folder" else "file"} \"${item.name}\" to trash?")
+                Text(stringResource(R.string.trash_confirm_message, trashItemType, item.name))
             },
             confirmButton = {
                 TextButton(
@@ -3404,7 +3412,7 @@ fun FilesScreen(
                                 scopedOps.delete(currentScope, path)
                                 deleteItem = null
                                 status = "OK"
-                                snackbarHostState.showSnackbar("Moved ${item.name} to trash")
+                                snackbarHostState.showSnackbar(trashMovedSnackbar)
                                 load(currentPath)
                             } catch (e: Exception) {
                                 val msg = friendlyHttpMessage("Delete", e)
@@ -3414,12 +3422,12 @@ fun FilesScreen(
                         }
                     }
                 ) {
-                    Text("Move to trash")
+                    Text(stringResource(R.string.trash_title))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { deleteItem = null }) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.cancel))
                 }
             }
         )
@@ -3579,7 +3587,7 @@ fun FilesScreen(
                             shareDialogExpiry = defaultShareExpiryOption()
                         }
                     ) {
-                        Text("Close")
+                        Text(stringResource(R.string.close))
                     }
                 }
             )
@@ -3944,9 +3952,9 @@ private fun FileRow(
     }
 
     val typeAndSize = if (isDir) {
-        "Directory"
+        stringResource(R.string.file_type_directory)
     } else {
-        "File • ${formatBytes(item.size_bytes ?: 0)}"
+        stringResource(R.string.file_type_file_size, formatBytes(item.size_bytes ?: 0))
     }
 
     val dateText = item.mtime_unix?.takeIf { it > 0 }?.let { formatUnixTime(it) } ?: ""
@@ -3978,7 +3986,7 @@ private fun FileRow(
                 if (item.isLocked) {
                     Icon(
                         imageVector = Icons.Default.Lock,
-                        contentDescription = "Locked",
+                        contentDescription = stringResource(R.string.file_locked),
                         modifier = Modifier.size(16.dp),
                         tint = Color(0xFFFFC107)
                     )
@@ -4052,7 +4060,7 @@ private fun FileRow(
                 ) {
                     if (isDir) {
                         Text(
-                            text = "Open",
+                            text = stringResource(R.string.file_open),
                             style = MaterialTheme.typography.labelLarge,
                             color = MaterialTheme.colorScheme.primary
                         )
@@ -4061,7 +4069,7 @@ private fun FileRow(
                     IconButton(onClick = { menuExpanded = true }) {
                         Icon(
                             imageVector = Icons.Default.MoreVert,
-                            contentDescription = "More actions"
+                            contentDescription = stringResource(R.string.file_more_actions)
                         )
                     }
 
@@ -4070,7 +4078,7 @@ private fun FileRow(
                         onDismissRequest = { menuExpanded = false }
                     ) {
                         DropdownMenuItem(
-                            text = { Text(if (item.isFavorite) "Remove from favorites" else "Add to favorites") },
+                            text = { Text(stringResource(if (item.isFavorite) R.string.menu_remove_from_favorites else R.string.menu_add_to_favorites)) },
                             onClick = {
                                 menuExpanded = false
                                 onMenuAction("ToggleFavorite", item)
@@ -4078,7 +4086,7 @@ private fun FileRow(
                         )
 
                         DropdownMenuItem(
-                            text = { Text(if (item.isShared) "Shared…" else "Share") },
+                            text = { Text(stringResource(if (item.isShared) R.string.menu_shared else R.string.menu_share)) },
                             onClick = {
                                 menuExpanded = false
                                 onMenuAction("Share", item)
@@ -4087,7 +4095,7 @@ private fun FileRow(
 
                         if (!isDir && isProbablyImageFile(item.name)) {
                             DropdownMenuItem(
-                                text = { Text("Open preview") },
+                                text = { Text(stringResource(R.string.menu_open_preview)) },
                                 onClick = {
                                     menuExpanded = false
                                     onMenuAction("Preview", item)
@@ -4097,7 +4105,7 @@ private fun FileRow(
 
                         if (!isDir && isProbablyAudioFile(item.name)) {
                             DropdownMenuItem(
-                                text = { Text("Play audio") },
+                                text = { Text(stringResource(R.string.menu_play_audio)) },
                                 onClick = {
                                     menuExpanded = false
                                     onMenuAction("PlayAudio", item)
@@ -4107,7 +4115,7 @@ private fun FileRow(
 
                         if (!isDir && isProbablyVideoFile(item.name)) {
                             DropdownMenuItem(
-                                text = { Text("Play video") },
+                                text = { Text(stringResource(R.string.menu_play_video)) },
                                 onClick = {
                                     menuExpanded = false
                                     onMenuAction("PlayVideo", item)
@@ -4117,7 +4125,7 @@ private fun FileRow(
 
                         if (!isDir && isProbablyTextFile(item.name)) {
                             DropdownMenuItem(
-                                text = { Text("Edit text") },
+                                text = { Text(stringResource(R.string.menu_edit_text)) },
                                 onClick = {
                                     menuExpanded = false
                                     onMenuAction("EditText", item)
@@ -4126,7 +4134,7 @@ private fun FileRow(
                         }
                         if (!isDir) {
                             DropdownMenuItem(
-                                text = { Text("Versions") },
+                                text = { Text(stringResource(R.string.menu_versions)) },
                                 onClick = {
                                     menuExpanded = false
                                     onMenuAction("Versions", item)
@@ -4134,7 +4142,7 @@ private fun FileRow(
                             )
                         }
                         DropdownMenuItem(
-                            text = { Text("Download") },
+                            text = { Text(stringResource(R.string.menu_download)) },
                             onClick = {
                                 menuExpanded = false
                                 onMenuAction("Download", item)
@@ -4142,7 +4150,7 @@ private fun FileRow(
                         )
 
                         DropdownMenuItem(
-                            text = { Text("Rename") },
+                            text = { Text(stringResource(R.string.menu_rename)) },
                             onClick = {
                                 menuExpanded = false
                                 onMenuAction("Rename", item)
@@ -4150,7 +4158,7 @@ private fun FileRow(
                         )
 
                         DropdownMenuItem(
-                            text = { Text("Move…") },
+                            text = { Text(stringResource(R.string.menu_move)) },
                             onClick = {
                                 menuExpanded = false
                                 onMenuAction("Move", item)
@@ -4158,7 +4166,7 @@ private fun FileRow(
                         )
 
                         DropdownMenuItem(
-                            text = { Text("Copy…") },
+                            text = { Text(stringResource(R.string.menu_copy)) },
                             onClick = {
                                 menuExpanded = false
                                 onMenuAction("Copy", item)
@@ -4166,7 +4174,7 @@ private fun FileRow(
                         )
 
                         DropdownMenuItem(
-                            text = { Text("Move to trash") },
+                            text = { Text(stringResource(R.string.menu_move_to_trash)) },
                             onClick = {
                                 menuExpanded = false
                                 onMenuAction("Delete", item)
@@ -4174,7 +4182,7 @@ private fun FileRow(
                         )
 
                         DropdownMenuItem(
-                            text = { Text("Info") },
+                            text = { Text(stringResource(R.string.menu_info)) },
                             onClick = {
                                 menuExpanded = false
                                 onMenuAction("Info", item)
@@ -4208,7 +4216,7 @@ private fun FileIcon(
     if (bitmap != null) {
         Image(
             bitmap = bitmap.asImageBitmap(),
-            contentDescription = if (item.type == "dir") "Directory icon" else "File icon",
+            contentDescription = if (item.type == "dir") stringResource(R.string.file_directory_icon) else stringResource(R.string.file_file_icon),
             modifier = modifier
         )
     } else {

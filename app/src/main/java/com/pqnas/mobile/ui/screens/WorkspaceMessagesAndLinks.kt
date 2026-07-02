@@ -41,10 +41,12 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import com.pqnas.mobile.R
 import com.pqnas.mobile.api.WorkspaceMessageDto
 import com.pqnas.mobile.files.FileScope
 import com.pqnas.mobile.files.FilesRepository
@@ -71,13 +73,21 @@ internal fun WorkspaceMessagesSheet(
     var draft by remember { mutableStateOf("") }
     var sending by remember { mutableStateOf(false) }
 
+    val workspaceMessagesLoadingText = stringResource(R.string.workspace_messages_loading)
+    val workspaceMessagesLoadFailedText = stringResource(R.string.workspace_messages_load_failed)
+    val workspaceContactCardDetectedText = stringResource(R.string.workspace_contact_card_detected)
+    val workspaceSendingText = stringResource(R.string.workspace_sending)
+    val workspaceDeletingText = stringResource(R.string.workspace_deleting)
+    val workspaceMessageDeletedText = stringResource(R.string.workspace_message_deleted)
+    val workspaceDeleteFailedText = stringResource(R.string.workspace_delete_failed)
+
     fun reload() {
         reloadNonce += 1
     }
 
     LaunchedEffect(workspace.workspaceId, reloadNonce) {
         loading = true
-        status = "Loading messages..."
+        status = workspaceMessagesLoadingText
         runCatching {
             filesRepository.listWorkspaceMessages(
                 workspaceId = workspace.workspaceId,
@@ -90,7 +100,7 @@ internal fun WorkspaceMessagesSheet(
                     .sortedBy { it.id }
                 status = "OK: ${messages.size} messages loaded for ${workspace.workspaceId}"
             } else {
-                status = response.message ?: response.error ?: "Could not load messages."
+                status = response.message ?: response.error ?: workspaceMessagesLoadFailedText
             }
         }.onFailure { e ->
             status = workspaceMessageFailureText("Load messages", e)
@@ -108,7 +118,7 @@ internal fun WorkspaceMessagesSheet(
 
         scope.launch {
             sending = true
-            status = "Sending..."
+            status = workspaceSendingText
             runCatching {
                 filesRepository.postWorkspaceMessage(
                     workspaceId = workspace.workspaceId,
@@ -144,7 +154,7 @@ internal fun WorkspaceMessagesSheet(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Text(
-                text = "Workspace messages",
+                text = stringResource(R.string.workspace_messages_title),
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold
             )
@@ -196,7 +206,7 @@ internal fun WorkspaceMessagesSheet(
                     if (messages.isEmpty()) {
                         item {
                             Text(
-                                text = "Android received zero messages. Status: $status",
+                                text = stringResource(R.string.workspace_messages_empty_status, status),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -209,14 +219,14 @@ internal fun WorkspaceMessagesSheet(
                             onStatus = { status = it },
                             onDelete = {
                                 scope.launch {
-                                    status = "Deleting message..."
+                                    status = workspaceDeletingText
                                     runCatching {
                                         filesRepository.deleteWorkspaceMessage(
                                             workspaceId = workspace.workspaceId,
                                             messageId = message.id
                                         )
                                     }.onSuccess { response ->
-                                        status = if (response.ok) "Message deleted." else response.message ?: response.error ?: "Delete failed."
+                                        status = if (response.ok) workspaceMessageDeletedText else response.message ?: response.error ?: workspaceDeleteFailedText
                                         reload()
                                     }.onFailure { e ->
                                         status = workspaceMessageFailureText("Delete message", e)
@@ -235,11 +245,11 @@ internal fun WorkspaceMessagesSheet(
                         val nextDraft = value.take(4000)
                         draft = nextDraft
                         if (parseWorkspaceContactCardText(nextDraft) != null) {
-                            status = "Contact card detected. Send to share it with workspace members."
+                            status = workspaceContactCardDetectedText
                         }
                     },
-                    label = { Text("New message") },
-                    placeholder = { Text("Write a note visible to workspace members...") },
+                    label = { Text(stringResource(R.string.workspace_new_message)) },
+                    placeholder = { Text(stringResource(R.string.workspace_new_message_placeholder)) },
                     minLines = 3,
                     maxLines = 6,
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
@@ -252,18 +262,18 @@ internal fun WorkspaceMessagesSheet(
                     horizontalArrangement = Arrangement.End
                 ) {
                     TextButton(onClick = { reload() }) {
-                        Text("Refresh")
+                        Text(stringResource(R.string.refresh))
                     }
                     Button(
                         enabled = !sending && draft.trim().isNotBlank(),
                         onClick = { sendDraft() }
                     ) {
-                        Text(if (sending) "Sending..." else "Send")
+                        Text(if (sending) stringResource(R.string.workspace_sending) else stringResource(R.string.workspace_send))
                     }
                 }
             } else {
                 Text(
-                    text = "You can read messages here, but this workspace role cannot post new ones.",
+                    text = stringResource(R.string.workspace_no_write),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -272,7 +282,7 @@ internal fun WorkspaceMessagesSheet(
                     horizontalArrangement = Arrangement.End
                 ) {
                     TextButton(onClick = { reload() }) {
-                        Text("Refresh")
+                        Text(stringResource(R.string.refresh))
                     }
                 }
             }
@@ -541,7 +551,7 @@ private fun WorkspaceContactMessageBody(
                             )
                         }
                     ) {
-                        Text("Copy contact")
+                        Text(stringResource(R.string.workspace_copy_contact))
                     }
 
                     if (card.email.isNotBlank()) {
@@ -550,7 +560,7 @@ private fun WorkspaceContactMessageBody(
                                 onCopy("Email", card.email, "Email copied.")
                             }
                         ) {
-                            Text("Email")
+                            Text(stringResource(R.string.workspace_copy_email))
                         }
                     }
 
@@ -564,7 +574,7 @@ private fun WorkspaceContactMessageBody(
                                 )
                             }
                         ) {
-                            Text("Phone")
+                            Text(stringResource(R.string.workspace_copy_phone))
                         }
                     }
                 }
@@ -579,7 +589,7 @@ private fun WorkspaceContactMessageBody(
                                 onCopy("Address", card.address, "Address copied.")
                             }
                         ) {
-                            Text("Address")
+                            Text(stringResource(R.string.workspace_copy_address))
                         }
                     }
 
@@ -589,7 +599,7 @@ private fun WorkspaceContactMessageBody(
                                 onCopy("Website", card.website, "Website copied.")
                             }
                         ) {
-                            Text("Website")
+                            Text(stringResource(R.string.workspace_copy_website))
                         }
                     }
                 }
