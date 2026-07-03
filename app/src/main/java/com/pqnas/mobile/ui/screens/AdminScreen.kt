@@ -33,6 +33,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import com.pqnas.mobile.R
 import com.pqnas.mobile.admin.AdminRepository
 import com.pqnas.mobile.api.AdminUserDto
 import kotlinx.coroutines.launch
@@ -45,10 +48,11 @@ fun AdminScreen(
     onBack: () -> Unit
 ) {
     val scope = rememberCoroutineScope()
+    val context = LocalContext.current
 
     var users by remember { mutableStateOf<List<AdminUserDto>>(emptyList()) }
     var loading by remember { mutableStateOf(true) }
-    var status by remember { mutableStateOf("Loading admin data...") }
+    var status by remember { mutableStateOf(context.getString(R.string.admin_status_loading)) }
     var approvalsOnly by remember { mutableStateOf(true) }
     var filter by remember { mutableStateOf("") }
     var reloadKey by remember { mutableIntStateOf(0) }
@@ -61,12 +65,12 @@ fun AdminScreen(
 
     LaunchedEffect(reloadKey) {
         loading = true
-        status = "Loading admin data..."
+        status = context.getString(R.string.admin_status_loading)
         try {
             users = repository.users().sortedBy { it.fingerprint.lowercase(Locale.ROOT) }
-            status = "Loaded ${users.size} users"
+            status = context.getString(R.string.admin_status_loaded_users, users.size)
         } catch (e: Throwable) {
-            status = e.message ?: "Failed to load admin data"
+            status = e.message ?: context.getString(R.string.admin_status_load_failed)
         } finally {
             loading = false
         }
@@ -74,13 +78,13 @@ fun AdminScreen(
 
     fun runAction(label: String, block: suspend () -> Unit) {
         scope.launch {
-            status = "$label..."
+            status = context.getString(R.string.admin_status_action_running, label)
             try {
                 block()
-                status = "$label OK"
+                status = context.getString(R.string.admin_status_action_ok, label)
                 reload()
             } catch (e: Throwable) {
-                status = e.message ?: "$label failed"
+                status = e.message ?: context.getString(R.string.admin_status_action_failed, label)
             }
         }
     }
@@ -117,22 +121,22 @@ fun AdminScreen(
     ) {
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             Button(onClick = onBack) {
-                Text("Back", color = MaterialTheme.colorScheme.onPrimary)
+                Text(stringResource(R.string.admin_back), color = MaterialTheme.colorScheme.onPrimary)
             }
 
             OutlinedButton(onClick = { reload() }) {
-                Text("Refresh", color = MaterialTheme.colorScheme.primary)
+                Text(stringResource(R.string.admin_refresh), color = MaterialTheme.colorScheme.primary)
             }
         }
 
         Text(
-            text = "Admin tools",
+            text = stringResource(R.string.admin_title),
             style = MaterialTheme.typography.headlineSmall,
             color = MaterialTheme.colorScheme.onBackground
         )
 
         Text(
-            text = "Approvals, enable/disable, revoke, and user storage allocation.",
+            text = stringResource(R.string.admin_subtitle),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onBackground
         )
@@ -140,21 +144,21 @@ fun AdminScreen(
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             if (approvalsOnly) {
                 Button(onClick = { approvalsOnly = true }) {
-                    Text("Approvals")
+                    Text(stringResource(R.string.admin_approvals))
                 }
             } else {
                 OutlinedButton(onClick = { approvalsOnly = true }) {
-                    Text("Approvals")
+                    Text(stringResource(R.string.admin_approvals))
                 }
             }
 
             if (!approvalsOnly) {
                 Button(onClick = { approvalsOnly = false }) {
-                    Text("All users")
+                    Text(stringResource(R.string.admin_all_users))
                 }
             } else {
                 OutlinedButton(onClick = { approvalsOnly = false }) {
-                    Text("All users")
+                    Text(stringResource(R.string.admin_all_users))
                 }
             }
         }
@@ -162,7 +166,7 @@ fun AdminScreen(
         OutlinedTextField(
             value = filter,
             onValueChange = { filter = it },
-            label = { Text("Filter users") },
+            label = { Text(stringResource(R.string.admin_filter_users)) },
             singleLine = true,
             modifier = Modifier.fillMaxWidth()
         )
@@ -190,12 +194,12 @@ fun AdminScreen(
                     AdminUserCard(
                         user = user,
                         onEnable = {
-                            runAction("Enable user") {
+                            runAction(context.getString(R.string.admin_action_enable_user)) {
                                 repository.enable(user.fingerprint)
                             }
                         },
                         onDisable = {
-                            runAction("Disable user") {
+                            runAction(context.getString(R.string.admin_action_disable_user)) {
                                 repository.disable(user.fingerprint)
                             }
                         },
@@ -217,7 +221,7 @@ fun AdminScreen(
             onCancel = { allocateUser = null },
             onAllocate = { gb ->
                 allocateUser = null
-                runAction("Allocate storage") {
+                runAction(context.getString(R.string.admin_action_allocate_storage)) {
                     repository.allocateStorageGb(user.fingerprint, gb)
                 }
             }
@@ -227,33 +231,33 @@ fun AdminScreen(
     revokeUser?.let { user ->
         AlertDialog(
             onDismissRequest = { revokeUser = null },
-            title = { Text("Revoke user?") },
+            title = { Text(stringResource(R.string.admin_revoke_user_title)) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(userDisplayName(user))
+                    Text(userDisplayName(user, stringResource(R.string.admin_unnamed_user)))
                     Text(
                         text = user.fingerprint,
                         fontFamily = FontFamily.Monospace,
                         style = MaterialTheme.typography.bodySmall
                     )
-                    Text("Revoked users are hard-blocked from logging in.")
+                    Text(stringResource(R.string.admin_revoke_warning))
                 }
             },
             confirmButton = {
                 TextButton(
                     onClick = {
                         revokeUser = null
-                        runAction("Revoke user") {
+                        runAction(context.getString(R.string.admin_action_revoke_user)) {
                             repository.revoke(user.fingerprint)
                         }
                     }
                 ) {
-                    Text("Revoke")
+                    Text(stringResource(R.string.admin_revoke))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { revokeUser = null }) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.admin_cancel))
                 }
             }
         )
@@ -281,25 +285,25 @@ private fun AdminUserCard(
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Text(
-                text = userDisplayName(user),
+                text = userDisplayName(user, stringResource(R.string.admin_unnamed_user)),
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.onSurface
             )
 
             Text(
-                text = "Role: $role  •  Status: $status",
+                text = stringResource(R.string.admin_role_status, role, status),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurface
             )
 
             Text(
-                text = "Storage: $storageState  •  Pool: $pool",
+                text = stringResource(R.string.admin_storage_pool, storageState, pool),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
 
             Text(
-                text = "Used: ${fmtBytes(used)} / Quota: ${if (quota > 0) fmtBytes(quota) else "not allocated"}",
+                text = stringResource(R.string.admin_used_quota, fmtBytes(used), if (quota > 0) fmtBytes(quota) else stringResource(R.string.admin_not_allocated)),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -320,19 +324,19 @@ private fun AdminUserCard(
 
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Button(onClick = onEnable) {
-                    Text("Enable")
+                    Text(stringResource(R.string.admin_enable))
                 }
 
                 OutlinedButton(onClick = onDisable) {
-                    Text("Disable")
+                    Text(stringResource(R.string.admin_disable))
                 }
 
                 OutlinedButton(onClick = onAllocate) {
-                    Text("Space")
+                    Text(stringResource(R.string.admin_space))
                 }
 
                 OutlinedButton(onClick = onRevoke) {
-                    Text("Revoke")
+                    Text(stringResource(R.string.admin_revoke))
                 }
             }
         }
@@ -353,10 +357,10 @@ private fun AllocateStorageDialog(
 
     AlertDialog(
         onDismissRequest = onCancel,
-        title = { Text("Allocate storage") },
+        title = { Text(stringResource(R.string.admin_allocate_storage_title)) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                Text(userDisplayName(user))
+                Text(userDisplayName(user, stringResource(R.string.admin_unnamed_user)))
                 Text(
                     text = user.fingerprint,
                     fontFamily = FontFamily.Monospace,
@@ -368,13 +372,13 @@ private fun AllocateStorageDialog(
                     onValueChange = { raw ->
                         gbText = raw.filter { it.isDigit() }.take(6)
                     },
-                    label = { Text("Quota in GB") },
+                    label = { Text(stringResource(R.string.admin_quota_gb)) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
 
                 Text(
-                    text = "This mobile v1 uses the default storage pool.",
+                    text = stringResource(R.string.admin_default_pool_note),
                     style = MaterialTheme.typography.bodySmall
                 )
             }
@@ -386,25 +390,25 @@ private fun AllocateStorageDialog(
                     onAllocate(gb)
                 }
             ) {
-                Text("Allocate")
+                Text(stringResource(R.string.admin_allocate))
             }
         },
         dismissButton = {
             TextButton(onClick = onCancel) {
-                Text("Cancel")
+                Text(stringResource(R.string.admin_cancel))
             }
         }
     )
 }
 
-private fun userDisplayName(user: AdminUserDto): String {
+private fun userDisplayName(user: AdminUserDto, fallback: String): String {
     return user.name
         ?.trim()
         ?.takeIf { it.isNotBlank() }
         ?: user.email
             ?.trim()
             ?.takeIf { it.isNotBlank() }
-        ?: "Unnamed user"
+        ?: fallback
 }
 
 private fun bytesToGb(bytes: Long): Long {
