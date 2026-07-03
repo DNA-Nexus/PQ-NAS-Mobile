@@ -53,6 +53,9 @@ DEFAULT_ALLOWED_SAME_AS_BASE = {
 
     # Standard short status token, intentionally same in Finnish.
     "text_editor_status_ok",
+
+    # Standard URL field label, intentionally same in Finnish.
+    "workspace_url_label",
 }
 
 

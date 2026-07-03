@@ -66,9 +66,11 @@ internal fun WorkspaceMessagesSheet(
 ) {
     val scope = rememberCoroutineScope()
     val focusManager = LocalFocusManager.current
+    val context = LocalContext.current
     var reloadNonce by remember { mutableIntStateOf(0) }
     var loading by remember { mutableStateOf(false) }
     var status by remember { mutableStateOf("") }
+    var statusIsError by remember { mutableStateOf(false) }
     var messages by remember { mutableStateOf<List<WorkspaceMessageDto>>(emptyList()) }
     var draft by remember { mutableStateOf("") }
     var sending by remember { mutableStateOf(false) }
@@ -85,9 +87,14 @@ internal fun WorkspaceMessagesSheet(
         reloadNonce += 1
     }
 
+    fun setWorkspaceStatus(value: String, isError: Boolean = false) {
+        status = value
+        statusIsError = isError
+    }
+
     LaunchedEffect(workspace.workspaceId, reloadNonce) {
         loading = true
-        status = workspaceMessagesLoadingText
+        setWorkspaceStatus(workspaceMessagesLoadingText)
         runCatching {
             filesRepository.listWorkspaceMessages(
                 workspaceId = workspace.workspaceId,
@@ -98,12 +105,12 @@ internal fun WorkspaceMessagesSheet(
                 messages = response.messages
                     .distinctBy { it.id }
                     .sortedBy { it.id }
-                status = "OK: ${messages.size} messages loaded for ${workspace.workspaceId}"
+                setWorkspaceStatus(context.getString(R.string.workspace_messages_loaded_status, messages.size, workspace.workspaceId))
             } else {
-                status = response.message ?: response.error ?: workspaceMessagesLoadFailedText
+                setWorkspaceStatus(response.message ?: response.error ?: workspaceMessagesLoadFailedText, isError = true)
             }
         }.onFailure { e ->
-            status = workspaceMessageFailureText("Load messages", e)
+            setWorkspaceStatus(workspaceMessageFailureText(context, context.getString(R.string.workspace_action_load_messages), e), isError = true)
         }
         loading = false
     }
@@ -118,7 +125,7 @@ internal fun WorkspaceMessagesSheet(
 
         scope.launch {
             sending = true
-            status = workspaceSendingText
+            setWorkspaceStatus(workspaceSendingText)
             runCatching {
                 filesRepository.postWorkspaceMessage(
                     workspaceId = workspace.workspaceId,
@@ -132,13 +139,13 @@ internal fun WorkspaceMessagesSheet(
                             .distinctBy { it.id }
                             .sortedBy { it.id }
                     }
-                    status = "Message sent. Local list now has ${messages.size} messages."
+                    setWorkspaceStatus(context.getString(R.string.workspace_message_sent_status, messages.size))
                     reload()
                 } else {
-                    status = response.error ?: "Send failed."
+                    setWorkspaceStatus(response.error ?: context.getString(R.string.workspace_send_failed), isError = true)
                 }
             }.onFailure { e ->
-                status = workspaceMessageFailureText("Send message", e)
+                setWorkspaceStatus(workspaceMessageFailureText(context, context.getString(R.string.workspace_action_send_message), e), isError = true)
             }
             sending = false
         }
@@ -172,20 +179,10 @@ internal fun WorkspaceMessagesSheet(
                 Text(
                     text = status,
                     style = MaterialTheme.typography.bodyMedium,
-                    color = if (
-                        status == "OK" ||
-                        status.startsWith("OK:") ||
-                        status.startsWith("No ") ||
-                        status.startsWith("Loading") ||
-                        status.startsWith("Sending") ||
-                        status.startsWith("Contact card") ||
-                        status.endsWith("copied.") ||
-                        status.startsWith("Message sent") ||
-                        status.startsWith("Message deleted")
-                    ) {
-                        MaterialTheme.colorScheme.onSurfaceVariant
-                    } else {
+                    color = if (statusIsError) {
                         MaterialTheme.colorScheme.error
+                    } else {
+                        MaterialTheme.colorScheme.onSurfaceVariant
                     }
                 )
             }
@@ -216,20 +213,20 @@ internal fun WorkspaceMessagesSheet(
                     items(messages, key = { it.id }) { message ->
                         WorkspaceMessageRow(
                             message = message,
-                            onStatus = { status = it },
+                            onStatus = { value, isError -> setWorkspaceStatus(value, isError = isError) },
                             onDelete = {
                                 scope.launch {
-                                    status = workspaceDeletingText
+                                    setWorkspaceStatus(workspaceDeletingText)
                                     runCatching {
                                         filesRepository.deleteWorkspaceMessage(
                                             workspaceId = workspace.workspaceId,
                                             messageId = message.id
                                         )
                                     }.onSuccess { response ->
-                                        status = if (response.ok) workspaceMessageDeletedText else response.message ?: response.error ?: workspaceDeleteFailedText
+                                        setWorkspaceStatus(if (response.ok) workspaceMessageDeletedText else response.message ?: response.error ?: workspaceDeleteFailedText, isError = !response.ok)
                                         reload()
                                     }.onFailure { e ->
-                                        status = workspaceMessageFailureText("Delete message", e)
+                                        setWorkspaceStatus(workspaceMessageFailureText(context, context.getString(R.string.workspace_action_delete_message), e), isError = true)
                                     }
                                 }
                             }
@@ -295,7 +292,7 @@ internal fun WorkspaceMessagesSheet(
 @Composable
 private fun WorkspaceMessageRow(
     message: WorkspaceMessageDto,
-    onStatus: (String) -> Unit,
+    onStatus: (String, Boolean) -> Unit,
     onDelete: () -> Unit
 ) {
     val context = LocalContext.current
@@ -322,7 +319,7 @@ private fun WorkspaceMessageRow(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
-                    text = message.author_name.ifBlank { if (message.is_own) "Me" else "Member" },
+                    text = message.author_name.ifBlank { if (message.is_own) stringResource(R.string.workspace_author_me) else stringResource(R.string.workspace_author_member) },
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface
                 )
@@ -358,7 +355,7 @@ private fun WorkspaceMessageRow(
                 HorizontalDivider()
                 message.attachments.forEach { attachment ->
                     Text(
-                        text = "Attachment: " + attachment.label.ifBlank { attachment.name.ifBlank { attachment.path } },
+                        text = stringResource(R.string.workspace_attachment, attachment.label.ifBlank { attachment.name.ifBlank { attachment.path } }),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -371,7 +368,7 @@ private fun WorkspaceMessageRow(
                     horizontalArrangement = Arrangement.End
                 ) {
                     TextButton(onClick = onDelete) {
-                        Text("Delete")
+                        Text(stringResource(R.string.workspace_delete))
                     }
                 }
             }
@@ -464,6 +461,7 @@ private fun WorkspaceContactMessageBody(
     parsed: ParsedWorkspaceContactCard,
     onCopy: (label: String, value: String, success: String) -> Unit
 ) {
+    val context = LocalContext.current
     val card = parsed.card
 
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -493,7 +491,7 @@ private fun WorkspaceContactMessageBody(
                         Text(
                             text = card.name.ifBlank {
                                 card.company.ifBlank {
-                                    card.email.ifBlank { "Contact card" }
+                                    card.email.ifBlank { stringResource(R.string.workspace_contact_card) }
                                 }
                             },
                             style = MaterialTheme.typography.titleMedium,
@@ -515,22 +513,22 @@ private fun WorkspaceContactMessageBody(
                     }
 
                     Text(
-                        text = "Contact",
+                        text = stringResource(R.string.workspace_contact_badge),
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.primary
                     )
                 }
 
-                WorkspaceContactLine("Email", card.email)
-                WorkspaceContactLine("Phone", card.phone)
-                WorkspaceContactLine("Mobile", card.mobile)
-                WorkspaceContactLine("Website", card.website)
-                WorkspaceContactLine("Address", card.address)
-                WorkspaceContactLine("Tags", card.tags)
+                WorkspaceContactLine(stringResource(R.string.workspace_contact_email), card.email)
+                WorkspaceContactLine(stringResource(R.string.workspace_contact_phone), card.phone)
+                WorkspaceContactLine(stringResource(R.string.workspace_contact_mobile), card.mobile)
+                WorkspaceContactLine(stringResource(R.string.workspace_contact_website), card.website)
+                WorkspaceContactLine(stringResource(R.string.workspace_contact_address), card.address)
+                WorkspaceContactLine(stringResource(R.string.workspace_contact_tags), card.tags)
 
                 if (card.identity.isNotBlank()) {
                     Text(
-                        text = "Identity: ${card.identity}",
+                        text = stringResource(R.string.workspace_contact_identity, card.identity),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -545,9 +543,9 @@ private fun WorkspaceContactMessageBody(
                     TextButton(
                         onClick = {
                             onCopy(
-                                "Contact card",
+                                context.getString(R.string.workspace_contact_card),
                                 formatWorkspaceContactCardForClipboard(card),
-                                "Contact copied."
+                                context.getString(R.string.workspace_contact_copied)
                             )
                         }
                     ) {
@@ -557,7 +555,7 @@ private fun WorkspaceContactMessageBody(
                     if (card.email.isNotBlank()) {
                         TextButton(
                             onClick = {
-                                onCopy("Email", card.email, "Email copied.")
+                                onCopy(context.getString(R.string.workspace_contact_email), card.email, context.getString(R.string.workspace_email_copied))
                             }
                         ) {
                             Text(stringResource(R.string.workspace_copy_email))
@@ -568,9 +566,9 @@ private fun WorkspaceContactMessageBody(
                         TextButton(
                             onClick = {
                                 onCopy(
-                                    "Phone",
+                                    context.getString(R.string.workspace_contact_phone),
                                     card.phone.ifBlank { card.mobile },
-                                    "Phone copied."
+                                    context.getString(R.string.workspace_phone_copied)
                                 )
                             }
                         ) {
@@ -586,7 +584,7 @@ private fun WorkspaceContactMessageBody(
                     if (card.address.isNotBlank()) {
                         TextButton(
                             onClick = {
-                                onCopy("Address", card.address, "Address copied.")
+                                onCopy(context.getString(R.string.workspace_contact_address), card.address, context.getString(R.string.workspace_address_copied))
                             }
                         ) {
                             Text(stringResource(R.string.workspace_copy_address))
@@ -596,7 +594,7 @@ private fun WorkspaceContactMessageBody(
                     if (card.website.isNotBlank()) {
                         TextButton(
                             onClick = {
-                                onCopy("Website", card.website, "Website copied.")
+                                onCopy(context.getString(R.string.workspace_contact_website), card.website, context.getString(R.string.workspace_website_copied))
                             }
                         ) {
                             Text(stringResource(R.string.workspace_copy_website))
@@ -648,11 +646,11 @@ private fun copyWorkspaceContactValue(
     label: String,
     value: String,
     success: String,
-    onStatus: (String) -> Unit
+    onStatus: (String, Boolean) -> Unit
 ) {
     val clean = value.trim()
     if (clean.isBlank()) {
-        onStatus("Nothing to copy.")
+        onStatus(context.getString(R.string.workspace_nothing_to_copy), true)
         return
     }
 
@@ -660,9 +658,9 @@ private fun copyWorkspaceContactValue(
         val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
         clipboard.setPrimaryClip(ClipData.newPlainText(label, clean))
     }.onSuccess {
-        onStatus(success)
+        onStatus(success, false)
     }.onFailure {
-        onStatus("Copy failed.")
+        onStatus(context.getString(R.string.workspace_copy_failed), true)
     }
 }
 
@@ -673,36 +671,38 @@ internal fun WorkspaceUrlLinkDialog(
     onDismiss: () -> Unit,
     onSave: (title: String, url: String) -> Unit
 ) {
+    val context = LocalContext.current
+
     var title by remember { mutableStateOf("") }
     var url by remember { mutableStateOf("") }
     var error by remember { mutableStateOf("") }
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Save URL link") },
+        title = { Text(stringResource(R.string.workspace_save_url_link)) },
         text = {
             Column(
                 modifier = Modifier.verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 Text(
-                    text = "Create a small .url shortcut file in this workspace" +
-                            (currentPath?.let { " at /$it" } ?: " root") + ".",
+                    text = currentPath?.let { stringResource(R.string.workspace_url_shortcut_at_path, it) }
+                            ?: stringResource(R.string.workspace_url_shortcut_root),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 OutlinedTextField(
                     value = title,
                     onValueChange = { title = it.take(120) },
-                    label = { Text("Title") },
-                    placeholder = { Text("Example: Supplier portal") },
+                    label = { Text(stringResource(R.string.workspace_url_title)) },
+                    placeholder = { Text(stringResource(R.string.workspace_url_title_placeholder)) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
                 OutlinedTextField(
                     value = url,
                     onValueChange = { url = it.trim().take(2048) },
-                    label = { Text("URL") },
+                    label = { Text(stringResource(R.string.workspace_url_label)) },
                     placeholder = { Text("https://example.com") },
                     singleLine = false,
                     minLines = 2,
@@ -723,18 +723,18 @@ internal fun WorkspaceUrlLinkDialog(
                 onClick = {
                     val cleanUrl = url.trim()
                     if (!isSafeHttpUrlForWorkspaceShortcut(cleanUrl)) {
-                        error = "Only http:// and https:// links are accepted."
+                        error = context.getString(R.string.workspace_url_only_http)
                         return@TextButton
                     }
                     onSave(title.trim(), cleanUrl)
                 }
             ) {
-                Text("Save")
+                Text(stringResource(R.string.workspace_save))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancel")
+                Text(stringResource(R.string.workspace_cancel))
             }
         }
     )
@@ -774,7 +774,7 @@ internal fun isSafeHttpUrlForWorkspaceShortcut(url: String): Boolean {
 
 
 // PQNAS_ANDROID_WORKSPACE_MESSAGE_ERROR_VISIBILITY_V1
-private fun workspaceMessageFailureText(prefix: String, e: Throwable): String {
+private fun workspaceMessageFailureText(context: Context, prefix: String, e: Throwable): String {
     if (e is HttpException) {
         val code = e.code()
         val rawBody = runCatching {
@@ -785,17 +785,17 @@ private fun workspaceMessageFailureText(prefix: String, e: Throwable): String {
             .ifBlank { e.message.orEmpty() }
 
         return if (detail.isNotBlank()) {
-            "$prefix failed (HTTP $code): $detail"
+            context.getString(R.string.workspace_error_http_detail, prefix, code, detail)
         } else {
-            "$prefix failed (HTTP $code)"
+            context.getString(R.string.workspace_error_http, prefix, code)
         }
     }
 
     val msg = e.message
         ?: e::class.java.simpleName.takeIf { it.isNotBlank() }
-        ?: "unknown error"
+        ?: context.getString(R.string.workspace_unknown_error)
 
-    return "$prefix failed: $msg"
+    return context.getString(R.string.workspace_error_failed_detail, prefix, msg)
 }
 
 private fun workspaceMessageErrorDetail(rawBody: String): String {
