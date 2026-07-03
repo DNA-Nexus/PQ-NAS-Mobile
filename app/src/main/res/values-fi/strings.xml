@@ -79,6 +79,12 @@
     <string name="files_cached_refreshing">Välimuistissa olevat tiedostot — päivitetään...</string>
     <string name="files_loading">Ladataan...</string>
     <string name="files_loading_favorites">Ladataan suosikkeja...</string>
+    <string name="files_removed_from_favorites">Poistettu suosikeista: %1$s</string>
+    <string name="files_added_to_favorites">Lisätty suosikkeihin: %1$s</string>
+    <string name="files_downloading_item">Ladataan %1$s...</string>
+    <string name="files_saved_to_download">Tallennettu kansioon Download/%1$s</string>
+    <string name="files_file_already_exists">Tiedosto on jo olemassa: %1$s</string>
+    <string name="files_no_files_selected">Tiedostoja ei ole valittu.</string>
     <string name="menu_add_to_favorites">Lisää suosikkeihin</string>
     <string name="menu_remove_from_favorites">Poista suosikeista</string>
     <string name="menu_share">Jaa</string>

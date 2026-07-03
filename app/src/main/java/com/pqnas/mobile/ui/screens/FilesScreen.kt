@@ -662,12 +662,12 @@ fun FilesScreen(
                 val fullPath = itemFullPath(item)
                 if (item.isFavorite) {
                     filesRepository.removeFavorite(fullPath, item.type)
-                    status = "Removed from favorites: ${item.name}"
-                    snackbarHostState.showSnackbar("Removed from favorites: ${item.name}")
+                    status = context.getString(R.string.files_removed_from_favorites, item.name)
+                    snackbarHostState.showSnackbar(context.getString(R.string.files_removed_from_favorites, item.name))
                 } else {
                     filesRepository.addFavorite(fullPath, item.type)
-                    status = "Added to favorites: ${item.name}"
-                    snackbarHostState.showSnackbar("Added to favorites: ${item.name}")
+                    status = context.getString(R.string.files_added_to_favorites, item.name)
+                    snackbarHostState.showSnackbar(context.getString(R.string.files_added_to_favorites, item.name))
                 }
                 load(currentPath)
             } catch (e: Exception) {
@@ -1139,7 +1139,7 @@ fun FilesScreen(
 
         scope.launch {
             try {
-                status = "Downloading ${item.name}..."
+                status = context.getString(R.string.files_downloading_item, item.name)
                 val fullPath = buildItemPath(currentPath, item.name)
                 val body = scopedOps.download(currentScope, fullPath)
 
@@ -1158,7 +1158,7 @@ fun FilesScreen(
                 }
 
                 status = "OK"
-                snackbarHostState.showSnackbar("Saved to Download/${item.name}")
+                snackbarHostState.showSnackbar(context.getString(R.string.files_saved_to_download, item.name))
             } catch (e: Exception) {
                 val msg = friendlyHttpMessage("Download", e)
                 status = msg
@@ -1194,7 +1194,7 @@ fun FilesScreen(
                     overwriteUploadUri = uri
                     pendingUploadUri = uri
                     pendingUploadName = safeFileName
-                    status = "File already exists: $safeFileName"
+                    status = context.getString(R.string.files_file_already_exists, safeFileName)
                     return@launch
                 }
 
@@ -1297,7 +1297,7 @@ fun FilesScreen(
                     overwriteUploadUri = uri
                     pendingUploadUri = uri
                     pendingUploadName = fileName
-                    status = "File already exists: $fileName"
+                    status = context.getString(R.string.files_file_already_exists, fileName)
                 } else {
                     val msg = friendlyHttpMessage("Upload", e)
                     status = msg
@@ -1317,7 +1317,7 @@ fun FilesScreen(
             .distinctBy { it.toString() }
 
         if (selectedUris.isEmpty()) {
-            status = "No files selected."
+            status = context.getString(R.string.files_no_files_selected)
             return
         }
 
@@ -1506,7 +1506,7 @@ fun FilesScreen(
         }
 
         if (!scopedOps.canWrite(destinationScope)) {
-            status = "You do not have write access here."
+            status = context.getString(R.string.move_copy_no_write_access)
             scope.launch { snackbarHostState.showSnackbar(status) }
             onIncomingShareConsumed()
             return
