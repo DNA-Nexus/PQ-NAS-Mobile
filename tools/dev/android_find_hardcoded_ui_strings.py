@@ -90,6 +90,17 @@ ALLOW_EXACT = {
     # not prose that should be translated.
     "OK",
     "SHA-256: ${shortSha(sha)}",
+
+    # File screen icon-only labels and compact technical badges.
+    # These are intentional visual tokens, not translatable prose.
+    "✎",
+    "↑",
+    "↑↑",
+    "📁",
+    "📁 ${folder.name}",
+    "TXT",
+    "🔗",
+    "★",
 }
 
 ALLOW_PREFIXES = (
