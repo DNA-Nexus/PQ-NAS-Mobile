@@ -50,6 +50,9 @@ DEFAULT_ALLOWED_SAME_AS_BASE = {
 
     # Default device label is a product/platform name.
     "pair_default_device_name",
+
+    # Standard short status token, intentionally same in Finnish.
+    "text_editor_status_ok",
 }
 
 
