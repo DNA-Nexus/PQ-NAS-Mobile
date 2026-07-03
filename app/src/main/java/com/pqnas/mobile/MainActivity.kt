@@ -1,5 +1,6 @@
 package com.pqnas.mobile
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.WindowManager
@@ -20,6 +21,7 @@ import com.pqnas.mobile.ui.screens.AppLockScreen
 import com.pqnas.mobile.ui.screens.FilesScreen
 import com.pqnas.mobile.ui.screens.PairConfirmScreen
 import com.pqnas.mobile.ui.screens.ScanPairQrScreen
+import com.pqnas.mobile.ui.settings.PqnasAppLanguageStore
 import com.pqnas.mobile.ui.screens.ServerSetupScreen
 import com.pqnas.mobile.ui.theme.PQNASTheme
 import com.pqnas.mobile.ui.theme.PqnasThemeStore
@@ -34,6 +36,10 @@ import com.pqnas.mobile.contacts.ContactsRepository
 import com.pqnas.mobile.ui.screens.ContactsScreen
 
 class MainActivity : FragmentActivity() {
+    override fun attachBaseContext(newBase: Context) {
+        super.attachBaseContext(PqnasAppLanguageStore.wrapContext(newBase))
+    }
+
     // PQNAS_INCOMING_ANDROID_SHARE_V1
     private var incomingShareHandler: ((Intent) -> Unit)? = null
 
@@ -59,6 +65,8 @@ class MainActivity : FragmentActivity() {
 
         setContent {
             val context = LocalContext.current
+            val languageStore = remember { PqnasAppLanguageStore(context) }
+            var appLanguage by remember { mutableStateOf(languageStore.loadLanguage()) }
             val themeStore = remember { PqnasThemeStore(context) }
             var appTheme by remember { mutableStateOf(themeStore.loadTheme()) }
 
@@ -387,6 +395,12 @@ class MainActivity : FragmentActivity() {
                                 onAppThemeChange = { nextTheme ->
                                     appTheme = nextTheme
                                     themeStore.saveTheme(nextTheme)
+                                },
+                                appLanguage = appLanguage,
+                                onAppLanguageChange = { nextLanguage ->
+                                    languageStore.saveLanguage(nextLanguage)
+                                    appLanguage = nextLanguage
+                                    this@MainActivity.recreate()
                                 },
                                 onLogout = {
                                     logoutToServerScreen()

@@ -49,9 +49,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.pqnas.mobile.R
 import com.pqnas.mobile.api.ShareItemDto
 import com.pqnas.mobile.files.FilesRepository
 import kotlinx.coroutines.launch
@@ -59,11 +61,11 @@ import retrofit2.HttpException
 import java.time.Instant
 import java.util.Locale
 
-private enum class ShareFilter(val label: String) {
-    ALL("All"),
-    ACTIVE("Active"),
-    EXPIRED("Expired"),
-    NO_EXPIRY("No expiry")
+private enum class ShareFilter(val labelRes: Int) {
+    ALL(R.string.shares_filter_all),
+    ACTIVE(R.string.shares_filter_active),
+    EXPIRED(R.string.shares_filter_expired),
+    NO_EXPIRY(R.string.shares_filter_no_expiry)
 }
 
 private val SHARE_FILTERS = listOf(
@@ -87,7 +89,7 @@ fun SharesManagerScreen(
     var searchQuery by remember { mutableStateOf("") }
     var selectedFilter by remember { mutableStateOf(ShareFilter.ALL) }
     var loading by remember { mutableStateOf(false) }
-    var status by remember { mutableStateOf("Loading shares...") }
+    var status by remember { mutableStateOf(context.getString(R.string.shares_loading)) }
     var revokeItem by remember { mutableStateOf<ShareItemDto?>(null) }
 
     val baseUrl = remember(filesRepository) {
@@ -97,18 +99,18 @@ fun SharesManagerScreen(
     fun loadShares() {
         scope.launch {
             loading = true
-            status = "Loading shares..."
+            status = context.getString(R.string.shares_loading)
             try {
                 val resp = filesRepository.getShares()
 
                 if (!resp.ok) {
-                    throw IllegalStateException("Share list failed")
+                    throw IllegalStateException(context.getString(R.string.shares_list_failed))
                 }
 
                 shares = resp.shares
                 status = "OK"
             } catch (e: Exception) {
-                status = friendlySharesManagerMessage("Load shares", e)
+                status = friendlySharesManagerMessage(context, context.getString(R.string.shares_action_load), e)
             } finally {
                 loading = false
             }
@@ -181,7 +183,7 @@ fun SharesManagerScreen(
                     onValueChange = { searchQuery = it },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
-                    label = { Text("Search shares") },
+                    label = { Text(stringResource(R.string.shares_search_label)) },
                     enabled = !loading
                 )
 
@@ -192,14 +194,14 @@ fun SharesManagerScreen(
                         FilterChip(
                             selected = selectedFilter == filter,
                             onClick = { selectedFilter = filter },
-                            label = { Text(filter.label) },
+                            label = { Text(stringResource(filter.labelRes)) },
                             enabled = !loading
                         )
                     }
                 }
 
                 Text(
-                    text = "Showing ${filteredShares.size} / ${shares.size} shares",
+                    text = stringResource(R.string.shares_showing_count, filteredShares.size, shares.size),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -246,15 +248,15 @@ fun SharesManagerScreen(
                                 verticalArrangement = Arrangement.spacedBy(6.dp)
                             ) {
                                 Text(
-                                    text = if (shares.isEmpty()) "No shares yet" else "No shares match the current filter",
+                                    text = if (shares.isEmpty()) stringResource(R.string.shares_empty_title) else stringResource(R.string.shares_empty_filtered_title),
                                     style = MaterialTheme.typography.titleMedium,
                                     color = MaterialTheme.colorScheme.onSurface
                                 )
                                 Text(
                                     text = if (shares.isEmpty()) {
-                                        "Create a share from the files screen and it will appear here."
+                                        stringResource(R.string.shares_empty_desc)
                                     } else {
-                                        "Try another search or filter."
+                                        stringResource(R.string.shares_empty_filtered_desc)
                                     },
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -279,7 +281,7 @@ fun SharesManagerScreen(
                                         val ok = copyShareText(context, fullUrl)
                                         scope.launch {
                                             snackbarHostState.showSnackbar(
-                                                if (ok) "Copied share link" else "Copy failed"
+                                                if (ok) context.getString(R.string.shares_copied_link) else context.getString(R.string.shares_copy_failed)
                                             )
                                         }
                                     },
@@ -298,9 +300,9 @@ fun SharesManagerScreen(
     revokeItem?.let { share ->
         AlertDialog(
             onDismissRequest = { revokeItem = null },
-            title = { Text("Revoke share?") },
+            title = { Text(stringResource(R.string.shares_revoke_title)) },
             text = {
-                Text("Revoke share for \"${share.path}\"?")
+                Text(stringResource(R.string.shares_revoke_confirm, share.path))
             },
             confirmButton = {
                 TextButton(
@@ -309,7 +311,7 @@ fun SharesManagerScreen(
                         if (token.isNullOrBlank()) {
                             revokeItem = null
                             scope.launch {
-                                snackbarHostState.showSnackbar("Cannot revoke: share token is missing")
+                                snackbarHostState.showSnackbar(context.getString(R.string.shares_revoke_missing_token))
                             }
                             return@TextButton
                         }
@@ -318,12 +320,12 @@ fun SharesManagerScreen(
                             try {
                                 filesRepository.revokeShare(token)
                                 revokeItem = null
-                                snackbarHostState.showSnackbar("Share revoked")
+                                snackbarHostState.showSnackbar(context.getString(R.string.shares_revoked))
                                 loadShares()
                             } catch (e: Exception) {
                                 revokeItem = null
                                 snackbarHostState.showSnackbar(
-                                    friendlySharesManagerMessage("Revoke share", e)
+                                    friendlySharesManagerMessage(context, context.getString(R.string.shares_action_revoke), e)
                                 )
                             }
                         }
@@ -332,14 +334,14 @@ fun SharesManagerScreen(
                         contentColor = MaterialTheme.colorScheme.error
                     )
                 ) {
-                    Text("Revoke")
+                    Text(stringResource(R.string.shares_revoke_button))
                 }
             },
             dismissButton = {
                 TextButton(
                     onClick = { revokeItem = null }
                 ) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.cancel))
                 }
             }
         )
@@ -361,9 +363,9 @@ private fun ShareCard(
     val expired = isExpiredIso(share.expires_at)
 
     val stateText = when {
-        expired -> "Expired"
-        share.expires_at.isNullOrBlank() -> "No expiry"
-        else -> "Active"
+        expired -> stringResource(R.string.shares_state_expired)
+        share.expires_at.isNullOrBlank() -> stringResource(R.string.shares_state_no_expiry)
+        else -> stringResource(R.string.shares_state_active)
     }
 
     Card(
@@ -388,7 +390,7 @@ private fun ShareCard(
             )
 
             Text(
-                text = "${if (share.type == "dir") "Directory" else "File"} • $stateText",
+                text = stringResource(R.string.shares_type_state, if (share.type == "dir") stringResource(R.string.shares_type_directory) else stringResource(R.string.shares_type_file), stateText),
                 style = MaterialTheme.typography.bodyMedium,
                 color = when {
                     expired -> MaterialTheme.colorScheme.error
@@ -398,13 +400,13 @@ private fun ShareCard(
             )
 
             Text(
-                text = "Expires: ${share.expires_at ?: "Never"}",
+                text = stringResource(R.string.shares_expires, share.expires_at ?: stringResource(R.string.shares_never)),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
 
             Text(
-                text = "Downloads: ${share.downloads ?: 0}",
+                text = stringResource(R.string.shares_downloads, share.downloads ?: 0),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -420,7 +422,7 @@ private fun ShareCard(
                 )
             } else {
                 Text(
-                    text = "Share link not available",
+                    text = stringResource(R.string.shares_link_not_available),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.error
                 )
@@ -433,7 +435,7 @@ private fun ShareCard(
                     onClick = { onCopy(fullUrl) },
                     enabled = fullUrl.isNotBlank()
                 ) {
-                    Text("Copy link")
+                    Text(stringResource(R.string.shares_copy_link))
                 }
 
                 Spacer(modifier = Modifier.width(8.dp))
@@ -445,7 +447,7 @@ private fun ShareCard(
                         contentColor = MaterialTheme.colorScheme.error
                     )
                 ) {
-                    Text("Revoke")
+                    Text(stringResource(R.string.shares_revoke_button))
                 }
             }
         }
@@ -542,6 +544,7 @@ private fun copyShareText(
 }
 
 private fun friendlySharesManagerMessage(
+    context: Context,
     action: String,
     error: Throwable
 ): String {
@@ -553,14 +556,15 @@ private fun friendlySharesManagerMessage(
             ?.toIntOrNull()
 
     return when (http) {
-        400 -> "$action failed: invalid request."
-        401 -> "Session expired. Please pair again."
-        403 -> "Access denied."
-        404 -> "Share not found."
-        500 -> "$action failed: server error."
+        400 -> context.getString(R.string.shares_error_invalid_request, action)
+        401 -> context.getString(R.string.shares_error_session_expired)
+        403 -> context.getString(R.string.shares_error_access_denied)
+        404 -> context.getString(R.string.shares_error_not_found)
+        500 -> context.getString(R.string.shares_error_server, action)
         else -> {
-            val msg = error.message?.takeIf { it.isNotBlank() } ?: "unknown error"
-            "$action failed: $msg"
+            val msg = error.message?.takeIf { it.isNotBlank() }
+                ?: context.getString(R.string.shares_unknown_error)
+            context.getString(R.string.shares_error_generic, action, msg)
         }
     }
 }

@@ -42,6 +42,8 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
@@ -51,6 +53,7 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -102,6 +105,7 @@ import kotlinx.coroutines.Job
 import com.pqnas.mobile.api.WorkspaceListItemDto
 import com.pqnas.mobile.files.FileScope
 import com.pqnas.mobile.ui.theme.PqnasAppTheme
+import com.pqnas.mobile.ui.settings.PqnasAppLanguage
 import com.pqnas.mobile.files.FileListCache
 import com.pqnas.mobile.files.ScopedFilesOps
 import com.pqnas.mobile.files.listWorkspaces
@@ -123,6 +127,8 @@ fun FilesScreen(
     onOpenAdmin: (() -> Unit)? = null,
     appTheme: PqnasAppTheme = PqnasAppTheme.Dark,
     onAppThemeChange: (PqnasAppTheme) -> Unit = {},
+    appLanguage: PqnasAppLanguage,
+    onAppLanguageChange: (PqnasAppLanguage) -> Unit,
     onBeforeExternalPicker: () -> Unit = {},
     incomingShareManifestPath: String? = null,
     incomingShareNonce: Int = 0,
@@ -167,6 +173,7 @@ fun FilesScreen(
     var shareDialogExpiry by remember { mutableStateOf(defaultShareExpiryOption()) }
 
     var showSettingsSheet by remember { mutableStateOf(false) }
+    var showAppSettingsDialog by remember { mutableStateOf(false) }
     var showAppsSheet by remember { mutableStateOf(false) }
     var showSharesManager by remember { mutableStateOf(false) }
     var showAboutDialog by remember { mutableStateOf(false) }
@@ -2563,11 +2570,6 @@ fun FilesScreen(
                 )
 
 
-                ThemeAppearanceSection(
-                    selectedTheme = appTheme,
-                    onThemeSelected = onAppThemeChange
-                )
-
                 SettingsStorageSection(
                     storage = myStorage,
                     storageStatus = storageStatus
@@ -2586,10 +2588,20 @@ fun FilesScreen(
                 }
 
                 Button(
+                    onClick = {
+                        showSettingsSheet = false
+                        showAppSettingsDialog = true
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(stringResource(R.string.app_settings))
+                }
+
+                Button(
                     onClick = { showAboutDialog = true },
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("About DNA-Nexus Files")
+                    Text(stringResource(R.string.about_dna_nexus_files))
                 }
 
                 Button(
@@ -2612,15 +2624,6 @@ fun FilesScreen(
                 ) {
                     Text(stringResource(R.string.refresh))
                 }
-                Button(
-                    onClick = {
-                        showSettingsSheet = false
-                        showSharesManager = true
-                    },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(stringResource(R.string.share_manager))
-                }
                 if (onLogout != null) {
                     Button(
                         onClick = {
@@ -2640,6 +2643,37 @@ fun FilesScreen(
 
         }
     }
+
+    if (showAppSettingsDialog) {
+        AlertDialog(
+            onDismissRequest = { showAppSettingsDialog = false },
+            title = {
+                Text(stringResource(R.string.app_settings))
+            },
+            text = {
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    ThemeDropdownSection(
+                        selectedTheme = appTheme,
+                        onThemeSelected = onAppThemeChange
+                    )
+
+                    LanguageDropdownSection(
+                        selectedLanguage = appLanguage,
+                        onLanguageSelected = onAppLanguageChange
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showAppSettingsDialog = false }) {
+                    Text(stringResource(R.string.close))
+                }
+            }
+        )
+    }
+
         if (showAppsSheet) {
             ModalBottomSheet(
                 onDismissRequest = { showAppsSheet = false }
@@ -2663,6 +2697,36 @@ fun FilesScreen(
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
+
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                showAppsSheet = false
+                                showSharesManager = true
+                            },
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant
+                        )
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            Text(
+                                text = stringResource(R.string.share_manager),
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+
+                            Text(
+                                text = stringResource(R.string.share_manager_desc),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
 
                     if (contactsAvailable && onOpenContacts != null) {
                         Card(
@@ -2793,7 +2857,7 @@ fun FilesScreen(
                         }
                     }
 
-                    if (appsChecked && !contactsAvailable && !circleStackAvailable && !echoStackAvailable && !dropZoneAvailable) {
+                    if (false && appsChecked && !contactsAvailable && !circleStackAvailable && !echoStackAvailable && !dropZoneAvailable) {
                         Text(
                             text = stringResource(R.string.no_mobile_apps_available),
                             style = MaterialTheme.typography.bodyMedium,
@@ -3792,56 +3856,117 @@ private fun themeDescription(theme: PqnasAppTheme): String {
 }
 
 @Composable
-private fun ThemeAppearanceSection(
-    selectedTheme: PqnasAppTheme,
-    onThemeSelected: (PqnasAppTheme) -> Unit
+private fun languageLabel(language: PqnasAppLanguage): String {
+    return when (language) {
+        PqnasAppLanguage.System -> stringResource(R.string.language_system_label)
+        PqnasAppLanguage.English -> stringResource(R.string.language_english_label)
+        PqnasAppLanguage.Finnish -> stringResource(R.string.language_finnish_label)
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun LanguageDropdownSection(
+    selectedLanguage: PqnasAppLanguage,
+    onLanguageSelected: (PqnasAppLanguage) -> Unit
 ) {
-    Card(
+    var expanded by remember { mutableStateOf(false) }
+
+    Column(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
-        )
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ExposedDropdownMenuBox(
+            expanded = expanded,
+            onExpandedChange = { expanded = !expanded }
         ) {
-            Text(
-                text = stringResource(R.string.theme),
-                style = MaterialTheme.typography.titleSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+            OutlinedTextField(
+                value = languageLabel(selectedLanguage),
+                onValueChange = {},
+                readOnly = true,
+                label = { Text(stringResource(R.string.language_select_label)) },
+                trailingIcon = {
+                    ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
+                },
+                modifier = Modifier
+                    .menuAnchor(MenuAnchorType.PrimaryNotEditable, enabled = true)
+                    .fillMaxWidth()
             )
 
-            PqnasAppTheme.values().forEach { option ->
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { onThemeSelected(option) }
-                        .padding(vertical = 2.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    RadioButton(
-                        selected = selectedTheme == option,
-                        onClick = { onThemeSelected(option) }
+            ExposedDropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false }
+            ) {
+                PqnasAppLanguage.values().forEach { option ->
+                    DropdownMenuItem(
+                        text = { Text(languageLabel(option)) },
+                        onClick = {
+                            expanded = false
+                            onLanguageSelected(option)
+                        }
                     )
-
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = option.label,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                        Text(
-                            text = themeDescription(option),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
                 }
             }
         }
+
+        Text(
+            text = stringResource(R.string.language_restart_note),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ThemeDropdownSection(
+    selectedTheme: PqnasAppTheme,
+    onThemeSelected: (PqnasAppTheme) -> Unit
+) {
+    var expanded by remember { mutableStateOf(false) }
+
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        ExposedDropdownMenuBox(
+            expanded = expanded,
+            onExpandedChange = { expanded = !expanded }
+        ) {
+            OutlinedTextField(
+                value = themeLabel(selectedTheme),
+                onValueChange = {},
+                readOnly = true,
+                label = { Text(stringResource(R.string.theme_select_label)) },
+                trailingIcon = {
+                    ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
+                },
+                modifier = Modifier
+                    .menuAnchor(MenuAnchorType.PrimaryNotEditable, enabled = true)
+                    .fillMaxWidth()
+            )
+
+            ExposedDropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false }
+            ) {
+                PqnasAppTheme.values().forEach { option ->
+                    DropdownMenuItem(
+                        text = { Text(themeLabel(option)) },
+                        onClick = {
+                            expanded = false
+                            onThemeSelected(option)
+                        }
+                    )
+                }
+            }
+        }
+
+        Text(
+            text = themeDescription(selectedTheme),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
     }
 }
 
@@ -4474,7 +4599,7 @@ private fun SettingsAboutSection() {
         }
 
         Text(
-            text = "About DNA-Nexus Files",
+            text = "About DNA-Nexus Mobile",
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onSurface
@@ -4487,7 +4612,7 @@ private fun SettingsAboutSection() {
         )
 
         Text(
-            text = "DNA-Nexus Files was created by and for the CPUNK community. Digital freedom, privacy and safety are what we eat and breathe.",
+            text = stringResource(R.string.about_files_description),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -4504,7 +4629,7 @@ private fun SettingsAboutSection() {
         )
 
         Text(
-            text = "DNA-Nexus ecosystem: ML-KEM-768 • CRYSTALS-Dilithium 5 • AES-256-GCM\nAndroid app: HTTPS + TLS pinning • Android Keystore • AES-GCM encrypted local auth/cache",
+            text = "DNA-Nexus ecosystem: ML-KEM-768 • CRYSTALS-Dilithium 5 • AES-256-GCM\nMobile app: HTTPS + TLS pinning • Android Keystore • AES-GCM encrypted local auth/cache",
             style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
