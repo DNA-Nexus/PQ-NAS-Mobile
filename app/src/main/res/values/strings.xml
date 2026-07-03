@@ -85,6 +85,11 @@
     <string name="files_saved_to_download">Saved to Download/%1$s</string>
     <string name="files_file_already_exists">File already exists: %1$s</string>
     <string name="files_no_files_selected">No files selected.</string>
+    <string name="files_drop_zone_link">Drop Zone link</string>
+    <string name="files_share_link_clip_label">Share link</string>
+    <string name="files_folder_download_not_implemented">Folder download not implemented yet: %1$s</string>
+    <string name="files_action_not_implemented">%1$s not implemented yet: %2$s</string>
+    <string name="files_saved_url_link">Saved URL link: %1$s</string>
     <string name="menu_add_to_favorites">Add to favorites</string>
     <string name="menu_remove_from_favorites">Remove from favorites</string>
     <string name="menu_share">Share</string>

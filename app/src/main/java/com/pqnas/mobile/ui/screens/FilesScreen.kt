@@ -1889,7 +1889,7 @@ fun FilesScreen(
 
         val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
         clipboard.setPrimaryClip(
-            ClipData.newPlainText("Drop Zone link", dropZoneLatestUrl)
+            ClipData.newPlainText(context.getString(R.string.files_drop_zone_link), dropZoneLatestUrl)
         )
 
         dropZoneStatus = "Drop Zone link copied."
@@ -2251,7 +2251,7 @@ fun FilesScreen(
                                         "Versions" -> versionsItem = clickedItem
                                         "Download" -> {
                                             if (clickedItem.type == "dir") {
-                                                status = "Folder download not implemented yet: ${clickedItem.name}"
+                                                status = context.getString(R.string.files_folder_download_not_implemented, clickedItem.name)
                                             } else {
                                                 pendingDownloadItem = clickedItem
                                                 onBeforeExternalPicker()
@@ -2279,7 +2279,7 @@ fun FilesScreen(
                                                 deleteItem = clickedItem
                                             }
                                         }
-                                        else -> status = "$action not implemented yet: ${clickedItem.name}"
+                                        else -> status = context.getString(R.string.files_action_not_implemented, action, clickedItem.name)
                                     }
                                 }
                             )
@@ -3797,7 +3797,7 @@ fun FilesScreen(
                                     overwrite = false
                                 )
                                 showWorkspaceUrlLinkDialog = false
-                                status = "Saved URL link: $targetName"
+                                status = context.getString(R.string.files_saved_url_link, targetName)
                                 snackbarHostState.showSnackbar(status)
                                 load(currentPath)
                             } catch (e: Exception) {
@@ -4491,7 +4491,7 @@ private suspend fun copyText(context: Context, text: String): Boolean {
     return try {
         withContext(Dispatchers.Main) {
             val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-            val clip = ClipData.newPlainText("share link", text)
+            val clip = ClipData.newPlainText(context.getString(R.string.files_share_link_clip_label), text)
             clipboard.setPrimaryClip(clip)
         }
         true

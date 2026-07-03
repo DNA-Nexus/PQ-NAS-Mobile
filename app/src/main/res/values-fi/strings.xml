@@ -85,6 +85,11 @@
     <string name="files_saved_to_download">Tallennettu kansioon Download/%1$s</string>
     <string name="files_file_already_exists">Tiedosto on jo olemassa: %1$s</string>
     <string name="files_no_files_selected">Tiedostoja ei ole valittu.</string>
+    <string name="files_drop_zone_link">Drop Zone -linkki</string>
+    <string name="files_share_link_clip_label">Jakolinkki</string>
+    <string name="files_folder_download_not_implemented">Kansion latausta ei ole vielä toteutettu: %1$s</string>
+    <string name="files_action_not_implemented">%1$s-toimintoa ei ole vielä toteutettu: %2$s</string>
+    <string name="files_saved_url_link">URL-linkki tallennettu: %1$s</string>
     <string name="menu_add_to_favorites">Lisää suosikkeihin</string>
     <string name="menu_remove_from_favorites">Poista suosikeista</string>
     <string name="menu_share">Jaa</string>
