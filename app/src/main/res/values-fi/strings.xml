@@ -90,6 +90,15 @@
     <string name="files_folder_download_not_implemented">Kansion latausta ei ole vielä toteutettu: %1$s</string>
     <string name="files_action_not_implemented">%1$s-toimintoa ei ole vielä toteutettu: %2$s</string>
     <string name="files_saved_url_link">URL-linkki tallennettu: %1$s</string>
+    <string name="files_replace_file_title">Korvataanko tiedosto?</string>
+    <string name="files_replace_file_confirm">Samanniminen tiedosto on jo olemassa. Haluatko korvata sen?</string>
+    <string name="files_replace">Korvaa</string>
+    <string name="files_share_title">Jaa</string>
+    <string name="files_share_valid_for">Voimassa</string>
+    <string name="files_share_link_label">Jakolinkki</string>
+    <string name="files_share_change_validity_note">Jos haluat muuttaa linkin voimassaoloa, poista tämä linkki ja luo uusi.</string>
+    <string name="files_share_create">Luo</string>
+    <string name="files_share_revoke">Poista jako</string>
     <string name="menu_add_to_favorites">Lisää suosikkeihin</string>
     <string name="menu_remove_from_favorites">Poista suosikeista</string>
     <string name="menu_share">Jaa</string>

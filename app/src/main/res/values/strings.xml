@@ -90,6 +90,15 @@
     <string name="files_folder_download_not_implemented">Folder download not implemented yet: %1$s</string>
     <string name="files_action_not_implemented">%1$s not implemented yet: %2$s</string>
     <string name="files_saved_url_link">Saved URL link: %1$s</string>
+    <string name="files_replace_file_title">Replace file?</string>
+    <string name="files_replace_file_confirm">A file with this name already exists. Do you want to replace it?</string>
+    <string name="files_replace">Replace</string>
+    <string name="files_share_title">Share</string>
+    <string name="files_share_valid_for">Valid for</string>
+    <string name="files_share_link_label">Share link</string>
+    <string name="files_share_change_validity_note">To change link validity, revoke this link and create a new one.</string>
+    <string name="files_share_create">Create</string>
+    <string name="files_share_revoke">Revoke</string>
     <string name="menu_add_to_favorites">Add to favorites</string>
     <string name="menu_remove_from_favorites">Remove from favorites</string>
     <string name="menu_share">Share</string>

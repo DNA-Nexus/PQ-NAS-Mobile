@@ -3529,9 +3529,9 @@ fun FilesScreen(
                 pendingUploadUri = null
                 pendingUploadName = null
             },
-            title = { Text("Replace file?") },
+            title = { Text(stringResource(R.string.files_replace_file_title)) },
             text = {
-                Text("A file with this name already exists. Do you want to replace it?")
+                Text(stringResource(R.string.files_replace_file_confirm))
             },
             confirmButton = {
                 TextButton(
@@ -3552,7 +3552,7 @@ fun FilesScreen(
                         }
                     }
                 ) {
-                    Text("Replace")
+                    Text(stringResource(R.string.files_replace))
                 }
             },
             dismissButton = {
@@ -3579,14 +3579,14 @@ fun FilesScreen(
                     shareDialogExistingToken = null
                     shareDialogExpiry = defaultShareExpiryOption()
                 },
-                title = { Text("Share") },
+                title = { Text(stringResource(R.string.files_share_title)) },
                 text = {
                     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                         Text(item.name)
 
                         if (shareDialogUrl.isBlank()) {
                             Text(
-                                text = "Valid for",
+                                text = stringResource(R.string.files_share_valid_for),
                                 style = MaterialTheme.typography.labelLarge,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -3618,11 +3618,11 @@ fun FilesScreen(
                                 onValueChange = {},
                                 readOnly = true,
                                 modifier = Modifier.fillMaxWidth(),
-                                label = { Text("Share link") }
+                                label = { Text(stringResource(R.string.files_share_link_label)) }
                             )
 
                             Text(
-                                text = "To change link validity, revoke this link and create a new one.",
+                                text = stringResource(R.string.files_share_change_validity_note),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -3643,14 +3643,14 @@ fun FilesScreen(
                             TextButton(
                                 onClick = { createShareFor(item, shareDialogExpiry.expiresSec) }
                             ) {
-                                Text("Create")
+                                Text(stringResource(R.string.files_share_create))
                             }
                         } else {
                             TextButton(
                                 onClick = {
                                     scope.launch {
                                         val ok = copyText(context, shareDialogUrl)
-                                        shareDialogStatus = if (ok) "Copied" else "Copy failed"
+                                        shareDialogStatus = if (ok) context.getString(R.string.shares_copied_link) else context.getString(R.string.shares_copy_failed)
                                     }
                                 }
                             ) {
@@ -3660,7 +3660,7 @@ fun FilesScreen(
                             TextButton(
                                 onClick = { revokeShareForCurrentDialog() }
                             ) {
-                                Text("Revoke")
+                                Text(stringResource(R.string.files_share_revoke))
                             }
                         }
                     }
