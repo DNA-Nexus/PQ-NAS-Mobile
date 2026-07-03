@@ -1,5 +1,6 @@
 package com.pqnas.mobile.ui.screens
 
+import android.content.Context
 import androidx.activity.compose.BackHandler
 import androidx.annotation.OptIn
 import androidx.compose.foundation.background
@@ -25,6 +26,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.media3.common.MediaItem
@@ -35,6 +37,7 @@ import androidx.media3.datasource.okhttp.OkHttpDataSource
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.ProgressiveMediaSource
 import androidx.media3.ui.PlayerView
+import com.pqnas.mobile.R
 import com.pqnas.mobile.api.FileItemDto
 import com.pqnas.mobile.files.FileScope
 import com.pqnas.mobile.files.FilesRepository
@@ -72,7 +75,7 @@ fun VideoPlayerScreen(
         )
     }
 
-    var status by remember(videoUrl) { mutableStateOf("Preparing video...") }
+    var status by remember(videoUrl) { mutableStateOf(context.getString(R.string.video_preparing)) }
     var errorText by remember(videoUrl) { mutableStateOf("") }
 
     BackHandler {
@@ -83,8 +86,8 @@ fun VideoPlayerScreen(
         VideoPlayerErrorShell(
             title = currentVideo.name,
             counter = "${currentIndex + 1} / ${videoFiles.size}",
-            status = "Could not build video URL",
-            errorText = "Invalid server URL or file path.",
+            status = context.getString(R.string.video_url_failed),
+            errorText = context.getString(R.string.media_invalid_url_or_path),
             onClose = onClose
         )
         return
@@ -97,7 +100,7 @@ fun VideoPlayerScreen(
 
     LaunchedEffect(videoUrl) {
         try {
-            status = "Preparing video..."
+            status = context.getString(R.string.video_preparing)
             errorText = ""
 
             val okHttpClient = filesRepository.createAuthedOkHttpClient()
@@ -116,8 +119,8 @@ fun VideoPlayerScreen(
             player.prepare()
             player.playWhenReady = true
         } catch (e: Exception) {
-            status = "Video failed"
-            errorText = friendlyVideoMessage(e)
+            status = context.getString(R.string.video_failed)
+            errorText = friendlyVideoMessage(e, context)
         }
     }
 
@@ -125,18 +128,18 @@ fun VideoPlayerScreen(
         val listener = object : Player.Listener {
             override fun onPlaybackStateChanged(playbackState: Int) {
                 status = when (playbackState) {
-                    Player.STATE_BUFFERING -> "Buffering..."
-                    Player.STATE_READY -> "Ready"
-                    Player.STATE_ENDED -> "Ended"
-                    Player.STATE_IDLE -> "Idle"
-                    else -> "Video"
+                    Player.STATE_BUFFERING -> context.getString(R.string.media_status_buffering)
+                    Player.STATE_READY -> context.getString(R.string.media_status_ready)
+                    Player.STATE_ENDED -> context.getString(R.string.media_status_ended)
+                    Player.STATE_IDLE -> context.getString(R.string.media_status_idle)
+                    else -> context.getString(R.string.media_status_video)
                 }
             }
 
             override fun onPlayerError(error: PlaybackException) {
-                status = "Video failed"
+                status = context.getString(R.string.video_failed)
                 errorText = buildString {
-                    append(friendlyVideoMessage(error))
+                    append(friendlyVideoMessage(error, context))
                     append("\n\n")
                     append("code=")
                     append(error.errorCodeName)
@@ -194,7 +197,7 @@ fun VideoPlayerScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 TextButton(onClick = onClose) {
-                    Text("Close", color = Color.White)
+                    Text(stringResource(R.string.media_close), color = Color.White)
                 }
 
                 TextButton(
@@ -204,7 +207,7 @@ fun VideoPlayerScreen(
                     enabled = currentIndex > 0
                 ) {
                     Text(
-                        "Prev",
+                        stringResource(R.string.media_prev),
                         color = if (currentIndex > 0) Color.White else Color.Gray
                     )
                 }
@@ -216,7 +219,7 @@ fun VideoPlayerScreen(
                     enabled = currentIndex < videoFiles.lastIndex
                 ) {
                     Text(
-                        "Next",
+                        stringResource(R.string.media_next),
                         color = if (currentIndex < videoFiles.lastIndex) Color.White else Color.Gray
                     )
                 }
@@ -280,7 +283,7 @@ private fun VideoPlayerErrorShell(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 TextButton(onClick = onClose) {
-                    Text("Close", color = Color.White)
+                    Text(stringResource(R.string.media_close), color = Color.White)
                 }
 
                 Spacer(modifier = Modifier.weight(1f))
@@ -345,27 +348,27 @@ private fun guessVideoMimeType(name: String): String {
         else -> "application/octet-stream"
     }
 }
-private fun friendlyVideoMessage(error: Throwable): String {
+private fun friendlyVideoMessage(error: Throwable, context: Context): String {
     val msg = error.message?.trim().orEmpty()
 
     return when {
         msg.contains("401", ignoreCase = true) ->
-            "Session expired. Please pair again."
+            context.getString(R.string.media_session_expired)
 
         msg.contains("403", ignoreCase = true) ->
-            "Access denied."
+            context.getString(R.string.media_access_denied)
 
         msg.contains("404", ignoreCase = true) ->
-            "Video file not found."
+            context.getString(R.string.video_file_not_found)
 
         msg.contains("TLS", ignoreCase = true) ||
                 msg.contains("certificate", ignoreCase = true) ->
-            "Server TLS identity check failed."
+            context.getString(R.string.media_tls_identity_failed)
 
         msg.isNotBlank() ->
-            "Playback failed: $msg"
+            context.getString(R.string.media_playback_failed_with_message, msg)
 
         else ->
-            "Playback failed."
+            context.getString(R.string.media_playback_failed)
     }
 }

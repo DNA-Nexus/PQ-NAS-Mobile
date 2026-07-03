@@ -1,5 +1,6 @@
 package com.pqnas.mobile.ui.screens
 
+import android.content.Context
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -31,6 +32,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
@@ -39,6 +41,7 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.okhttp.OkHttpDataSource
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.ProgressiveMediaSource
+import com.pqnas.mobile.R
 import com.pqnas.mobile.api.FileItemDto
 import com.pqnas.mobile.files.FileScope
 import com.pqnas.mobile.files.FilesRepository
@@ -59,6 +62,8 @@ fun AudioPlayerScreen(
 ) {
     if (audioFiles.isEmpty()) return
 
+    val context = LocalContext.current
+
     var currentIndex by remember(audioFiles, initialIndex) {
         mutableStateOf(initialIndex.coerceIn(0, audioFiles.lastIndex))
     }
@@ -76,7 +81,7 @@ fun AudioPlayerScreen(
         )
     }
 
-    var status by remember(audioUrl) { mutableStateOf("Preparing audio...") }
+    var status by remember(audioUrl) { mutableStateOf(context.getString(R.string.audio_preparing)) }
     var errorText by remember(audioUrl) { mutableStateOf("") }
     var isPlaying by remember(audioUrl) { mutableStateOf(false) }
     var durationMs by remember(audioUrl) { mutableLongStateOf(0L) }
@@ -90,8 +95,8 @@ fun AudioPlayerScreen(
         AudioPlayerShell(
             title = currentAudio.name,
             counter = "${currentIndex + 1} / ${audioFiles.size}",
-            status = "Could not build audio URL",
-            errorText = "Invalid server URL or file path.",
+            status = context.getString(R.string.audio_url_failed),
+            errorText = context.getString(R.string.media_invalid_url_or_path),
             isPlaying = false,
             positionMs = 0L,
             durationMs = 0L,
@@ -106,8 +111,6 @@ fun AudioPlayerScreen(
         return
     }
 
-    val context = LocalContext.current
-
     val player = remember(audioUrl) {
         ExoPlayer.Builder(context)
             .build()
@@ -120,7 +123,7 @@ fun AudioPlayerScreen(
      */
     LaunchedEffect(audioUrl) {
         try {
-            status = "Preparing audio..."
+            status = context.getString(R.string.audio_preparing)
             errorText = ""
 
             val okHttpClient = filesRepository.createAuthedOkHttpClient()
@@ -136,8 +139,8 @@ fun AudioPlayerScreen(
             player.prepare()
             player.playWhenReady = true
         } catch (e: Exception) {
-            status = "Audio failed"
-            errorText = friendlyAudioMessage(e)
+            status = context.getString(R.string.audio_failed)
+            errorText = friendlyAudioMessage(e, context)
         }
     }
 
@@ -149,17 +152,17 @@ fun AudioPlayerScreen(
 
             override fun onPlaybackStateChanged(playbackState: Int) {
                 status = when (playbackState) {
-                    Player.STATE_BUFFERING -> "Buffering..."
-                    Player.STATE_READY -> "Ready"
-                    Player.STATE_ENDED -> "Ended"
-                    Player.STATE_IDLE -> "Idle"
-                    else -> "Audio"
+                    Player.STATE_BUFFERING -> context.getString(R.string.media_status_buffering)
+                    Player.STATE_READY -> context.getString(R.string.media_status_ready)
+                    Player.STATE_ENDED -> context.getString(R.string.media_status_ended)
+                    Player.STATE_IDLE -> context.getString(R.string.media_status_idle)
+                    else -> context.getString(R.string.media_status_audio)
                 }
             }
 
             override fun onPlayerError(error: PlaybackException) {
-                status = "Audio failed"
-                errorText = friendlyAudioMessage(error)
+                status = context.getString(R.string.audio_failed)
+                errorText = friendlyAudioMessage(error, context)
             }
         }
 
@@ -242,7 +245,7 @@ private fun AudioPlayerShell(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 TextButton(onClick = onClose) {
-                    Text("Close", color = Color.White)
+                    Text(stringResource(R.string.media_close), color = Color.White)
                 }
 
                 Spacer(modifier = Modifier.weight(1f))
@@ -282,7 +285,7 @@ private fun AudioPlayerShell(
                         style = MaterialTheme.typography.bodyMedium
                     )
 
-                    if (status == "Buffering...") {
+                    if (status == stringResource(R.string.media_status_buffering)) {
                         CircularProgressIndicator(color = Color.White)
                     }
 
@@ -341,14 +344,14 @@ private fun AudioPlayerShell(
                         enabled = canPrev,
                         modifier = Modifier.weight(1f)
                     ) {
-                        Text("Prev")
+                        Text(stringResource(R.string.media_prev))
                     }
 
                     Button(
                         onClick = onPlayPause,
                         modifier = Modifier.weight(1.4f)
                     ) {
-                        Text(if (isPlaying) "Pause" else "Play")
+                        Text(if (isPlaying) stringResource(R.string.media_pause) else stringResource(R.string.media_play))
                     }
 
                     Button(
@@ -356,7 +359,7 @@ private fun AudioPlayerShell(
                         enabled = canNext,
                         modifier = Modifier.weight(1f)
                     ) {
-                        Text("Next")
+                        Text(stringResource(R.string.media_next))
                     }
                 }
             }
@@ -402,27 +405,27 @@ private fun formatAudioTime(ms: Long): String {
     return String.format(Locale.US, "%d:%02d", minutes, seconds)
 }
 
-private fun friendlyAudioMessage(error: Throwable): String {
+private fun friendlyAudioMessage(error: Throwable, context: Context): String {
     val msg = error.message?.trim().orEmpty()
 
     return when {
         msg.contains("401", ignoreCase = true) ->
-            "Session expired. Please pair again."
+            context.getString(R.string.media_session_expired)
 
         msg.contains("403", ignoreCase = true) ->
-            "Access denied."
+            context.getString(R.string.media_access_denied)
 
         msg.contains("404", ignoreCase = true) ->
-            "Audio file not found."
+            context.getString(R.string.audio_file_not_found)
 
         msg.contains("TLS", ignoreCase = true) ||
                 msg.contains("certificate", ignoreCase = true) ->
-            "Server TLS identity check failed."
+            context.getString(R.string.media_tls_identity_failed)
 
         msg.isNotBlank() ->
-            "Playback failed: $msg"
+            context.getString(R.string.media_playback_failed_with_message, msg)
 
         else ->
-            "Playback failed."
+            context.getString(R.string.media_playback_failed)
     }
 }
