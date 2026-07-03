@@ -21,10 +21,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import com.pqnas.mobile.R
+import com.pqnas.mobile.ui.theme.PqnasAppTheme
 
 @Composable
 fun AppLockScreen(
     status: String,
+    appTheme: PqnasAppTheme,
     onUnlock: () -> Unit,
     onLogout: () -> Unit
 ) {
@@ -64,8 +66,15 @@ Card(
                     ),
                     elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
                 ) {
+                    val logoResId = when (appTheme) {
+                        PqnasAppTheme.Bright -> R.drawable.dna_nexus_logo_bright
+                        PqnasAppTheme.CpunkOrange -> R.drawable.dna_nexus_logo_orange
+                        PqnasAppTheme.WinClassic -> R.drawable.dna_nexus_logo_bright
+                        PqnasAppTheme.Dark -> R.drawable.dna_nexus_logo_dark
+                    }
+
                     Image(
-                        painter = painterResource(id = R.drawable.dna_nexus_logo_dark),
+                        painter = painterResource(id = logoResId),
                         contentDescription = stringResource(R.string.app_lock_logo_desc),
                         modifier = Modifier
                             .fillMaxSize()

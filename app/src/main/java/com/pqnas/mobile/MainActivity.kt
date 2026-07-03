@@ -315,6 +315,7 @@ class MainActivity : FragmentActivity() {
                         if (!appUnlocked) {
                             AppLockScreen(
                                 status = appLockStatus,
+                                appTheme = appTheme,
                                 onUnlock = {
                                     requestAppUnlock(force = true)
                                 },
@@ -345,6 +346,7 @@ class MainActivity : FragmentActivity() {
                         if (!appUnlocked) {
                             AppLockScreen(
                                 status = appLockStatus,
+                                appTheme = appTheme,
                                 onUnlock = {
                                     requestAppUnlock(force = true)
                                 },
@@ -374,6 +376,7 @@ class MainActivity : FragmentActivity() {
                         if (!appUnlocked) {
                             AppLockScreen(
                                 status = appLockStatus,
+                                appTheme = appTheme,
                                 onUnlock = {
                                     requestAppUnlock(force = true)
                                 },
