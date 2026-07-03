@@ -644,4 +644,35 @@
     <string name="video_url_failed">Could not build video URL</string>
     <string name="video_failed">Video failed</string>
     <string name="video_file_not_found">Video file not found.</string>
+    <string name="setup_logo_desc">DNA-Nexus logo</string>
+    <string name="setup_intro">Connect securely with trusted-device pairing.</string>
+    <string name="setup_server_url">Server URL</string>
+    <string name="setup_https_required">Only HTTPS server URLs are allowed.</string>
+    <string name="setup_scan_pairing_qr">Scan pairing QR</string>
+    <string name="setup_scan_help">Open Trusted Devices in the DNA-Nexus web UI, show the QR code, then scan it here.</string>
+    <string name="scan_status_ready">Ready to scan DNA-Nexus pairing QR</string>
+    <string name="scan_status_cancelled">Scan cancelled</string>
+    <string name="scan_status_invalid">Invalid DNA-Nexus pairing QR or missing TLS trust pin</string>
+    <string name="scan_prompt">Scan DNA-Nexus pairing QR</string>
+    <string name="scan_title">Scan pairing QR</string>
+    <string name="scan_help">Open Trusted Devices in DNA-Nexus web UI and show the QR code there.</string>
+    <string name="scan_start">Start QR scan</string>
+    <string name="scan_back">Back</string>
+    <string name="pair_default_device_name">DNA-Nexus Android</string>
+    <string name="pair_title">Pair device</string>
+    <string name="pair_mascot_desc">CPUNK DNA-Nexus mascot</string>
+    <string name="pair_server">Server: %1$s</string>
+    <string name="pair_configured_server_mismatch">Configured server: %1$s
+This QR code points to a different server. Pairing is blocked.</string>
+    <string name="pair_app">App: %1$s</string>
+    <string name="pair_tls_system_ca">TLS trust: Android system CA + hostname</string>
+    <string name="pair_tls_identity">TLS identity: %1$s…</string>
+    <string name="pair_device_name">Device name</string>
+    <string name="pair_error_origin_mismatch">QR server does not match configured server.</string>
+    <string name="pair_status_pairing">Pairing...</string>
+    <string name="pair_status_failed">Pairing failed</string>
+    <string name="pair_error_tls_identity">Server identity check failed. Re-pair with a fresh QR code.</string>
+    <string name="pair_error_failed_check">Pairing failed. Check the server address and QR code.</string>
+    <string name="pair_this_device">Pair this device</string>
+    <string name="pair_back">Back</string>
 </resources>

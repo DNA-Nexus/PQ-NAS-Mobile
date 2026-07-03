@@ -644,4 +644,35 @@
     <string name="video_url_failed">Video-URL:n muodostus epäonnistui</string>
     <string name="video_failed">Videon toisto epäonnistui</string>
     <string name="video_file_not_found">Videotiedostoa ei löytynyt.</string>
+    <string name="setup_logo_desc">DNA-Nexus-logo</string>
+    <string name="setup_intro">Yhdistä turvallisesti luotetun laitteen parituksella.</string>
+    <string name="setup_server_url">Palvelimen URL</string>
+    <string name="setup_https_required">Vain HTTPS-palvelinosoitteet ovat sallittuja.</string>
+    <string name="setup_scan_pairing_qr">Skannaa paritus-QR</string>
+    <string name="setup_scan_help">Avaa DNA-Nexuksen web-käyttöliittymästä Trusted Devices, näytä QR-koodi ja skannaa se täällä.</string>
+    <string name="scan_status_ready">Valmis skannaamaan DNA-Nexuksen paritus-QR-koodin</string>
+    <string name="scan_status_cancelled">Skannaus peruutettu</string>
+    <string name="scan_status_invalid">Virheellinen DNA-Nexus-paritus-QR tai TLS trust pin puuttuu</string>
+    <string name="scan_prompt">Skannaa DNA-Nexuksen paritus-QR</string>
+    <string name="scan_title">Skannaa paritus-QR</string>
+    <string name="scan_help">Avaa DNA-Nexuksen web-käyttöliittymästä Trusted Devices ja näytä QR-koodi siellä.</string>
+    <string name="scan_start">Aloita QR-skannaus</string>
+    <string name="scan_back">Takaisin</string>
+    <string name="pair_default_device_name">DNA-Nexus Android</string>
+    <string name="pair_title">Parita laite</string>
+    <string name="pair_mascot_desc">CPUNK DNA-Nexus -maskotti</string>
+    <string name="pair_server">Palvelin: %1$s</string>
+    <string name="pair_configured_server_mismatch">Määritetty palvelin: %1$s
+Tämä QR-koodi osoittaa eri palvelimeen. Paritus estettiin.</string>
+    <string name="pair_app">Sovellus: %1$s</string>
+    <string name="pair_tls_system_ca">TLS-luottamus: Androidin järjestelmä-CA + palvelinnimi</string>
+    <string name="pair_tls_identity">TLS-identiteetti: %1$s…</string>
+    <string name="pair_device_name">Laitteen nimi</string>
+    <string name="pair_error_origin_mismatch">QR-palvelin ei vastaa määritettyä palvelinta.</string>
+    <string name="pair_status_pairing">Paritetaan...</string>
+    <string name="pair_status_failed">Paritus epäonnistui</string>
+    <string name="pair_error_tls_identity">Palvelimen identiteetin tarkistus epäonnistui. Parita uudelleen tuoreella QR-koodilla.</string>
+    <string name="pair_error_failed_check">Paritus epäonnistui. Tarkista palvelinosoite ja QR-koodi.</string>
+    <string name="pair_this_device">Parita tämä laite</string>
+    <string name="pair_back">Takaisin</string>
 </resources>

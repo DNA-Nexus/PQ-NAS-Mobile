@@ -23,7 +23,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.pqnas.mobile.R
 
@@ -31,6 +33,8 @@ import com.pqnas.mobile.R
 fun ServerSetupScreen(
     onScanPair: (String) -> Unit
 ) {
+    val context = LocalContext.current
+
     var baseUrl by remember { mutableStateOf("") }
     var status by remember { mutableStateOf("") }
 
@@ -44,7 +48,7 @@ fun ServerSetupScreen(
     ) {
         Image(
             painter = painterResource(id = R.drawable.nexus_app_logo_trans),
-            contentDescription = "DNA-Nexus logo",
+            contentDescription = stringResource(R.string.setup_logo_desc),
             modifier = Modifier
                 .fillMaxWidth()
                 .height(140.dp),
@@ -54,7 +58,7 @@ fun ServerSetupScreen(
 
 
         Text(
-            text = "Connect securely with trusted-device pairing.",
+            text = stringResource(R.string.setup_intro),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -74,7 +78,7 @@ fun ServerSetupScreen(
                 OutlinedTextField(
                     value = baseUrl,
                     onValueChange = { baseUrl = it },
-                    label = { Text("Server URL") },
+                    label = { Text(stringResource(R.string.setup_server_url)) },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true
                 )
@@ -83,14 +87,14 @@ fun ServerSetupScreen(
                     onClick = {
                         val clean = baseUrl.trim().trimEnd('/')
                         if (!clean.startsWith("https://", ignoreCase = true)) {
-                            status = "Only HTTPS server URLs are allowed."
+                            status = context.getString(R.string.setup_https_required)
                             return@Button
                         }
                         onScanPair(clean)
                     },
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("Scan pairing QR")
+                    Text(stringResource(R.string.setup_scan_pairing_qr))
                 }
 
                 if (status.isNotBlank()) {
@@ -106,7 +110,7 @@ fun ServerSetupScreen(
         Spacer(Modifier.height(4.dp))
 
         Text(
-            text = "Open Trusted Devices in the DNA-Nexus web UI, show the QR code, then scan it here.",
+            text = stringResource(R.string.setup_scan_help),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )

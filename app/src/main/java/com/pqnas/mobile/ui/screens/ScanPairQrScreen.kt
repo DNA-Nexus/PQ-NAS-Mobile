@@ -16,9 +16,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.journeyapps.barcodescanner.ScanContract
 import com.journeyapps.barcodescanner.ScanOptions
+import com.pqnas.mobile.R
 import com.pqnas.mobile.auth.PairQrParser
 import com.pqnas.mobile.auth.PairQrPayload
 import com.pqnas.mobile.ui.screens.PortraitCaptureActivity
@@ -28,18 +31,20 @@ fun ScanPairQrScreen(
     onParsed: (PairQrPayload) -> Unit,
     onBack: () -> Unit
 ) {
-    var status by remember { mutableStateOf("Ready to scan DNA-Nexus pairing QR") }
+    val context = LocalContext.current
+
+    var status by remember { mutableStateOf(context.getString(R.string.scan_status_ready)) }
 
     val launcher = rememberLauncherForActivityResult(ScanContract()) { result ->
         val contents = result.contents
         if (contents.isNullOrBlank()) {
-            status = "Scan cancelled"
+            status = context.getString(R.string.scan_status_cancelled)
             return@rememberLauncherForActivityResult
         }
 
         val parsed = PairQrParser.parse(contents)
         if (parsed == null) {
-            status = "Invalid DNA-Nexus pairing QR or missing TLS trust pin"
+            status = context.getString(R.string.scan_status_invalid)
             return@rememberLauncherForActivityResult
         }
 
@@ -49,7 +54,7 @@ fun ScanPairQrScreen(
     fun startScan() {
         val options = ScanOptions().apply {
             setDesiredBarcodeFormats(ScanOptions.QR_CODE)
-            setPrompt("Scan DNA-Nexus pairing QR")
+            setPrompt(context.getString(R.string.scan_prompt))
             setBeepEnabled(true)
 
             // DNA-Nexus: force scanner upright on devices where sensor-driven
@@ -68,7 +73,7 @@ fun ScanPairQrScreen(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Text(
-            text = "Scan pairing QR",
+            text = stringResource(R.string.scan_title),
             style = MaterialTheme.typography.headlineSmall,
             color = MaterialTheme.colorScheme.onBackground
         )
@@ -86,7 +91,7 @@ fun ScanPairQrScreen(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 Text(
-                    text = "Open Trusted Devices in DNA-Nexus web UI and show the QR code there.",
+                    text = stringResource(R.string.scan_help),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurface
                 )
@@ -103,14 +108,14 @@ fun ScanPairQrScreen(
                     onClick = { startScan() },
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("Start QR scan")
+                    Text(stringResource(R.string.scan_start))
                 }
 
                 Button(
                     onClick = onBack,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("Back")
+                    Text(stringResource(R.string.scan_back))
                 }
             }
         }

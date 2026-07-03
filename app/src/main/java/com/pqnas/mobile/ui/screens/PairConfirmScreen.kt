@@ -18,7 +18,9 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import com.pqnas.mobile.R
@@ -35,8 +37,11 @@ fun PairConfirmScreen(
     onPaired: () -> Unit,
     onBack: () -> Unit
 ) {
-    var deviceName by remember { mutableStateOf("DNA-Nexus Android") }
+    val context = LocalContext.current
+
+    var deviceName by remember { mutableStateOf(context.getString(R.string.pair_default_device_name)) }
     var status by remember { mutableStateOf("") }
+    var statusIsError by remember { mutableStateOf(false) }
     var busy by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
     fun normalizeOriginForCompare(value: String): String {
@@ -54,7 +59,7 @@ fun PairConfirmScreen(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Text(
-            text = "Pair device",
+            text = stringResource(R.string.pair_title),
             style = MaterialTheme.typography.headlineSmall,
             color = MaterialTheme.colorScheme.onBackground
         )
@@ -82,35 +87,35 @@ fun PairConfirmScreen(
                 ) {
                     Image(
                         painter = painterResource(id = R.drawable.cpunk_about),
-                        contentDescription = "CPUNK DNA-Nexus mascot",
+                        contentDescription = stringResource(R.string.pair_mascot_desc),
                         modifier = Modifier.fillMaxSize(),
                         contentScale = ContentScale.Crop
                     )
                 }
 
                 Text(
-                    text = "Server: ${payload.origin}",
+                    text = stringResource(R.string.pair_server, payload.origin),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 if (originMismatch) {
                     Text(
-                        text = "Configured server: $configuredBaseUrl\nThis QR code points to a different server. Pairing is blocked.",
+                        text = stringResource(R.string.pair_configured_server_mismatch, configuredBaseUrl),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.error
                     )
                 }
                 Text(
-                    text = "App: ${payload.appName}",
+                    text = stringResource(R.string.pair_app, payload.appName),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
 
                 Text(
                     text = if (PinnedTls.usesPublicCaTrust(payload.tlsPinSha256)) {
-                        "TLS trust: Android system CA + hostname"
+                        stringResource(R.string.pair_tls_system_ca)
                     } else {
-                        "TLS identity: ${payload.tlsPinSha256.take(24)}…"
+                        stringResource(R.string.pair_tls_identity, payload.tlsPinSha256.take(24))
                     },
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -119,7 +124,7 @@ fun PairConfirmScreen(
                 OutlinedTextField(
                     value = deviceName,
                     onValueChange = { deviceName = it },
-                    label = { Text("Device name") },
+                    label = { Text(stringResource(R.string.pair_device_name)) },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true
                 )
@@ -132,7 +137,7 @@ fun PairConfirmScreen(
                     Text(
                         text = status,
                         style = MaterialTheme.typography.bodyMedium,
-                        color = if (status.startsWith("Error")) {
+                        color = if (statusIsError) {
                             MaterialTheme.colorScheme.error
                         } else {
                             MaterialTheme.colorScheme.onSurfaceVariant
@@ -146,12 +151,14 @@ fun PairConfirmScreen(
                     onClick = {
                         scope.launch {
                             if (originMismatch) {
-                                status = "Error: QR server does not match configured server."
+                                statusIsError = true
+                                status = context.getString(R.string.pair_error_origin_mismatch)
                                 return@launch
                             }
 
                             busy = true
-                            status = "Pairing..."
+                            statusIsError = false
+                            status = context.getString(R.string.pair_status_pairing)
                             try {
                                 val ok = authRepository.consumePair(
                                     baseUrl = payload.origin,
@@ -162,12 +169,15 @@ fun PairConfirmScreen(
                                 if (ok) {
                                     onPaired()
                                 } else {
-                                    status = "Pairing failed"
+                                    statusIsError = true
+                                    status = context.getString(R.string.pair_status_failed)
                                 }
                             } catch (_: javax.net.ssl.SSLException) {
-                                status = "Error: Server identity check failed. Re-pair with a fresh QR code."
+                                statusIsError = true
+                                status = context.getString(R.string.pair_error_tls_identity)
                             } catch (_: Exception) {
-                                status = "Error: Pairing failed. Check the server address and QR code."
+                                statusIsError = true
+                                status = context.getString(R.string.pair_error_failed_check)
                             } finally {
                                 busy = false
                             }
@@ -176,7 +186,7 @@ fun PairConfirmScreen(
                     modifier = Modifier.fillMaxWidth(),
                     enabled = !busy && !originMismatch
                 ) {
-                    Text("Pair this device")
+                    Text(stringResource(R.string.pair_this_device))
                 }
 
                 Button(
@@ -184,7 +194,7 @@ fun PairConfirmScreen(
                     modifier = Modifier.fillMaxWidth(),
                     enabled = !busy
                 ) {
-                    Text("Back")
+                    Text(stringResource(R.string.pair_back))
                 }
             }
         }
