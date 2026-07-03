@@ -19,6 +19,9 @@
     <string name="theme_win_classic_desc">Light gray classic UI</string>
     <string name="admin_tools">Admin tools</string>
     <string name="about_dna_nexus_files">About DNA-Nexus Mobile</string>
+    <string name="files_about_mascot_desc">CPUNK DNA-Nexus mascot</string>
+    <string name="files_about_security_stack">Security stack</string>
+    <string name="files_about_security_stack_desc">DNA-Nexus ecosystem: ML-KEM-768 • CRYSTALS-Dilithium 5 • AES-256-GCM\nMobile app: HTTPS + TLS pinning • Android Keystore • AES-GCM encrypted local auth/cache</string>
     <string name="show_all_items">Show all items</string>
     <string name="show_favorites_only">Show favorites only</string>
     <string name="refresh">Refresh</string>

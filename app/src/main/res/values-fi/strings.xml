@@ -19,6 +19,9 @@
     <string name="theme_win_classic_desc">Vaalea harmaa klassinen käyttöliittymä</string>
     <string name="admin_tools">Admin-työkalut</string>
     <string name="about_dna_nexus_files">Tietoja DNA-Nexus Mobilesta</string>
+    <string name="files_about_mascot_desc">CPUNK DNA-Nexus -maskotti</string>
+    <string name="files_about_security_stack">Tietoturvapino</string>
+    <string name="files_about_security_stack_desc">DNA-Nexus-ekosysteemi: ML-KEM-768 • CRYSTALS-Dilithium 5 • AES-256-GCM\nMobiiliappi: HTTPS + TLS-varmistus • Android Keystore • AES-GCM-salattu paikallinen tunnistautuminen/välimuisti</string>
     <string name="show_all_items">Näytä kaikki kohteet</string>
     <string name="show_favorites_only">Näytä vain suosikit</string>
     <string name="refresh">Päivitä</string>

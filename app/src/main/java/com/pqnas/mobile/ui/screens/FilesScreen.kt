@@ -4612,14 +4612,14 @@ private fun SettingsAboutSection() {
         ) {
             Image(
                 painter = painterResource(id = R.drawable.cpunk_about),
-                contentDescription = "CPUNK DNA-Nexus mascot",
+                contentDescription = stringResource(R.string.files_about_mascot_desc),
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop
             )
         }
 
         Text(
-            text = "About DNA-Nexus Mobile",
+            text = stringResource(R.string.about_dna_nexus_files),
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onSurface
@@ -4642,14 +4642,14 @@ private fun SettingsAboutSection() {
         )
 
         Text(
-            text = "Security stack",
+            text = stringResource(R.string.files_about_security_stack),
             style = MaterialTheme.typography.labelSmall,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
 
         Text(
-            text = "DNA-Nexus ecosystem: ML-KEM-768 • CRYSTALS-Dilithium 5 • AES-256-GCM\nMobile app: HTTPS + TLS pinning • Android Keystore • AES-GCM encrypted local auth/cache",
+            text = stringResource(R.string.files_about_security_stack_desc),
             style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
