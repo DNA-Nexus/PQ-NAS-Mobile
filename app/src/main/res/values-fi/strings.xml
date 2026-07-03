@@ -1,6 +1,6 @@
 <resources>
     <string name="app_name">DNA-Nexus Mobile</string>
-    <string name="dna_nexus_files">DNA-Nexus-tiedostot</string>
+    <string name="dna_nexus_files">DNA-Nexus Mobile</string>
     <string name="add">Lisää</string>
     <string name="apps">Sovellukset</string>
     <string name="settings_and_info">Asetukset ja tiedot</string>
@@ -578,4 +578,12 @@
     <string name="drop_zone_duplicate_label_version">Versioi olemassa oleva tiedosto</string>
     <string name="apps_checking_available">Tarkistetaan käytettävissä olevia appeja...</string>
     <string name="apps_checking_available_desc">DNA-Nexus Mobile tarkistaa, mitkä palvelimen appit ovat käytettävissä tällä tilillä.</string>
+    <string name="file_scope_my_files">Omat tiedostot</string>
+    <string name="file_scope_workspace_fallback">Jaettu tila</string>
+    <string name="file_scope_current_user">Nykyinen sijainti: Omat tiedostot</string>
+    <string name="file_scope_current_workspace">Nykyinen sijainti: Jaettu tila • %1$s</string>
+    <string name="file_scope_role_owner">omistaja</string>
+    <string name="file_scope_role_editor">muokkaaja</string>
+    <string name="file_scope_role_viewer">katsoja</string>
+    <string name="file_scope_no_workspaces">Tällä tilillä ei ole jaettuja tiloja.</string>
 </resources>

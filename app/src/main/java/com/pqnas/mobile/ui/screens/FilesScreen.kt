@@ -1466,8 +1466,8 @@ fun FilesScreen(
         val suffix = if (cleanPath.isBlank()) "/" else "/$cleanPath"
 
         return when (scope) {
-            FileScope.User -> "My Files $suffix"
-            is FileScope.Workspace -> "${scope.workspaceName.ifBlank { "Workspace" }} $suffix"
+            FileScope.User -> "${context.getString(R.string.file_scope_my_files)} $suffix"
+            is FileScope.Workspace -> "${scope.workspaceName.ifBlank { context.getString(R.string.file_scope_workspace_fallback) }} $suffix"
         }
     }
 

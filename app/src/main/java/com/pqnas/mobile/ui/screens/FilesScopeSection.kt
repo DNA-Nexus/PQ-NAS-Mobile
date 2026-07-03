@@ -13,7 +13,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.pqnas.mobile.R
 import com.pqnas.mobile.files.FileScope
 
 data class WorkspaceScopeOption(
@@ -30,10 +32,10 @@ fun FilesScopeSection(
     onSelectWorkspaceScope: (WorkspaceScopeOption) -> Unit
 ) {
     val currentLabel = when (currentScope) {
-        FileScope.User -> "Current scope: My files"
+        FileScope.User -> stringResource(R.string.file_scope_current_user)
         is FileScope.Workspace -> {
             val name = currentScope.workspaceName.ifBlank { currentScope.workspaceId }
-            "Current scope: Workspace • $name"
+            stringResource(R.string.file_scope_current_workspace, name)
         }
     }
 
@@ -62,7 +64,7 @@ fun FilesScopeSection(
                     FilterChip(
                         selected = currentScope == FileScope.User,
                         onClick = onSelectUserScope,
-                        label = { Text("My files") }
+                        label = { Text(stringResource(R.string.file_scope_my_files)) }
                     )
                 }
 
@@ -76,9 +78,9 @@ fun FilesScopeSection(
                         onClick = { onSelectWorkspaceScope(ws) },
                         label = {
                             val suffix = when (ws.role.lowercase()) {
-                                "owner" -> " • owner"
-                                "editor" -> " • editor"
-                                "viewer" -> " • viewer"
+                                "owner" -> " • " + stringResource(R.string.file_scope_role_owner)
+                                "editor" -> " • " + stringResource(R.string.file_scope_role_editor)
+                                "viewer" -> " • " + stringResource(R.string.file_scope_role_viewer)
                                 else -> ""
                             }
                             Text(ws.label + suffix)
@@ -89,7 +91,7 @@ fun FilesScopeSection(
 
             if (workspaces.isEmpty()) {
                 Text(
-                    text = "No workspaces available for this account.",
+                    text = stringResource(R.string.file_scope_no_workspaces),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
