@@ -675,4 +675,15 @@ This QR code points to a different server. Pairing is blocked.</string>
     <string name="pair_error_failed_check">Pairing failed. Check the server address and QR code.</string>
     <string name="pair_this_device">Pair this device</string>
     <string name="pair_back">Back</string>
+    <string name="version_compare_title">Compare version</string>
+    <string name="version_compare_selected_to_current">Selected version → Current file</string>
+    <string name="version_compare_close">Close</string>
+    <string name="version_compare_hide_unchanged">Hide unchanged</string>
+    <string name="version_compare_hidden_lines">%1$d unchanged line(s) hidden</string>
+    <string name="version_compare_no_differences">No line differences found.</string>
+    <string name="version_compare_added">+%1$d added</string>
+    <string name="version_compare_removed">-%1$d removed</string>
+    <string name="version_compare_large_file_fallback">large-file fallback</string>
+    <string name="version_compare_unknown_error">unknown error</string>
+    <string name="version_compare_failed">Compare failed: %1$s</string>
 </resources>

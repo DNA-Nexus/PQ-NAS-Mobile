@@ -28,11 +28,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import com.pqnas.mobile.R
 import com.pqnas.mobile.api.FileVersionItemDto
 import com.pqnas.mobile.files.FileScope
 import com.pqnas.mobile.files.FilesRepository
@@ -108,7 +110,7 @@ fun FileVersionCompareDialog(
                         verticalArrangement = Arrangement.spacedBy(3.dp)
                     ) {
                         Text(
-                            text = "Compare version",
+                            text = stringResource(R.string.version_compare_title),
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onBackground
@@ -128,14 +130,14 @@ fun FileVersionCompareDialog(
                         )
 
                         Text(
-                            text = "Selected version → Current file",
+                            text = stringResource(R.string.version_compare_selected_to_current),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
 
                     TextButton(onClick = onDismiss) {
-                        Text("Close")
+                        Text(stringResource(R.string.version_compare_close))
                     }
                 }
 
@@ -148,13 +150,13 @@ fun FileVersionCompareDialog(
                         onCheckedChange = { hideUnchanged = it }
                     )
                     Text(
-                        text = "Hide unchanged",
+                        text = stringResource(R.string.version_compare_hide_unchanged),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onBackground
                     )
                 }
 
-                val summary = diffSummary(diff)
+                val summary = diffSummary(context, diff)
                 if (summary.isNotBlank()) {
                     Text(
                         text = summary,
@@ -204,6 +206,7 @@ fun FileVersionCompareDialog(
 
 @Composable
 private fun DiffLineRow(row: DiffLine) {
+    val context = LocalContext.current
     val colorScheme = MaterialTheme.colorScheme
 
     val bg = when (row.kind) {
@@ -238,7 +241,7 @@ private fun DiffLineRow(row: DiffLine) {
     }
 
     val text = if (row.kind == DiffKind.Skip) {
-        "${row.skipCount} unchanged line(s) hidden"
+        context.getString(R.string.version_compare_hidden_lines, row.skipCount)
     } else {
         row.text.ifEmpty { " " }
     }
@@ -465,20 +468,27 @@ private fun compactUnchangedRows(rows: List<DiffLine>, contextLines: Int): List<
     return out
 }
 
-private fun diffSummary(diff: DiffResult): String {
+private fun diffSummary(context: Context, diff: DiffResult): String {
     if (diff.added == 0 && diff.removed == 0) {
-        return "No line differences found."
+        return context.getString(R.string.version_compare_no_differences)
     }
 
     val parts = mutableListOf<String>()
-    if (diff.added > 0) parts += "+${diff.added} added"
-    if (diff.removed > 0) parts += "-${diff.removed} removed"
-    if (diff.fallback) parts += "large-file fallback"
+    if (diff.added > 0) {
+        parts += context.getString(R.string.version_compare_added, diff.added)
+    }
+    if (diff.removed > 0) {
+        parts += context.getString(R.string.version_compare_removed, diff.removed)
+    }
+    if (diff.fallback) {
+        parts += context.getString(R.string.version_compare_large_file_fallback)
+    }
 
     return parts.joinToString(" • ")
 }
 
 private fun friendlyCompareMessage(context: Context, error: Throwable): String {
-    val msg = error.message?.takeIf { it.isNotBlank() } ?: "unknown error"
-    return "Compare failed: $msg"
+    val msg = error.message?.takeIf { it.isNotBlank() }
+        ?: context.getString(R.string.version_compare_unknown_error)
+    return context.getString(R.string.version_compare_failed, msg)
 }

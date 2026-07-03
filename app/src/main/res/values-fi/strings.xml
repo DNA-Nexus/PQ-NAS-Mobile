@@ -675,4 +675,15 @@ Tämä QR-koodi osoittaa eri palvelimeen. Paritus estettiin.</string>
     <string name="pair_error_failed_check">Paritus epäonnistui. Tarkista palvelinosoite ja QR-koodi.</string>
     <string name="pair_this_device">Parita tämä laite</string>
     <string name="pair_back">Takaisin</string>
+    <string name="version_compare_title">Vertaa versiota</string>
+    <string name="version_compare_selected_to_current">Valittu versio → Nykyinen tiedosto</string>
+    <string name="version_compare_close">Sulje</string>
+    <string name="version_compare_hide_unchanged">Piilota muuttumattomat</string>
+    <string name="version_compare_hidden_lines">%1$d muuttumatonta riviä piilotettu</string>
+    <string name="version_compare_no_differences">Rivieroja ei löytynyt.</string>
+    <string name="version_compare_added">+%1$d lisätty</string>
+    <string name="version_compare_removed">-%1$d poistettu</string>
+    <string name="version_compare_large_file_fallback">suuren tiedoston varatila</string>
+    <string name="version_compare_unknown_error">tuntematon virhe</string>
+    <string name="version_compare_failed">Vertailu epäonnistui: %1$s</string>
 </resources>
