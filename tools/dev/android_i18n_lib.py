@@ -47,6 +47,9 @@ DEFAULT_ALLOWED_SAME_AS_BASE = {
 
     # Natural Finnish technical/media label.
     "media_status_video",
+
+    # Default device label is a product/platform name.
+    "pair_default_device_name",
 }
 
 
