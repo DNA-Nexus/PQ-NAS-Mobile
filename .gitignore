@@ -18,3 +18,7 @@ captures/
 .idea/misc.xml
 # Android Studio / IntelliJ local project files
 build.txt
+
+# Python cache files
+__pycache__/
+*.pyc
