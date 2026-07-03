@@ -45,9 +45,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import com.pqnas.mobile.R
 import com.pqnas.mobile.api.DropZoneBrandingDto
 import com.pqnas.mobile.api.DropZoneInfo
 import java.util.Locale
@@ -66,16 +68,16 @@ private val DzBad = Color(0xFFFF6B6B)
 private val DzGood = Color(0xFF7DE38B)
 
 private data class DzExpiryOption(
-    val label: String,
+    val labelRes: Int,
     val seconds: Long,
-    val description: String
+    val descriptionRes: Int
 )
 
 private val DzExpiryOptions = listOf(
-    DzExpiryOption("1 day", 1L * 24L * 60L * 60L, "Short-lived upload link"),
-    DzExpiryOption("7 days", 7L * 24L * 60L * 60L, "Good default for most cases"),
-    DzExpiryOption("30 days", 30L * 24L * 60L * 60L, "Longer customer/project collection"),
-    DzExpiryOption("90 days", 90L * 24L * 60L * 60L, "Maximum long-running intake")
+    DzExpiryOption(R.string.drop_zone_expiry_1_day, 1L * 24L * 60L * 60L, R.string.drop_zone_expiry_1_day_desc),
+    DzExpiryOption(R.string.drop_zone_expiry_7_days, 7L * 24L * 60L * 60L, R.string.drop_zone_expiry_7_days_desc),
+    DzExpiryOption(R.string.drop_zone_expiry_30_days, 30L * 24L * 60L * 60L, R.string.drop_zone_expiry_30_days_desc),
+    DzExpiryOption(R.string.drop_zone_expiry_90_days, 90L * 24L * 60L * 60L, R.string.drop_zone_expiry_90_days_desc)
 )
 
 private data class DzEditDraft(
@@ -171,6 +173,8 @@ fun DropZoneScreen(
     var clearHistoryCandidate by remember { mutableStateOf<DropZoneInfo?>(null) }
     var showCreateForm by remember { mutableStateOf(false) }
     var editDraft by remember { mutableStateOf<DzEditDraft?>(null) }
+    val dropZoneNameFallback = stringResource(R.string.drop_zone)
+    val dropZoneHistoryFallback = stringResource(R.string.drop_zone_history_fallback)
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -329,7 +333,7 @@ fun DropZoneScreen(
                             )
                         ) {
                             Text(
-                                text = "No Drop Zones yet. Open the create form above when you want to receive files from outsiders.",
+                                text = stringResource(R.string.drop_zone_empty_owner),
                                 modifier = Modifier.padding(18.dp),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = DzMuted
@@ -347,7 +351,7 @@ fun DropZoneScreen(
 
     renewCandidate?.let { zone ->
         DropZoneRenewDialog(
-            zoneName = zone.name.ifBlank { "Drop Zone" },
+            zoneName = zone.name.ifBlank { dropZoneNameFallback },
             onDismiss = { renewCandidate = null },
             onRenew = { seconds ->
                 renewCandidate = null
@@ -362,11 +366,11 @@ fun DropZoneScreen(
             containerColor = DzPanel,
             titleContentColor = DzText,
             textContentColor = DzMuted,
-            title = { Text("Clear upload history?") },
+            title = { Text(stringResource(R.string.drop_zone_clear_history_title)) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(zone.name.ifBlank { "Drop Zone" })
-                    Text("This clears the Drop Zone upload history list. Uploaded files are not deleted.")
+                    Text(zone.name.ifBlank { dropZoneNameFallback })
+                    Text(stringResource(R.string.drop_zone_clear_history_desc))
                 }
             },
             confirmButton = {
@@ -376,12 +380,12 @@ fun DropZoneScreen(
                         onClearHistory(zone.id)
                     }
                 ) {
-                    Text("Clear")
+                    Text(stringResource(R.string.drop_zone_clear))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { clearHistoryCandidate = null }) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.drop_zone_cancel))
                 }
             }
         )
@@ -389,7 +393,7 @@ fun DropZoneScreen(
 
     if (historyOpen) {
         DropZoneHistoryDialog(
-            title = historyTitle.ifBlank { "Drop Zone history" },
+            title = historyTitle.ifBlank { dropZoneHistoryFallback },
             uploads = historyUploads,
             loading = historyLoading,
             status = historyStatus,
@@ -403,11 +407,11 @@ fun DropZoneScreen(
             containerColor = DzPanel,
             titleContentColor = DzText,
             textContentColor = DzMuted,
-            title = { Text("Disable Drop Zone?") },
+            title = { Text(stringResource(R.string.drop_zone_disable_title)) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(zone.name.ifBlank { "Drop Zone" })
-                    Text("This will stop the public upload link from accepting more files.")
+                    Text(zone.name.ifBlank { dropZoneNameFallback })
+                    Text(stringResource(R.string.drop_zone_disable_desc))
                 }
             },
             confirmButton = {
@@ -417,12 +421,12 @@ fun DropZoneScreen(
                         onDisable(zone.id)
                     }
                 ) {
-                    Text("Disable", color = DzBad)
+                    Text(stringResource(R.string.drop_zone_disable), color = DzBad)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { disableCandidate = null }) {
-                    Text("Cancel", color = DzMuted)
+                    Text(stringResource(R.string.drop_zone_cancel), color = DzMuted)
                 }
             }
         )
@@ -472,28 +476,28 @@ private fun DropZoneHeader(
         IconButton(onClick = onClose) {
             Icon(
                 imageVector = Icons.Default.ArrowBack,
-                contentDescription = "Back",
+                contentDescription = stringResource(R.string.drop_zone_back),
                 tint = DzText
             )
         }
 
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = "DNA-NEXUS SERVER",
+                text = stringResource(R.string.drop_zone_header_kicker),
                 style = MaterialTheme.typography.labelSmall,
                 fontWeight = FontWeight.Bold,
                 color = DzOrange
             )
 
             Text(
-                text = "Drop Zone",
+                text = stringResource(R.string.drop_zone),
                 style = MaterialTheme.typography.headlineLarge,
                 fontWeight = FontWeight.Bold,
                 color = DzText
             )
 
             Text(
-                text = "Secure one-way upload links for outsiders.",
+                text = stringResource(R.string.drop_zone_header_subtitle),
                 style = MaterialTheme.typography.bodySmall,
                 color = DzMuted
             )
@@ -512,29 +516,29 @@ private fun DropZoneRenewDialog(
         containerColor = DzPanel,
         titleContentColor = DzText,
         textContentColor = DzMuted,
-        title = { Text("Renew Drop Zone") },
+        title = { Text(stringResource(R.string.drop_zone_renew_title)) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(zoneName)
-                Text("Choose how long the public upload link should stay active from now.")
+                Text(stringResource(R.string.drop_zone_renew_desc))
             }
         },
         confirmButton = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 TextButton(onClick = { onRenew(7L * 24L * 60L * 60L) }) {
-                    Text("Renew 7 days")
+                    Text(stringResource(R.string.drop_zone_renew_7_days))
                 }
                 TextButton(onClick = { onRenew(30L * 24L * 60L * 60L) }) {
-                    Text("Renew 30 days")
+                    Text(stringResource(R.string.drop_zone_renew_30_days))
                 }
                 TextButton(onClick = { onRenew(90L * 24L * 60L * 60L) }) {
-                    Text("Renew 90 days")
+                    Text(stringResource(R.string.drop_zone_renew_90_days))
                 }
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancel")
+                Text(stringResource(R.string.drop_zone_cancel))
             }
         }
     )
@@ -562,13 +566,13 @@ private fun DropZoneCollapsedCreateCard(
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             Text(
-                text = "Create branded upload link",
+                text = stringResource(R.string.drop_zone_create_branded_link),
                 style = MaterialTheme.typography.titleMedium,
                 color = DzText
             )
 
             Text(
-                text = "Open the form only when you want to create a new branded public upload page.",
+                text = stringResource(R.string.drop_zone_create_collapsed_desc),
                 style = MaterialTheme.typography.bodySmall,
                 color = DzMuted
             )
@@ -577,7 +581,7 @@ private fun DropZoneCollapsedCreateCard(
                 onClick = onOpen,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Create branded upload link")
+                Text(stringResource(R.string.drop_zone_create_branded_link))
             }
         }
     }
@@ -638,32 +642,32 @@ private fun DropZoneCreateCard(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Text(
-                text = "Create branded upload link",
+                text = stringResource(R.string.drop_zone_create_branded_link),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 color = DzText
             )
 
             Text(
-                text = "Uploaders can send files only. They cannot browse, download, rename, or delete anything.",
+                text = stringResource(R.string.drop_zone_create_security_note),
                 style = MaterialTheme.typography.bodySmall,
                 color = DzMuted
             )
 
-            DzSectionTitle("Basics")
+            DzSectionTitle(stringResource(R.string.drop_zone_section_basics))
 
             DzTextField(
                 value = name,
                 onValueChange = onNameChange,
-                label = "Name",
-                placeholder = "Drop Zone"
+                label = stringResource(R.string.drop_zone_name_label),
+                placeholder = stringResource(R.string.drop_zone_name_placeholder)
             )
 
             DzTextField(
                 value = destination,
                 onValueChange = onDestinationChange,
-                label = "Destination folder",
-                placeholder = "Incoming/Drop Zones/Drop Zone"
+                label = stringResource(R.string.drop_zone_destination_label),
+                placeholder = stringResource(R.string.drop_zone_destination_placeholder)
             )
 
             OutlinedTextField(
@@ -671,83 +675,83 @@ private fun DropZoneCreateCard(
                 onValueChange = onPasswordChange,
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
-                label = { Text("Password, optional") },
-                placeholder = { Text("Leave empty for no password") },
+                label = { Text(stringResource(R.string.drop_zone_password_label)) },
+                placeholder = { Text(stringResource(R.string.drop_zone_password_placeholder)) },
                 visualTransformation = PasswordVisualTransformation(),
                 colors = dzTextFieldColors()
             )
 
-            DzSectionTitle("Validity")
+            DzSectionTitle(stringResource(R.string.drop_zone_section_validity))
 
             DzExpiryOptions.forEach { option ->
                 DzSelectionRow(
-                    title = option.label,
-                    subtitle = option.description,
+                    title = stringResource(option.labelRes),
+                    subtitle = stringResource(option.descriptionRes),
                     selected = expiresInSeconds == option.seconds,
                     onClick = { onExpiresInSecondsChange(option.seconds) }
                 )
             }
 
-            DzSectionTitle("Limits")
+            DzSectionTitle(stringResource(R.string.drop_zone_section_limits))
 
             DzTextField(
                 value = maxFileBytesText,
                 onValueChange = onMaxFileBytesTextChange,
-                label = "Max file size, optional",
-                placeholder = "Example: 500 MB, 2 GB"
+                label = stringResource(R.string.drop_zone_max_file_label),
+                placeholder = stringResource(R.string.drop_zone_max_file_placeholder)
             )
 
             DzTextField(
                 value = maxTotalBytesText,
                 onValueChange = onMaxTotalBytesTextChange,
-                label = "Max total upload size, optional",
-                placeholder = "Example: 5 GB"
+                label = stringResource(R.string.drop_zone_max_total_label),
+                placeholder = stringResource(R.string.drop_zone_max_total_placeholder)
             )
 
-            DzSectionTitle("Duplicate filenames")
+            DzSectionTitle(stringResource(R.string.drop_zone_section_duplicates))
 
             DzSelectionRow(
-                title = "Version existing file",
-                subtitle = "Preserve the old live file as a File Manager version, then replace live file.",
+                title = stringResource(R.string.drop_zone_duplicate_version_title),
+                subtitle = stringResource(R.string.drop_zone_duplicate_version_desc),
                 selected = duplicatePolicy == "version",
                 onClick = { onDuplicatePolicyChange("version") }
             )
 
             DzSelectionRow(
-                title = "Keep both",
-                subtitle = "Save the new upload as name (1).ext when a file already exists.",
+                title = stringResource(R.string.drop_zone_duplicate_keep_both_title),
+                subtitle = stringResource(R.string.drop_zone_duplicate_keep_both_desc),
                 selected = duplicatePolicy == "keep_both",
                 onClick = { onDuplicatePolicyChange("keep_both") }
             )
 
             DzSelectionRow(
-                title = "Reject duplicate",
-                subtitle = "Reject uploads that would overwrite an existing filename.",
+                title = stringResource(R.string.drop_zone_duplicate_reject_title),
+                subtitle = stringResource(R.string.drop_zone_duplicate_reject_desc),
                 selected = duplicatePolicy == "reject",
                 onClick = { onDuplicatePolicyChange("reject") }
             )
 
-            DzSectionTitle("Branded public page")
+            DzSectionTitle(stringResource(R.string.drop_zone_section_branding))
 
             DzTextField(
                 value = brandingCompanyName,
                 onValueChange = onBrandingCompanyNameChange,
-                label = "Company / page brand",
+                label = stringResource(R.string.drop_zone_company_brand_label),
                 placeholder = "Pohjola Cloud Oy"
             )
 
             DzTextField(
                 value = brandingKicker,
                 onValueChange = onBrandingKickerChange,
-                label = "Kicker",
-                placeholder = "Secure upload"
+                label = stringResource(R.string.drop_zone_kicker_label),
+                placeholder = stringResource(R.string.drop_zone_kicker_placeholder)
             )
 
             DzTextField(
                 value = brandingTitle,
                 onValueChange = onBrandingTitleChange,
-                label = "Public page title",
-                placeholder = "Send files securely"
+                label = stringResource(R.string.drop_zone_public_title_label),
+                placeholder = stringResource(R.string.drop_zone_public_title_placeholder)
             )
 
             OutlinedTextField(
@@ -756,29 +760,29 @@ private fun DropZoneCreateCard(
                 modifier = Modifier.fillMaxWidth(),
                 minLines = 3,
                 maxLines = 5,
-                label = { Text("Public page description") },
-                placeholder = { Text("Tell the uploader what this page is for.") },
+                label = { Text(stringResource(R.string.drop_zone_public_desc_label)) },
+                placeholder = { Text(stringResource(R.string.drop_zone_public_desc_placeholder)) },
                 colors = dzTextFieldColors()
             )
 
             DzTextField(
                 value = brandingButtonText,
                 onValueChange = onBrandingButtonTextChange,
-                label = "Upload button text",
-                placeholder = "Upload files"
+                label = stringResource(R.string.drop_zone_button_text_label),
+                placeholder = stringResource(R.string.drop_zone_button_text_placeholder)
             )
 
             DzTextField(
                 value = brandingFooterText,
                 onValueChange = onBrandingFooterTextChange,
-                label = "Footer text",
-                placeholder = "Powered by DNA-Nexus"
+                label = stringResource(R.string.drop_zone_footer_text_label),
+                placeholder = stringResource(R.string.drop_zone_footer_text_placeholder)
             )
 
             DzTextField(
                 value = brandingLogoUrl,
                 onValueChange = onBrandingLogoUrlChange,
-                label = "Logo URL, optional",
+                label = stringResource(R.string.drop_zone_logo_url_label),
                 placeholder = "https://example.com/logo.png"
             )
 
@@ -789,7 +793,7 @@ private fun DropZoneCreateCard(
                 DzTextField(
                     value = brandingPrimaryColor,
                     onValueChange = onBrandingPrimaryColorChange,
-                    label = "Primary",
+                    label = stringResource(R.string.drop_zone_primary_color_label),
                     placeholder = "#ff9f1a",
                     modifier = Modifier.weight(1f)
                 )
@@ -797,7 +801,7 @@ private fun DropZoneCreateCard(
                 DzTextField(
                     value = brandingButtonTextColor,
                     onValueChange = onBrandingButtonTextColorChange,
-                    label = "Button text",
+                    label = stringResource(R.string.drop_zone_button_text_color_label),
                     placeholder = "#000000",
                     modifier = Modifier.weight(1f)
                 )
@@ -810,7 +814,7 @@ private fun DropZoneCreateCard(
                 DzTextField(
                     value = brandingBackgroundColor,
                     onValueChange = onBrandingBackgroundColorChange,
-                    label = "Background",
+                    label = stringResource(R.string.drop_zone_background_color_label),
                     placeholder = "#070a10",
                     modifier = Modifier.weight(1f)
                 )
@@ -818,7 +822,7 @@ private fun DropZoneCreateCard(
                 DzTextField(
                     value = brandingPanelColor,
                     onValueChange = onBrandingPanelColorChange,
-                    label = "Panel",
+                    label = stringResource(R.string.drop_zone_panel_color_label),
                     placeholder = "#15161d",
                     modifier = Modifier.weight(1f)
                 )
@@ -827,7 +831,7 @@ private fun DropZoneCreateCard(
             DzTextField(
                 value = brandingTextColor,
                 onValueChange = onBrandingTextColorChange,
-                label = "Text color",
+                label = stringResource(R.string.drop_zone_text_color_label),
                 placeholder = "#f4f4f6"
             )
 
@@ -842,7 +846,7 @@ private fun DropZoneCreateCard(
                     disabledContentColor = DzMuted
                 )
             ) {
-                Text(if (creating) "Creating..." else "Create Drop Zone")
+                Text(if (creating) stringResource(R.string.drop_zone_creating) else stringResource(R.string.drop_zone_create_button))
             }
         }
     }
@@ -865,7 +869,7 @@ private fun DropZoneLatestLinkCard(
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             Text(
-                text = "New public upload link",
+                text = stringResource(R.string.drop_zone_latest_link_title),
                 style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.Bold,
                 color = DzOrangeSoft
@@ -885,7 +889,7 @@ private fun DropZoneLatestLinkCard(
                     contentColor = DzText
                 )
             ) {
-                Text("Copy link")
+                Text(stringResource(R.string.drop_zone_copy_link))
             }
         }
     }
@@ -913,7 +917,7 @@ private fun DropZoneExistingHeader(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Existing Drop Zones",
+                    text = stringResource(R.string.drop_zone_existing_title),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = DzText
@@ -927,12 +931,12 @@ private fun DropZoneExistingHeader(
                         disabledContentColor = DzMuted
                     )
                 ) {
-                    Text(if (loading) "Loading..." else "Refresh")
+                    Text(if (loading) stringResource(R.string.drop_zone_loading) else stringResource(R.string.drop_zone_refresh))
                 }
             }
 
             Text(
-                text = "For security, public URLs are shown only immediately after creation.",
+                text = stringResource(R.string.drop_zone_public_urls_note),
                 style = MaterialTheme.typography.bodySmall,
                 color = DzMuted
             )
@@ -975,15 +979,19 @@ private fun DropZoneExistingCard(
     onClearHistory: () -> Unit) {
     val zoneExpired = dropZoneIsExpired(zone)
     val zoneStatusText = when {
-        zone.disabled -> "Disabled"
-        zoneExpired -> "Expired"
-        else -> "Active"
+        zone.disabled -> stringResource(R.string.drop_zone_status_disabled)
+        zoneExpired -> stringResource(R.string.drop_zone_status_expired)
+        else -> stringResource(R.string.drop_zone_status_active)
     }
     val zoneStatusColor = when {
         zone.disabled -> DzMuted
         zoneExpired -> DzBad
         else -> DzGood
     }
+    val dropZoneNameFallback = stringResource(R.string.drop_zone)
+    val noDestinationText = stringResource(R.string.drop_zone_no_destination)
+    val uploadCountText = stringResource(R.string.drop_zone_uploads_count, zone.upload_count)
+    val passwordRequiredText = stringResource(R.string.drop_zone_password_required)
 
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -1003,14 +1011,14 @@ private fun DropZoneExistingCard(
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = zone.name.ifBlank { "Drop Zone" },
+                        text = zone.name.ifBlank { dropZoneNameFallback },
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold,
                         color = DzText
                     )
 
                     Text(
-                        text = zone.destination_path.ifBlank { "No destination" },
+                        text = zone.destination_path.ifBlank { noDestinationText },
                         style = MaterialTheme.typography.bodySmall,
                         color = DzMuted
                     )
@@ -1026,14 +1034,14 @@ private fun DropZoneExistingCard(
 
             Text(
                 text = buildString {
-                    append(zone.upload_count)
-                    append(" uploads")
+                    append(uploadCountText)
                     if (zone.bytes_uploaded > 0L) {
                         append(" • ")
                         append(formatDzBytes(zone.bytes_uploaded))
                     }
                     if (zone.password_required) {
-                        append(" • password")
+                        append(" • ")
+                        append(passwordRequiredText)
                     }
                 },
                 style = MaterialTheme.typography.bodySmall,
@@ -1055,17 +1063,17 @@ private fun DropZoneExistingCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     DropZoneActionButton(
-                        text = "Edit",
+                        text = stringResource(R.string.drop_zone_edit),
                         onClick = onEdit
                     )
 
                     DropZoneActionButton(
-                        text = "New uploads",
+                        text = stringResource(R.string.drop_zone_new_uploads),
                         onClick = onHistory
                     )
 
                     DropZoneActionButton(
-                        text = "Renew",
+                        text = stringResource(R.string.drop_zone_renew),
                         onClick = onRenew
                     )
                 }
@@ -1076,13 +1084,13 @@ private fun DropZoneExistingCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     DropZoneActionButton(
-                        text = "Clear new",
+                        text = stringResource(R.string.drop_zone_clear_new),
                         onClick = onClearHistory
                     )
 
                     if (!zone.disabled) {
                         DropZoneActionButton(
-                            text = "Disable",
+                            text = stringResource(R.string.drop_zone_disable),
                             onClick = onDisable
                         )
                     }
@@ -1100,12 +1108,14 @@ private fun DropZoneHistoryDialog(
     status: String,
     onDismiss: () -> Unit
 ) {
+    val uploadedFileFallback = stringResource(R.string.drop_zone_uploaded_file)
+
     AlertDialog(
         onDismissRequest = onDismiss,
         containerColor = DzPanel,
         titleContentColor = DzText,
         textContentColor = DzMuted,
-        title = { Text("${title} · New uploads") },
+        title = { Text(stringResource(R.string.drop_zone_history_title, title)) },
         text = {
             Column(
                 modifier = Modifier
@@ -1132,7 +1142,7 @@ private fun DropZoneHistoryDialog(
 
                 if (!loading && uploads.isEmpty()) {
                     Text(
-                        text = "No new uploads waiting.",
+                        text = stringResource(R.string.drop_zone_no_new_uploads),
                         style = MaterialTheme.typography.bodyMedium,
                         color = DzMuted
                     )
@@ -1156,7 +1166,7 @@ private fun DropZoneHistoryDialog(
                             Text(
                                 text = upload.stored_filename
                                     .ifBlank { upload.original_filename }
-                                    .ifBlank { "Uploaded file" },
+                                    .ifBlank { uploadedFileFallback },
                                 style = MaterialTheme.typography.bodyMedium,
                                 fontWeight = FontWeight.SemiBold,
                                 color = DzText
@@ -1198,7 +1208,7 @@ private fun DropZoneHistoryDialog(
                                 upload.scan_status != "not_scanned"
                             ) {
                                 Text(
-                                    text = "Scan: ${upload.scan_status}",
+                                    text = stringResource(R.string.drop_zone_scan_value, upload.scan_status),
                                     style = MaterialTheme.typography.bodySmall,
                                     color = DzMuted
                                 )
@@ -1210,7 +1220,7 @@ private fun DropZoneHistoryDialog(
         },
         confirmButton = {
             TextButton(onClick = onDismiss) {
-                Text("Close", color = DzOrangeSoft)
+                Text(stringResource(R.string.drop_zone_close), color = DzOrangeSoft)
             }
         }
     )
@@ -1296,13 +1306,24 @@ private fun DzSelectionRow(
 @Composable
 private fun DropZoneExistingDetails(zone: DropZoneInfo) {
     val brandingSummary = dropZoneBrandingSummary(zone)
+    val duplicatePolicyText = stringResource(duplicatePolicyLabelRes(zone.duplicate_policy))
+    val maxFileLimitText = if (zone.max_file_bytes > 0L) {
+        stringResource(R.string.drop_zone_max_file_value, formatDzBytes(zone.max_file_bytes))
+    } else {
+        ""
+    }
+    val maxTotalLimitText = if (zone.max_total_bytes > 0L) {
+        stringResource(R.string.drop_zone_max_total_value, formatDzBytes(zone.max_total_bytes))
+    } else {
+        ""
+    }
 
     Column(
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         if (zone.has_pending_uploads || zone.pending_upload_count > 0L) {
             Text(
-                text = "New uploads waiting: ${zone.pending_upload_count}",
+                text = stringResource(R.string.drop_zone_pending_uploads, zone.pending_upload_count),
                 style = MaterialTheme.typography.bodySmall,
                 fontWeight = FontWeight.Bold,
                 color = DzOrangeSoft
@@ -1310,7 +1331,7 @@ private fun DropZoneExistingDetails(zone: DropZoneInfo) {
         }
 
         Text(
-            text = "Duplicate policy: ${duplicatePolicyLabel(zone.duplicate_policy)}",
+            text = stringResource(R.string.drop_zone_duplicate_policy_value, duplicatePolicyText),
             style = MaterialTheme.typography.bodySmall,
             color = DzMuted
         )
@@ -1319,13 +1340,11 @@ private fun DropZoneExistingDetails(zone: DropZoneInfo) {
             Text(
                 text = buildString {
                     if (zone.max_file_bytes > 0L) {
-                        append("Max file ")
-                        append(formatDzBytes(zone.max_file_bytes))
+                        append(maxFileLimitText)
                     }
                     if (zone.max_total_bytes > 0L) {
                         if (isNotEmpty()) append(" • ")
-                        append("Max total ")
-                        append(formatDzBytes(zone.max_total_bytes))
+                        append(maxTotalLimitText)
                     }
                 },
                 style = MaterialTheme.typography.bodySmall,
@@ -1335,7 +1354,7 @@ private fun DropZoneExistingDetails(zone: DropZoneInfo) {
 
         if (brandingSummary.isNotBlank()) {
             Text(
-                text = "Branding: $brandingSummary",
+                text = stringResource(R.string.drop_zone_branding_value, brandingSummary),
                 style = MaterialTheme.typography.bodySmall,
                 color = DzMuted
             )
@@ -1355,7 +1374,7 @@ private fun DropZoneEditDialog(
         containerColor = DzPanel,
         titleContentColor = DzText,
         textContentColor = DzMuted,
-        title = { Text("Edit Drop Zone") },
+        title = { Text(stringResource(R.string.drop_zone_edit_title)) },
         text = {
             Column(
                 modifier = Modifier
@@ -1364,80 +1383,80 @@ private fun DropZoneEditDialog(
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 Text(
-                    text = "This edits the owner-side settings. It does not change the destination folder, password, or public token.",
+                    text = stringResource(R.string.drop_zone_edit_note),
                     style = MaterialTheme.typography.bodySmall,
                     color = DzMuted
                 )
 
-                DzSectionTitle("Basics")
+                DzSectionTitle(stringResource(R.string.drop_zone_section_basics))
 
                 DzTextField(
                     value = draft.name,
                     onValueChange = { onDraftChange(draft.copy(name = it)) },
-                    label = "Name",
-                    placeholder = "Drop Zone"
+                    label = stringResource(R.string.drop_zone_name_label),
+                    placeholder = stringResource(R.string.drop_zone_name_placeholder)
                 )
 
-                DzSectionTitle("Limits")
+                DzSectionTitle(stringResource(R.string.drop_zone_section_limits))
 
                 DzTextField(
                     value = draft.maxFileBytesText,
                     onValueChange = { onDraftChange(draft.copy(maxFileBytesText = it)) },
-                    label = "Max file size, optional",
-                    placeholder = "Example: 500 MB, 2 GB"
+                    label = stringResource(R.string.drop_zone_max_file_label),
+                    placeholder = stringResource(R.string.drop_zone_max_file_placeholder)
                 )
 
                 DzTextField(
                     value = draft.maxTotalBytesText,
                     onValueChange = { onDraftChange(draft.copy(maxTotalBytesText = it)) },
-                    label = "Max total upload size, optional",
-                    placeholder = "Example: 5 GB"
+                    label = stringResource(R.string.drop_zone_max_total_label),
+                    placeholder = stringResource(R.string.drop_zone_max_total_placeholder)
                 )
 
-                DzSectionTitle("Duplicate filenames")
+                DzSectionTitle(stringResource(R.string.drop_zone_section_duplicates))
 
                 DzSelectionRow(
-                    title = "Version existing file",
-                    subtitle = "Preserve the old live file as a File Manager version, then replace live file.",
+                    title = stringResource(R.string.drop_zone_duplicate_version_title),
+                    subtitle = stringResource(R.string.drop_zone_duplicate_version_desc),
                     selected = draft.duplicatePolicy == "version",
                     onClick = { onDraftChange(draft.copy(duplicatePolicy = "version")) }
                 )
 
                 DzSelectionRow(
-                    title = "Keep both",
-                    subtitle = "Save the new upload as name (1).ext when a file already exists.",
+                    title = stringResource(R.string.drop_zone_duplicate_keep_both_title),
+                    subtitle = stringResource(R.string.drop_zone_duplicate_keep_both_desc),
                     selected = draft.duplicatePolicy == "keep_both",
                     onClick = { onDraftChange(draft.copy(duplicatePolicy = "keep_both")) }
                 )
 
                 DzSelectionRow(
-                    title = "Reject duplicate",
-                    subtitle = "Reject uploads that would overwrite an existing filename.",
+                    title = stringResource(R.string.drop_zone_duplicate_reject_title),
+                    subtitle = stringResource(R.string.drop_zone_duplicate_reject_desc),
                     selected = draft.duplicatePolicy == "reject",
                     onClick = { onDraftChange(draft.copy(duplicatePolicy = "reject")) }
                 )
 
-                DzSectionTitle("Branded public page")
+                DzSectionTitle(stringResource(R.string.drop_zone_section_branding))
 
                 DzTextField(
                     value = draft.brandingCompanyName,
                     onValueChange = { onDraftChange(draft.copy(brandingCompanyName = it)) },
-                    label = "Company / page brand",
+                    label = stringResource(R.string.drop_zone_company_brand_label),
                     placeholder = "Pohjola Cloud Oy"
                 )
 
                 DzTextField(
                     value = draft.brandingKicker,
                     onValueChange = { onDraftChange(draft.copy(brandingKicker = it)) },
-                    label = "Kicker",
-                    placeholder = "Secure upload"
+                    label = stringResource(R.string.drop_zone_kicker_label),
+                    placeholder = stringResource(R.string.drop_zone_kicker_placeholder)
                 )
 
                 DzTextField(
                     value = draft.brandingTitle,
                     onValueChange = { onDraftChange(draft.copy(brandingTitle = it)) },
-                    label = "Public page title",
-                    placeholder = "Send files securely"
+                    label = stringResource(R.string.drop_zone_public_title_label),
+                    placeholder = stringResource(R.string.drop_zone_public_title_placeholder)
                 )
 
                 OutlinedTextField(
@@ -1446,29 +1465,29 @@ private fun DropZoneEditDialog(
                     modifier = Modifier.fillMaxWidth(),
                     minLines = 3,
                     maxLines = 5,
-                    label = { Text("Public page description") },
-                    placeholder = { Text("Tell the uploader what this page is for.") },
+                    label = { Text(stringResource(R.string.drop_zone_public_desc_label)) },
+                    placeholder = { Text(stringResource(R.string.drop_zone_public_desc_placeholder)) },
                     colors = dzTextFieldColors()
                 )
 
                 DzTextField(
                     value = draft.brandingButtonText,
                     onValueChange = { onDraftChange(draft.copy(brandingButtonText = it)) },
-                    label = "Upload button text",
-                    placeholder = "Upload files"
+                    label = stringResource(R.string.drop_zone_button_text_label),
+                    placeholder = stringResource(R.string.drop_zone_button_text_placeholder)
                 )
 
                 DzTextField(
                     value = draft.brandingFooterText,
                     onValueChange = { onDraftChange(draft.copy(brandingFooterText = it)) },
-                    label = "Footer text",
-                    placeholder = "Powered by DNA-Nexus"
+                    label = stringResource(R.string.drop_zone_footer_text_label),
+                    placeholder = stringResource(R.string.drop_zone_footer_text_placeholder)
                 )
 
                 DzTextField(
                     value = draft.brandingLogoUrl,
                     onValueChange = { onDraftChange(draft.copy(brandingLogoUrl = it)) },
-                    label = "Logo URL, optional",
+                    label = stringResource(R.string.drop_zone_logo_url_label),
                     placeholder = "https://example.com/logo.png"
                 )
 
@@ -1479,7 +1498,7 @@ private fun DropZoneEditDialog(
                     DzTextField(
                         value = draft.brandingPrimaryColor,
                         onValueChange = { onDraftChange(draft.copy(brandingPrimaryColor = it)) },
-                        label = "Primary",
+                        label = stringResource(R.string.drop_zone_primary_color_label),
                         placeholder = "#ff9f1a",
                         modifier = Modifier.weight(1f)
                     )
@@ -1487,7 +1506,7 @@ private fun DropZoneEditDialog(
                     DzTextField(
                         value = draft.brandingButtonTextColor,
                         onValueChange = { onDraftChange(draft.copy(brandingButtonTextColor = it)) },
-                        label = "Button text",
+                        label = stringResource(R.string.drop_zone_button_text_color_label),
                         placeholder = "#000000",
                         modifier = Modifier.weight(1f)
                     )
@@ -1500,7 +1519,7 @@ private fun DropZoneEditDialog(
                     DzTextField(
                         value = draft.brandingBackgroundColor,
                         onValueChange = { onDraftChange(draft.copy(brandingBackgroundColor = it)) },
-                        label = "Background",
+                        label = stringResource(R.string.drop_zone_background_color_label),
                         placeholder = "#070a10",
                         modifier = Modifier.weight(1f)
                     )
@@ -1508,7 +1527,7 @@ private fun DropZoneEditDialog(
                     DzTextField(
                         value = draft.brandingPanelColor,
                         onValueChange = { onDraftChange(draft.copy(brandingPanelColor = it)) },
-                        label = "Panel",
+                        label = stringResource(R.string.drop_zone_panel_color_label),
                         placeholder = "#15161d",
                         modifier = Modifier.weight(1f)
                     )
@@ -1517,19 +1536,19 @@ private fun DropZoneEditDialog(
                 DzTextField(
                     value = draft.brandingTextColor,
                     onValueChange = { onDraftChange(draft.copy(brandingTextColor = it)) },
-                    label = "Text color",
+                    label = stringResource(R.string.drop_zone_text_color_label),
                     placeholder = "#f4f4f6"
                 )
             }
         },
         confirmButton = {
             TextButton(onClick = { onSave(draft) }) {
-                Text("Save", color = DzOrangeSoft)
+                Text(stringResource(R.string.drop_zone_save), color = DzOrangeSoft)
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancel", color = DzMuted)
+                Text(stringResource(R.string.drop_zone_cancel), color = DzMuted)
             }
         }
     )
@@ -1621,11 +1640,11 @@ private fun formatDzLimitForEdit(bytes: Long): String {
     }
 }
 
-private fun duplicatePolicyLabel(policy: String): String =
+private fun duplicatePolicyLabelRes(policy: String): Int =
     when (policy.lowercase(Locale.US)) {
-        "keep_both" -> "Keep both"
-        "reject" -> "Reject duplicates"
-        else -> "Version existing file"
+        "keep_both" -> R.string.drop_zone_duplicate_label_keep_both
+        "reject" -> R.string.drop_zone_duplicate_label_reject
+        else -> R.string.drop_zone_duplicate_label_version
     }
 
 private fun dropZoneBrandingSummary(zone: DropZoneInfo): String {

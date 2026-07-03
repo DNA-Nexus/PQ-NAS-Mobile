@@ -42,9 +42,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.pqnas.mobile.R
 import com.pqnas.mobile.api.EchoStackItemDto
 import com.pqnas.mobile.echostack.EchoStackRepository
 import com.pqnas.mobile.echostack.echoStackFriendlyMessage
@@ -73,6 +76,7 @@ fun EchoStackScreen(
     onClose: () -> Unit
 ) {
     val scope = rememberCoroutineScope()
+    val context = LocalContext.current
     val uriHandler = LocalUriHandler.current
 
     var items by remember { mutableStateOf<List<EchoStackItemDto>>(emptyList()) }
@@ -83,7 +87,7 @@ fun EchoStackScreen(
     var newTags by remember { mutableStateOf("") }
     var newNotes by remember { mutableStateOf("") }
     var showAddMetadata by remember { mutableStateOf(false) }
-    var status by remember { mutableStateOf("Loading Echo Stack...") }
+    var status by remember { mutableStateOf(context.getString(R.string.echo_stack_loading)) }
     var workingStatusBase by remember { mutableStateOf<String?>(null) }
     var workingDots by remember { mutableStateOf(0) }
     var archivingIds by remember { mutableStateOf<Set<String>>(emptySet()) }
@@ -100,19 +104,19 @@ fun EchoStackScreen(
     fun loadItems() {
         scope.launch {
             loading = true
-            status = "Loading Echo Stack..."
+            status = context.getString(R.string.echo_stack_loading)
 
             runCatching {
                 repository.listItems(query)
             }.onSuccess { loaded ->
                 items = loaded
                 status = if (loaded.isEmpty()) {
-                    if (query.isBlank()) "No Echo Stack items yet." else "No matching Echo Stack items."
+                    if (query.isBlank()) context.getString(R.string.echo_stack_empty) else context.getString(R.string.echo_stack_no_matches)
                 } else {
-                    "Ready."
+                    context.getString(R.string.echo_stack_ready)
                 }
             }.onFailure { e ->
-                status = echoStackFriendlyMessage("Load", e)
+                status = echoStackFriendlyMessage(context.getString(R.string.echo_stack_action_load), e)
             }
 
             loading = false
@@ -122,13 +126,13 @@ fun EchoStackScreen(
     fun createItem() {
         val url = newUrl.trim()
         if (url.isBlank()) {
-            status = "Paste a URL first."
+            status = context.getString(R.string.echo_stack_paste_url)
             return
         }
 
         scope.launch {
             creating = true
-            status = "Saving Echo Stack item..."
+            status = context.getString(R.string.echo_stack_saving_item)
 
             runCatching {
                 repository.createFromUrl(
@@ -146,9 +150,9 @@ fun EchoStackScreen(
                 newNotes = ""
                 showAddMetadata = false
                 items = listOf(created) + items
-                status = "Saved."
+                status = context.getString(R.string.echo_stack_saved)
             }.onFailure { e ->
-                status = echoStackFriendlyMessage("Save", e)
+                status = echoStackFriendlyMessage(context.getString(R.string.echo_stack_action_save), e)
             }
 
             creating = false
@@ -157,30 +161,30 @@ fun EchoStackScreen(
 
     fun setFavorite(item: EchoStackItemDto, favorite: Boolean) {
         scope.launch {
-            status = "Updating favorite..."
+            status = context.getString(R.string.echo_stack_updating_favorite)
 
             runCatching {
                 repository.setFavorite(item, favorite)
             }.onSuccess { updated ->
                 replaceItem(updated)
-                status = "Updated."
+                status = context.getString(R.string.echo_stack_updated)
             }.onFailure { e ->
-                status = echoStackFriendlyMessage("Favorite", e)
+                status = echoStackFriendlyMessage(context.getString(R.string.echo_stack_action_favorite), e)
             }
         }
     }
 
     fun setRead(item: EchoStackItemDto, read: Boolean) {
         scope.launch {
-            status = "Updating read state..."
+            status = context.getString(R.string.echo_stack_updating_read_state)
 
             runCatching {
                 repository.setReadState(item, read)
             }.onSuccess { updated ->
                 replaceItem(updated)
-                status = "Updated."
+                status = context.getString(R.string.echo_stack_updated)
             }.onFailure { e ->
-                status = echoStackFriendlyMessage("Read state", e)
+                status = echoStackFriendlyMessage(context.getString(R.string.echo_stack_action_read_state), e)
             }
         }
     }
@@ -188,7 +192,7 @@ fun EchoStackScreen(
     fun archive(item: EchoStackItemDto) {
         scope.launch {
             archivingIds = archivingIds + item.id
-            workingStatusBase = "Archiving page snapshot"
+            workingStatusBase = context.getString(R.string.echo_stack_archiving_snapshot)
             status = ""
 
             runCatching {
@@ -196,10 +200,10 @@ fun EchoStackScreen(
             }.onSuccess { updated ->
                 replaceItem(updated)
                 workingStatusBase = null
-                status = if (updated.archive_status == "archived") "Archived." else "Archive updated."
+                status = if (updated.archive_status == "archived") context.getString(R.string.echo_stack_archived) else context.getString(R.string.echo_stack_archive_updated)
             }.onFailure { e ->
                 workingStatusBase = null
-                status = echoStackFriendlyMessage("Archive", e)
+                status = echoStackFriendlyMessage(context.getString(R.string.echo_stack_action_archive), e)
                 loadItems()
             }
 
@@ -209,16 +213,16 @@ fun EchoStackScreen(
 
     fun deleteItem(item: EchoStackItemDto) {
         scope.launch {
-            status = "Deleting..."
+            status = context.getString(R.string.echo_stack_deleting)
 
             runCatching {
                 repository.delete(item.id)
             }.onSuccess {
                 items = items.filterNot { it.id == item.id }
                 deleteCandidate = null
-                status = "Deleted."
+                status = context.getString(R.string.echo_stack_deleted)
             }.onFailure { e ->
-                status = echoStackFriendlyMessage("Delete", e)
+                status = echoStackFriendlyMessage(context.getString(R.string.echo_stack_action_delete), e)
             }
         }
     }
@@ -258,28 +262,28 @@ fun EchoStackScreen(
                 IconButton(onClick = onClose) {
                     Icon(
                         imageVector = Icons.Default.ArrowBack,
-                        contentDescription = "Back",
+                        contentDescription = stringResource(R.string.echo_stack_back),
                         tint = EchoText
                     )
                 }
 
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "DNA-NEXUS",
+                        text = stringResource(R.string.echo_stack_header_kicker),
                         style = MaterialTheme.typography.labelSmall,
                         fontWeight = FontWeight.Bold,
                         color = EchoOrange
                     )
 
                     Text(
-                        text = "Echo Stack",
+                        text = stringResource(R.string.echo_stack),
                         style = MaterialTheme.typography.headlineLarge,
                         fontWeight = FontWeight.Bold,
                         color = EchoText
                     )
 
                     Text(
-                        text = "Save links, notes, tags, and research trails on your own NAS.",
+                        text = stringResource(R.string.echo_stack_subtitle),
                         style = MaterialTheme.typography.bodySmall,
                         color = EchoMuted
                     )
@@ -302,8 +306,8 @@ fun EchoStackScreen(
                     EchoTextField(
                         value = newUrl,
                         onValueChange = { newUrl = it },
-                        label = "URL",
-                        placeholder = "https://example.com/article"
+                        label = stringResource(R.string.echo_stack_url_label),
+                        placeholder = stringResource(R.string.echo_stack_url_placeholder)
                     )
 
                     Row(
@@ -318,7 +322,7 @@ fun EchoStackScreen(
                             ),
                             modifier = Modifier.weight(1f)
                         ) {
-                            Text(if (showAddMetadata) "Hide metadata" else "Add metadata")
+                            Text(if (showAddMetadata) stringResource(R.string.echo_stack_hide_metadata) else stringResource(R.string.echo_stack_add_metadata))
                         }
 
                         Button(
@@ -331,7 +335,7 @@ fun EchoStackScreen(
                                 disabledContentColor = EchoMuted
                             )
                         ) {
-                            Text(if (creating) "Saving..." else "Save link")
+                            Text(if (creating) stringResource(R.string.echo_stack_saving_short) else stringResource(R.string.echo_stack_save_link))
                         }
                     }
 
@@ -339,22 +343,22 @@ fun EchoStackScreen(
                         EchoTextField(
                             value = newTitle,
                             onValueChange = { newTitle = it },
-                            label = "Optional title",
-                            placeholder = "Leave empty to use page title"
+                            label = stringResource(R.string.echo_stack_optional_title),
+                            placeholder = stringResource(R.string.echo_stack_optional_title_placeholder)
                         )
 
                         EchoTextField(
                             value = newCollection,
                             onValueChange = { newCollection = it },
-                            label = "Collection",
-                            placeholder = "NAS docs"
+                            label = stringResource(R.string.echo_stack_collection),
+                            placeholder = stringResource(R.string.echo_stack_collection_placeholder)
                         )
 
                         EchoTextField(
                             value = newTags,
                             onValueChange = { newTags = it },
-                            label = "Tags",
-                            placeholder = "nas, crypto, research"
+                            label = stringResource(R.string.echo_stack_tags),
+                            placeholder = stringResource(R.string.echo_stack_tags_placeholder)
                         )
 
                         EchoNotesField(
@@ -384,8 +388,8 @@ fun EchoStackScreen(
                     EchoTextField(
                         value = query,
                         onValueChange = { query = it },
-                        label = "Search",
-                        placeholder = "Search links, notes, tags, collections",
+                        label = stringResource(R.string.echo_stack_search),
+                        placeholder = stringResource(R.string.echo_stack_search_placeholder),
                         modifier = Modifier.weight(1f)
                     )
 
@@ -399,7 +403,7 @@ fun EchoStackScreen(
                             disabledContentColor = EchoMuted
                         )
                     ) {
-                        Text("Refresh")
+                        Text(stringResource(R.string.echo_stack_refresh))
                     }
                 }
             }
@@ -416,7 +420,7 @@ fun EchoStackScreen(
                 color = when {
                     workingStatusBase != null ->
                         EchoOrangeSoft
-                    visibleStatus == "Ready." ||
+                    visibleStatus == context.getString(R.string.echo_stack_ready) ||
                             visibleStatus == "Saved." ||
                             visibleStatus == "Updated." ||
                             visibleStatus == "Archived." ||
@@ -458,9 +462,9 @@ fun EchoStackScreen(
                     ) {
                         Text(
                             text = if (query.isBlank()) {
-                                "No links saved yet. Paste a URL above to start your stack."
+                                stringResource(R.string.echo_stack_empty_hint)
                             } else {
-                                "No matching links."
+                                stringResource(R.string.echo_stack_no_matching_links)
                             },
                             color = EchoMuted,
                             modifier = Modifier.padding(18.dp)
@@ -512,18 +516,18 @@ fun EchoStackScreen(
             containerColor = EchoPanel,
             titleContentColor = EchoText,
             textContentColor = EchoMuted,
-            title = { Text("Delete Echo Stack item?") },
+            title = { Text(stringResource(R.string.echo_stack_delete_title)) },
             text = {
                 Text(item.title.ifBlank { item.url })
             },
             confirmButton = {
                 TextButton(onClick = { deleteItem(item) }) {
-                    Text("Delete", color = EchoBad)
+                    Text(stringResource(R.string.echo_stack_delete), color = EchoBad)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { deleteCandidate = null }) {
-                    Text("Cancel", color = EchoMuted)
+                    Text(stringResource(R.string.echo_stack_cancel), color = EchoMuted)
                 }
             }
         )
@@ -574,8 +578,8 @@ private fun EchoNotesField(
             .height(96.dp),
         singleLine = false,
         minLines = 3,
-        label = { Text("Notes") },
-        placeholder = { Text("Why this link matters, reminders, context...") },
+        label = { Text(stringResource(R.string.echo_stack_notes)) },
+        placeholder = { Text(stringResource(R.string.echo_stack_notes_placeholder)) },
         colors = OutlinedTextFieldDefaults.colors(
             focusedTextColor = EchoText,
             unfocusedTextColor = EchoText,
@@ -625,7 +629,7 @@ private fun EchoStackItemCard(
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = item.title.ifBlank { item.url.ifBlank { "Untitled" } },
+                        text = item.title.ifBlank { item.url.ifBlank { stringResource(R.string.echo_stack_untitled) } },
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold,
                         color = EchoText
@@ -659,14 +663,14 @@ private fun EchoStackItemCard(
                 Text(
                     text = buildString {
                         if (item.collection.isNotBlank()) {
-                            append("Collection: ")
+                            append(stringResource(R.string.echo_stack_collection_prefix))
                             append(item.collection)
                         }
                         if (item.collection.isNotBlank() && item.tags_text.isNotBlank()) {
                             append(" • ")
                         }
                         if (item.tags_text.isNotBlank()) {
-                            append("Tags: ")
+                            append(stringResource(R.string.echo_stack_tags_prefix))
                             append(item.tags_text)
                         }
                     },
@@ -690,8 +694,9 @@ private fun EchoStackItemCard(
 
             Text(
                 text = buildString {
-                    append(if (item.read_state == "read") "Read" else "Unread")
-                    append(" • Archive: ")
+                    append(if (item.read_state == "read") stringResource(R.string.echo_stack_read) else stringResource(R.string.echo_stack_unread))
+                    append(" • ")
+                    append(stringResource(R.string.echo_stack_archive_label))
                     append(if (archiveActive) "archiving" else archiveStatus)
                     if (item.archive_bytes > 0L) {
                         append(" • ")
@@ -709,7 +714,7 @@ private fun EchoStackItemCard(
 
             if (archiveStatus == "failed" && item.archive_error.isNotBlank()) {
                 Text(
-                    text = "Archive error: ${item.archive_error}",
+                    text = stringResource(R.string.echo_stack_archive_error, item.archive_error),
                     style = MaterialTheme.typography.bodySmall,
                     color = EchoBad
                 )
@@ -723,19 +728,19 @@ private fun EchoStackItemCard(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                EchoActionButton("Open", onOpenUrl)
+                EchoActionButton(stringResource(R.string.echo_stack_open), onOpenUrl)
 
                 EchoActionButton(
-                    text = if (item.read_state == "read") "Unread" else "Read",
+                    text = if (item.read_state == "read") stringResource(R.string.echo_stack_unread) else stringResource(R.string.echo_stack_read),
                     onClick = onReadToggle
                 )
 
                 EchoArchiveActionButton(
                     text = when {
-                        archiveActive -> "Archiving" + ".".repeat(archiveDots)
-                        archiveStatus == "archived" -> "Archived"
-                        archiveStatus == "failed" -> "Retry"
-                        else -> "Archive"
+                        archiveActive -> stringResource(R.string.echo_stack_archiving) + ".".repeat(archiveDots)
+                        archiveStatus == "archived" -> stringResource(R.string.echo_stack_archived).trimEnd('.')
+                        archiveStatus == "failed" -> stringResource(R.string.echo_stack_retry)
+                        else -> stringResource(R.string.echo_stack_archive)
                     },
                     active = archiveActive,
                     archived = archiveStatus == "archived" && !archiveActive,
@@ -750,7 +755,7 @@ private fun EchoStackItemCard(
                         disabledContentColor = EchoMuted
                     )
                 ) {
-                    Text("Delete")
+                    Text(stringResource(R.string.echo_stack_delete))
                 }
             }
         }
