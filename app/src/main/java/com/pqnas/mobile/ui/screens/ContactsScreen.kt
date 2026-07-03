@@ -45,8 +45,11 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.pqnas.mobile.R
 import com.pqnas.mobile.api.ContactDto
 import com.pqnas.mobile.api.ContactUpsertRequest
 import com.pqnas.mobile.contacts.ContactsRepository
@@ -115,12 +118,12 @@ fun ContactsScreen(
     onClose: () -> Unit
 ) {
     val scope = rememberCoroutineScope()
-    val context = androidx.compose.ui.platform.LocalContext.current
+    val context = LocalContext.current
 
     var contacts by remember { mutableStateOf<List<ContactDto>>(emptyList()) }
     var loading by remember { mutableStateOf(true) }
     var saving by remember { mutableStateOf(false) }
-    var status by remember { mutableStateOf("Loading contacts...") }
+    var status by remember { mutableStateOf(context.getString(R.string.contacts_loading)) }
     var search by remember { mutableStateOf("") }
     var selectedFingerprint by remember { mutableStateOf("") }
     var form by remember {
@@ -164,7 +167,7 @@ fun ContactsScreen(
     fun reloadContacts(selectFingerprint: String? = null) {
         scope.launch {
             loading = true
-            status = "Loading contacts..."
+            status = context.getString(R.string.contacts_loading)
 
             runCatching {
                 repository.listContacts()
@@ -185,7 +188,7 @@ fun ContactsScreen(
                 }
             }.onFailure { e ->
                 loading = false
-                status = e.message ?: "Could not load contacts."
+                status = e.message ?: context.getString(R.string.contacts_load_failed)
             }
         }
     }
@@ -240,22 +243,22 @@ fun ContactsScreen(
             val reasons = mutableListOf<String>()
 
             if (email.isNotBlank() && ContactsRepository.normalizeEmail(c.email) == email) {
-                reasons.add("same email")
+                reasons.add(context.getString(R.string.contacts_duplicate_same_email))
             }
             if (phone.isNotBlank() && ContactsRepository.normalizePhone(c.phone) == phone) {
-                reasons.add("same phone")
+                reasons.add(context.getString(R.string.contacts_duplicate_same_phone))
             }
             if (mobile.isNotBlank() && ContactsRepository.normalizePhone(c.mobile) == mobile) {
-                reasons.add("same mobile")
+                reasons.add(context.getString(R.string.contacts_duplicate_same_mobile))
             }
 
             val cName = ContactsRepository.normalizeNameKey(c.display_name)
             val cCompany = ContactsRepository.normalizeNameKey(c.company)
 
             if (name.isNotBlank() && name == cName && company.isNotBlank() && company == cCompany) {
-                reasons.add("same name and company")
+                reasons.add(context.getString(R.string.contacts_duplicate_same_name_company))
             } else if (name.isNotBlank() && name == cName && company.isBlank() && cCompany.isBlank()) {
-                reasons.add("same name")
+                reasons.add(context.getString(R.string.contacts_duplicate_same_name))
             }
 
             if (reasons.isEmpty()) {
@@ -270,15 +273,15 @@ fun ContactsScreen(
     fun commitSave(payload: ContactUpsertRequest) {
         scope.launch {
             saving = true
-            status = "Saving contact..."
+            status = context.getString(R.string.contacts_saving)
 
             runCatching {
                 repository.upsertContact(payload)
             }.onSuccess { saved ->
-                status = "Contact saved."
+                status = context.getString(R.string.contacts_saved)
                 reloadContacts(saved.subject_fingerprint.ifBlank { payload.subject_fingerprint })
             }.onFailure { e ->
-                status = e.message ?: "Could not save contact."
+                status = e.message ?: context.getString(R.string.contacts_save_failed)
             }
 
             saving = false
@@ -289,12 +292,12 @@ fun ContactsScreen(
         val payload = buildPayload()
 
         if (payload.subject_fingerprint.isBlank()) {
-            status = "Identity anchor is missing."
+            status = context.getString(R.string.contacts_identity_missing)
             return
         }
 
         if (payload.display_name.isBlank()) {
-            status = "Display name is required."
+            status = context.getString(R.string.contacts_display_name_required)
             return
         }
 
@@ -314,16 +317,16 @@ fun ContactsScreen(
         if (fp.isBlank()) return
 
         scope.launch {
-            status = "Deleting contact..."
+            status = context.getString(R.string.contacts_deleting)
 
             runCatching {
                 repository.deleteContact(fp)
             }.onSuccess {
-                status = "Contact deleted."
+                status = context.getString(R.string.contacts_deleted)
                 clearEditor()
                 reloadContacts()
             }.onFailure { e ->
-                status = e.message ?: "Could not delete contact."
+                status = e.message ?: context.getString(R.string.contacts_delete_failed)
             }
         }
     }
@@ -331,7 +334,7 @@ fun ContactsScreen(
     fun copyText(label: String, value: String, success: String) {
         val clean = value.trim()
         if (clean.isBlank()) {
-            status = "Nothing to copy."
+            status = context.getString(R.string.contacts_nothing_to_copy)
             return
         }
 
@@ -372,7 +375,7 @@ fun ContactsScreen(
     fun openWebsite() {
         var url = currentContactLike().website.trim()
         if (url.isBlank()) {
-            status = "No website saved for this contact."
+            status = context.getString(R.string.contacts_no_website)
             return
         }
 
@@ -385,7 +388,7 @@ fun ContactsScreen(
         runCatching {
             context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
         }.onFailure {
-            status = "Could not open website."
+            status = context.getString(R.string.contacts_open_website_failed)
         }
     }
 
@@ -423,17 +426,17 @@ fun ContactsScreen(
                 pendingSave = null
                 pendingDuplicateLines.clear()
             },
-            title = { Text("Possible duplicate") },
+            title = { Text(stringResource(R.string.contacts_duplicate_title)) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text("A similar contact already exists.")
+                    Text(stringResource(R.string.contacts_duplicate_message))
                     pendingDuplicateLines.forEach { line ->
                         Text(
                             text = "• $line",
                             style = MaterialTheme.typography.bodyMedium
                         )
                     }
-                    Text("Save this contact anyway?")
+                    Text(stringResource(R.string.contacts_duplicate_save_anyway_question))
                 }
             },
             confirmButton = {
@@ -444,7 +447,7 @@ fun ContactsScreen(
                         commitSave(payload)
                     }
                 ) {
-                    Text("Save anyway")
+                    Text(stringResource(R.string.contacts_save_anyway))
                 }
             },
             dismissButton = {
@@ -452,10 +455,10 @@ fun ContactsScreen(
                     onClick = {
                         pendingSave = null
                         pendingDuplicateLines.clear()
-                        status = "Save cancelled because a possible duplicate was found."
+                        status = context.getString(R.string.contacts_duplicate_cancelled)
                     }
                 ) {
-                    Text("Review")
+                    Text(stringResource(R.string.contacts_review))
                 }
             }
         )
@@ -464,9 +467,9 @@ fun ContactsScreen(
     pendingDelete?.let { contact ->
         AlertDialog(
             onDismissRequest = { pendingDelete = null },
-            title = { Text("Delete contact?") },
+            title = { Text(stringResource(R.string.contacts_delete_title)) },
             text = {
-                Text("Delete ${contactLabel(contact)} from Contacts? This removes it from your private address book.")
+                Text(stringResource(R.string.contacts_delete_confirm, contactLabel(contact, stringResource(R.string.contacts_fallback_contact))))
             },
             confirmButton = {
                 TextButton(
@@ -475,12 +478,12 @@ fun ContactsScreen(
                         deleteSelected(contact)
                     }
                 ) {
-                    Text("Delete")
+                    Text(stringResource(R.string.contacts_delete_button))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { pendingDelete = null }) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.cancel))
                 }
             }
         )
@@ -489,12 +492,12 @@ fun ContactsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Contacts") },
+                title = { Text(stringResource(R.string.contacts)) },
                 navigationIcon = {
                     IconButton(onClick = onClose) {
                         Icon(
                             imageVector = Icons.Default.ArrowBack,
-                            contentDescription = "Back"
+                            contentDescription = stringResource(R.string.contacts_back)
                         )
                     }
                 }
@@ -516,12 +519,12 @@ fun ContactsScreen(
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = "DNA-Nexus Contacts",
+                            text = stringResource(R.string.contacts),
                             style = MaterialTheme.typography.headlineSmall,
                             color = MaterialTheme.colorScheme.onBackground
                         )
                         Text(
-                            text = "${filteredContacts.size} shown / ${contacts.size} total",
+                            text = stringResource(R.string.contacts_shown_total, filteredContacts.size, contacts.size),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -537,8 +540,8 @@ fun ContactsScreen(
                 OutlinedTextField(
                     value = search,
                     onValueChange = { search = it },
-                    label = { Text("Search") },
-                    placeholder = { Text("Name, company, email, phone, city, tags or notes") },
+                    label = { Text(stringResource(R.string.contacts_search_label)) },
+                    placeholder = { Text(stringResource(R.string.contacts_search_placeholder)) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -553,14 +556,14 @@ fun ContactsScreen(
                         onClick = { reloadContacts() },
                         modifier = Modifier.weight(1f)
                     ) {
-                        Text("Refresh")
+                        Text(stringResource(R.string.refresh))
                     }
 
                     Button(
                         onClick = { clearEditor() },
                         modifier = Modifier.weight(1f)
                     ) {
-                        Text("New contact")
+                        Text(stringResource(R.string.contacts_new_contact))
                     }
                 }
             }
@@ -571,7 +574,7 @@ fun ContactsScreen(
 
             item {
                 Text(
-                    text = "Address book",
+                    text = stringResource(R.string.contacts_address_book),
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold
                 )
@@ -590,14 +593,14 @@ fun ContactsScreen(
                             verticalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
                             Text(
-                                text = if (loading) "Loading contacts..." else "No contacts found.",
+                                text = if (loading) stringResource(R.string.contacts_loading) else stringResource(R.string.contacts_no_contacts_found),
                                 style = MaterialTheme.typography.titleMedium
                             )
                             Text(
                                 text = if (search.isBlank()) {
-                                    "Add your first customer, supplier, relative or other contact."
+                                    stringResource(R.string.contacts_empty_desc)
                                 } else {
-                                    "Try another search term."
+                                    stringResource(R.string.contacts_try_another_search)
                                 },
                                 style = MaterialTheme.typography.bodyMedium
                             )
@@ -628,18 +631,18 @@ fun ContactsScreen(
                     onDelete = { selectedContact()?.let { pendingDelete = it } },
                     onCopyCard = {
                         val c = currentContactLike()
-                        copyText("Contact card", formatContactCard(c), "Contact card copied.")
+                        copyText(context.getString(R.string.contacts_card_clip_label), formatContactCard(c), context.getString(R.string.contacts_card_copied))
                     },
                     onCopyAddress = {
                         val c = currentContactLike()
-                        copyText("Address", formatAddress(c), "Address copied.")
+                        copyText(context.getString(R.string.contacts_address_clip_label), formatAddress(c), context.getString(R.string.contacts_address_copied))
                     },
                     onCopyEmail = {
-                        copyText("Email", currentContactLike().email, "Email copied.")
+                        copyText(context.getString(R.string.contacts_email_clip_label), currentContactLike().email, context.getString(R.string.contacts_email_copied))
                     },
                     onCopyPhone = {
                         val c = currentContactLike()
-                        copyText("Phone", c.phone.ifBlank { c.mobile }, "Phone copied.")
+                        copyText(context.getString(R.string.contacts_phone_clip_label), c.phone.ifBlank { c.mobile }, context.getString(R.string.contacts_phone_copied))
                     },
                     onOpenWebsite = { openWebsite() }
                 )
@@ -703,14 +706,14 @@ private fun ContactRow(
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
-                    text = contactLabel(contact),
+                    text = contactLabel(contact, stringResource(R.string.contacts_fallback_contact)),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.weight(1f)
                 )
 
                 Text(
-                    text = typeLabel(contact.contact_type),
+                    text = stringResource(typeLabelRes(contact.contact_type)),
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.primary
                 )
@@ -769,43 +772,43 @@ private fun ContactEditorSection(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Text(
-                text = if (selected == null) "New contact" else "Edit contact",
+                text = if (selected == null) stringResource(R.string.contacts_new_contact) else stringResource(R.string.contacts_edit_contact),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold
             )
 
             Text(
-                text = "Saved to your private DNA-Nexus Contacts list.",
+                text = stringResource(R.string.contacts_editor_note),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
 
             HorizontalDivider()
 
-            Text("Basic", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+            Text(stringResource(R.string.contacts_basic), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
 
             FormField(
-                label = "Display name *",
+                label = stringResource(R.string.contacts_display_name),
                 value = form.displayName,
                 onChange = { onFormChange(form.copy(displayName = it)) }
             )
 
             FormField(
-                label = "Company / organization",
+                label = stringResource(R.string.contacts_company),
                 value = form.company,
                 onChange = { onFormChange(form.copy(company = it)) }
             )
 
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 FormField(
-                    label = "Title / role",
+                    label = stringResource(R.string.contacts_title_role),
                     value = form.title,
                     onChange = { onFormChange(form.copy(title = it)) },
                     modifier = Modifier.weight(1f)
                 )
 
                 FormField(
-                    label = "Nickname",
+                    label = stringResource(R.string.contacts_nickname),
                     value = form.nickname,
                     onChange = { onFormChange(form.copy(nickname = it)) },
                     modifier = Modifier.weight(1f)
@@ -814,14 +817,14 @@ private fun ContactEditorSection(
 
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 FormField(
-                    label = "Contact type",
+                    label = stringResource(R.string.contacts_contact_type),
                     value = form.contactType,
                     onChange = { onFormChange(form.copy(contactType = it)) },
                     modifier = Modifier.weight(1f)
                 )
 
                 FormField(
-                    label = "Status",
+                    label = stringResource(R.string.contacts_status),
                     value = form.status,
                     onChange = { onFormChange(form.copy(status = it)) },
                     modifier = Modifier.weight(1f)
@@ -829,26 +832,26 @@ private fun ContactEditorSection(
             }
 
             FormField(
-                label = "Tags",
+                label = stringResource(R.string.contacts_tags),
                 value = form.tags,
                 onChange = { onFormChange(form.copy(tags = it)) },
-                placeholder = "customer, supplier, christmas-card"
+                placeholder = stringResource(R.string.contacts_tags_placeholder)
             )
 
             HorizontalDivider()
 
-            Text("Contact details", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+            Text(stringResource(R.string.contacts_contact_details), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
 
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 FormField(
-                    label = "Email",
+                    label = stringResource(R.string.contacts_email),
                     value = form.email,
                     onChange = { onFormChange(form.copy(email = it)) },
                     modifier = Modifier.weight(1f)
                 )
 
                 FormField(
-                    label = "Phone",
+                    label = stringResource(R.string.contacts_phone),
                     value = form.phone,
                     onChange = { onFormChange(form.copy(phone = it)) },
                     modifier = Modifier.weight(1f)
@@ -857,14 +860,14 @@ private fun ContactEditorSection(
 
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 FormField(
-                    label = "Mobile",
+                    label = stringResource(R.string.contacts_mobile),
                     value = form.mobile,
                     onChange = { onFormChange(form.copy(mobile = it)) },
                     modifier = Modifier.weight(1f)
                 )
 
                 FormField(
-                    label = "Website",
+                    label = stringResource(R.string.contacts_website),
                     value = form.website,
                     onChange = { onFormChange(form.copy(website = it)) },
                     modifier = Modifier.weight(1f)
@@ -873,24 +876,24 @@ private fun ContactEditorSection(
 
             HorizontalDivider()
 
-            Text("Address", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+            Text(stringResource(R.string.contacts_address), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
 
             FormField(
-                label = "Street address",
+                label = stringResource(R.string.contacts_street_address),
                 value = form.street,
                 onChange = { onFormChange(form.copy(street = it)) }
             )
 
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 FormField(
-                    label = "Postal code",
+                    label = stringResource(R.string.contacts_postal_code),
                     value = form.postalCode,
                     onChange = { onFormChange(form.copy(postalCode = it)) },
                     modifier = Modifier.weight(1f)
                 )
 
                 FormField(
-                    label = "City",
+                    label = stringResource(R.string.contacts_city),
                     value = form.city,
                     onChange = { onFormChange(form.copy(city = it)) },
                     modifier = Modifier.weight(1f)
@@ -898,53 +901,53 @@ private fun ContactEditorSection(
             }
 
             FormField(
-                label = "Country",
+                label = stringResource(R.string.contacts_country),
                 value = form.country,
                 onChange = { onFormChange(form.copy(country = it)) }
             )
 
             HorizontalDivider()
 
-            Text("Notes", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+            Text(stringResource(R.string.contacts_notes), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
 
             OutlinedTextField(
                 value = form.notes,
                 onValueChange = { onFormChange(form.copy(notes = it)) },
-                label = { Text("Private notes") },
+                label = { Text(stringResource(R.string.contacts_private_notes)) },
                 minLines = 4,
                 modifier = Modifier.fillMaxWidth()
             )
 
             HorizontalDivider()
 
-            Text("Quick actions", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+            Text(stringResource(R.string.contacts_quick_actions), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
 
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 OutlinedButton(onClick = onCopyCard, modifier = Modifier.weight(1f)) {
-                    Text("Copy card")
+                    Text(stringResource(R.string.contacts_copy_card))
                 }
                 OutlinedButton(onClick = onCopyAddress, modifier = Modifier.weight(1f)) {
-                    Text("Copy address")
+                    Text(stringResource(R.string.contacts_copy_address))
                 }
             }
 
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 OutlinedButton(onClick = onCopyEmail, modifier = Modifier.weight(1f)) {
-                    Text("Copy email")
+                    Text(stringResource(R.string.contacts_copy_email))
                 }
                 OutlinedButton(onClick = onCopyPhone, modifier = Modifier.weight(1f)) {
-                    Text("Copy phone")
+                    Text(stringResource(R.string.contacts_copy_phone))
                 }
             }
 
             OutlinedButton(onClick = onOpenWebsite, modifier = Modifier.fillMaxWidth()) {
-                Text("Open website")
+                Text(stringResource(R.string.contacts_open_website))
             }
 
             HorizontalDivider()
 
             Text(
-                text = "Identity: ${ContactsRepository.shortFingerprint(form.subjectFingerprint)} • ${form.subjectKind.ifBlank { "manual_contact" }}",
+                text = stringResource(R.string.contacts_identity_line, ContactsRepository.shortFingerprint(form.subjectFingerprint), form.subjectKind.ifBlank { "manual_contact" }),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -954,12 +957,12 @@ private fun ContactEditorSection(
                 enabled = !saving,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text(if (saving) "Saving..." else "Save contact")
+                Text(if (saving) stringResource(R.string.contacts_saving_short) else stringResource(R.string.contacts_save_contact))
             }
 
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 OutlinedButton(onClick = onClear, modifier = Modifier.weight(1f)) {
-                    Text("Clear")
+                    Text(stringResource(R.string.contacts_clear))
                 }
 
                 OutlinedButton(
@@ -967,7 +970,7 @@ private fun ContactEditorSection(
                     enabled = selected != null,
                     modifier = Modifier.weight(1f)
                 ) {
-                    Text("Delete")
+                    Text(stringResource(R.string.contacts_delete_button))
                 }
             }
         }
@@ -996,27 +999,27 @@ private fun FormField(
     )
 }
 
-private fun contactLabel(c: ContactDto): String =
+private fun contactLabel(c: ContactDto, fallback: String = "Contact"): String =
     c.display_name.ifBlank {
         c.company.ifBlank {
             c.email.ifBlank {
                 c.phone.ifBlank {
                     c.mobile.ifBlank {
-                        ContactsRepository.shortFingerprint(c.subject_fingerprint).ifBlank { "Contact" }
+                        ContactsRepository.shortFingerprint(c.subject_fingerprint).ifBlank { fallback }
                     }
                 }
             }
         }
     }
 
-private fun typeLabel(type: String): String =
+private fun typeLabelRes(type: String): Int =
     when (type) {
-        "company" -> "Company"
-        "customer" -> "Customer"
-        "supplier" -> "Supplier"
-        "family" -> "Family"
-        "other" -> "Other"
-        else -> "Person"
+        "company" -> R.string.contacts_type_company
+        "customer" -> R.string.contacts_type_customer
+        "supplier" -> R.string.contacts_type_supplier
+        "family" -> R.string.contacts_type_family
+        "other" -> R.string.contacts_type_other
+        else -> R.string.contacts_type_person
     }
 
 private fun formatAddress(c: ContactDto): String =
