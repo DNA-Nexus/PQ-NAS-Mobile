@@ -576,4 +576,6 @@
     <string name="drop_zone_duplicate_label_keep_both">Säilytä molemmat</string>
     <string name="drop_zone_duplicate_label_reject">Hylkää duplikaatit</string>
     <string name="drop_zone_duplicate_label_version">Versioi olemassa oleva tiedosto</string>
+    <string name="apps_checking_available">Tarkistetaan käytettävissä olevia appeja...</string>
+    <string name="apps_checking_available_desc">DNA-Nexus Mobile tarkistaa, mitkä palvelimen appit ovat käytettävissä tällä tilillä.</string>
 </resources>

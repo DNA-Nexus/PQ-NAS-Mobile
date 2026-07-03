@@ -2698,17 +2698,43 @@ fun FilesScreen(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
 
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable {
-                                showAppsSheet = false
-                                showSharesManager = true
-                            },
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceVariant
-                        )
-                    ) {
+                    if (!appsChecked) {
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.surfaceVariant
+                            )
+                        ) {
+                            Column(
+                                modifier = Modifier.padding(16.dp),
+                                verticalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                Text(
+                                    text = stringResource(R.string.apps_checking_available),
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+
+                                Text(
+                                    text = stringResource(R.string.apps_checking_available_desc),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                    } else {
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    showAppsSheet = false
+                                    showSharesManager = true
+                                },
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.surfaceVariant
+                            )
+                        ) {
                         Column(
                             modifier = Modifier.padding(16.dp),
                             verticalArrangement = Arrangement.spacedBy(6.dp)
@@ -2857,12 +2883,6 @@ fun FilesScreen(
                         }
                     }
 
-                    if (false && appsChecked && !contactsAvailable && !circleStackAvailable && !echoStackAvailable && !dropZoneAvailable) {
-                        Text(
-                            text = stringResource(R.string.no_mobile_apps_available),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
                     }
 
                     TextButton(

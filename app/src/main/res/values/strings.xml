@@ -576,4 +576,6 @@
     <string name="drop_zone_duplicate_label_keep_both">Keep both</string>
     <string name="drop_zone_duplicate_label_reject">Reject duplicates</string>
     <string name="drop_zone_duplicate_label_version">Version existing file</string>
+    <string name="apps_checking_available">Checking available apps...</string>
+    <string name="apps_checking_available_desc">DNA-Nexus Mobile is checking which server apps are available for this account.</string>
 </resources>
