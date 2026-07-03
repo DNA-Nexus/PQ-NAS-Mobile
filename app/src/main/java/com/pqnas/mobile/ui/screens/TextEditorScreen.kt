@@ -42,6 +42,7 @@ import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
+import com.pqnas.mobile.R
 import com.pqnas.mobile.files.FilesRepository
 import kotlinx.coroutines.launch
 import java.util.Locale
@@ -67,6 +68,7 @@ import android.widget.EditText
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -108,7 +110,9 @@ fun TextEditorScreen(
 
     var loading by remember(relPath) { mutableStateOf(true) }
     var saving by remember(relPath) { mutableStateOf(false) }
-    var status by remember(relPath) { mutableStateOf("Loading...") }
+    var status by remember(relPath) { mutableStateOf(context.getString(R.string.text_editor_status_loading)) }
+    var statusIsError by remember(relPath) { mutableStateOf(false) }
+    var statusIsOk by remember(relPath) { mutableStateOf(false) }
 
     var showFindBar by remember(relPath) { mutableStateOf(false) }
     var findQuery by remember(relPath) { mutableStateOf("") }
@@ -147,6 +151,7 @@ fun TextEditorScreen(
     }
     val findStatus = remember(matches, findQuery, editorSelectionStart) {
         computeFindStatus(
+            context = context,
             matches = matches,
             query = findQuery,
             selectedStart = editorSelectionStart
@@ -158,6 +163,12 @@ fun TextEditorScreen(
     }
     fun currentEditorText(): String {
         return editorBridge.latestText
+    }
+
+    fun setEditorStatus(value: String, isError: Boolean = false, isOk: Boolean = false) {
+        status = value
+        statusIsError = isError
+        statusIsOk = isOk
     }
 
 
@@ -218,11 +229,11 @@ fun TextEditorScreen(
         val lower = raw.lowercase(Locale.getDefault())
         return when {
             "edit_locked" in lower ->
-                "This file is currently being edited by another session. Opened in read-only mode."
+                context.getString(R.string.text_editor_lock_edited_elsewhere)
             "edit_lock_missing" in lower ->
-                "Edit lease was lost. The file is now read-only. Reload to try again."
+                context.getString(R.string.text_editor_lock_missing)
             else ->
-                "This file is currently read-only."
+                context.getString(R.string.text_editor_read_only)
         }
     }
 
@@ -239,20 +250,20 @@ fun TextEditorScreen(
                 } catch (e: Exception) {
                     stopLeaseHeartbeat()
                     readOnly = true
-                    status = leaseLockedMessage(e.message.orEmpty())
+                    setEditorStatus(leaseLockedMessage(e.message.orEmpty()), isError = true)
                 }
             }
         }
     }
     suspend fun loadFile() {
         loading = true
-        status = "Loading..."
+        setEditorStatus(context.getString(R.string.text_editor_status_loading))
         stopLeaseHeartbeat()
 
         try {
             val resp = scopedOps.readText(fileScope, relPath)
             if (!resp.ok) {
-                throw IllegalStateException(composeApiMessage(resp.error, resp.message, "Read text failed"))
+                throw IllegalStateException(composeApiMessage(resp.error, resp.message, context.getString(R.string.text_editor_read_text_failed)))
             }
 
             val text = resp.text ?: ""
@@ -270,27 +281,27 @@ fun TextEditorScreen(
             if (fileScope is FileScope.Workspace) {
                 if (!fileScope.canWrite) {
                     readOnly = true
-                    status = "Read-only: your workspace role does not allow editing."
+                    setEditorStatus(context.getString(R.string.text_editor_read_only_role), isError = true)
                 } else {
                     try {
                         scopedOps.acquireEditLease(fileScope, relPath)
                         readOnly = false
                         startLeaseHeartbeat()
-                        status = "OK"
+                        setEditorStatus(context.getString(R.string.text_editor_status_ok), isOk = true)
                     } catch (e: Exception) {
                         readOnly = true
-                        status = leaseLockedMessage(e.message.orEmpty())
+                        setEditorStatus(leaseLockedMessage(e.message.orEmpty()), isError = true)
                     }
                 }
             } else {
-                status = "OK"
+                setEditorStatus(context.getString(R.string.text_editor_status_ok), isOk = true)
             }
 
             loading = false
         } catch (e: Exception) {
             loading = false
             readOnly = true
-            status = friendlyTextEditorMessage("Read text", e)
+            setEditorStatus(friendlyTextEditorMessage(context, context.getString(R.string.text_editor_action_read_text), e), isError = true)
         }
     }
 
@@ -299,7 +310,7 @@ fun TextEditorScreen(
 
         uiScope.launch {
             saving = true
-            status = "Saving..."
+            setEditorStatus(context.getString(R.string.text_editor_status_saving))
 
             try {
                 if (fileScope is FileScope.Workspace && fileScope.canWrite) {
@@ -317,7 +328,7 @@ fun TextEditorScreen(
                 )
 
                 if (!resp.ok) {
-                    throw IllegalStateException(composeApiMessage(resp.error, resp.message, "Write text failed"))
+                    throw IllegalStateException(composeApiMessage(resp.error, resp.message, context.getString(R.string.text_editor_write_text_failed)))
                 }
 
                 originalText = textToSave
@@ -328,22 +339,25 @@ fun TextEditorScreen(
                 sha256 = resp.sha256 ?: sha256
                 saving = false
                 exitEditMode()
-                status = "Saved."
+                setEditorStatus(context.getString(R.string.text_editor_status_saved), isOk = true)
                 onSaved()
             } catch (e: Exception) {
                 saving = false
 
                 val raw = e.message.orEmpty().lowercase(Locale.getDefault())
-                status = when {
-                    "changed_on_server" in raw ->
-                        "File changed on server. Reload and review before saving again."
-                    "edit_locked" in raw || "edit_lock_missing" in raw -> {
-                        readOnly = true
-                        leaseLockedMessage(e.message.orEmpty())
-                    }
-                    else ->
-                        friendlyTextEditorMessage("Write text", e)
-                }
+                setEditorStatus(
+                    when {
+                        "changed_on_server" in raw ->
+                            context.getString(R.string.text_editor_changed_on_server)
+                        "edit_locked" in raw || "edit_lock_missing" in raw -> {
+                            readOnly = true
+                            leaseLockedMessage(e.message.orEmpty())
+                        }
+                        else ->
+                            friendlyTextEditorMessage(context, context.getString(R.string.text_editor_action_write_text), e)
+                    },
+                    isError = true
+                )
             }
         }
     }
@@ -417,7 +431,7 @@ fun TextEditorScreen(
                 TopAppBar(
                     title = {
                         Text(
-                            text = "Edit text file",
+                            text = stringResource(R.string.text_editor_title),
                             style = MaterialTheme.typography.titleLarge
                         )
                     },
@@ -425,7 +439,7 @@ fun TextEditorScreen(
                         IconButton(onClick = { requestClose() }) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = "Back"
+                                contentDescription = stringResource(R.string.text_editor_back)
                             )
                         }
                     },
@@ -436,7 +450,7 @@ fun TextEditorScreen(
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Search,
-                                contentDescription = "Find"
+                                contentDescription = stringResource(R.string.text_editor_find)
                             )
                         }
 
@@ -446,7 +460,7 @@ fun TextEditorScreen(
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Refresh,
-                                contentDescription = "Reload"
+                                contentDescription = stringResource(R.string.text_editor_reload)
                             )
                         }
 
@@ -456,14 +470,14 @@ fun TextEditorScreen(
                             },
                             enabled = !loading && !saving && !readOnly
                         ) {
-                            Text(if (editMode) "Done" else "Edit")
+                            Text(if (editMode) stringResource(R.string.text_editor_done) else stringResource(R.string.text_editor_edit))
                         }
 
                         TextButton(
                             onClick = { saveFile() },
                             enabled = !loading && !saving && dirty
                         ) {
-                            Text(if (saving) "Saving..." else "Save")
+                            Text(if (saving) stringResource(R.string.text_editor_status_saving) else stringResource(R.string.text_editor_save))
                         }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
@@ -505,13 +519,13 @@ fun TextEditorScreen(
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Text(
-                            text = "Encoding: $encoding • ${formatBytes(editorByteCount)}",
+                            text = stringResource(R.string.text_editor_encoding, encoding, formatBytes(editorByteCount)),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
 
                         Text(
-                            text = if (dirty) "Unsaved changes" else "No local changes",
+                            text = if (dirty) stringResource(R.string.text_editor_unsaved_changes) else stringResource(R.string.text_editor_no_local_changes),
                             style = MaterialTheme.typography.bodySmall,
                             color = if (dirty) {
                                 MaterialTheme.colorScheme.tertiary
@@ -520,7 +534,7 @@ fun TextEditorScreen(
                             }
                         )
                         Text(
-                            text = if (readOnly) "Mode: read-only" else "Mode: editable",
+                            text = if (readOnly) stringResource(R.string.text_editor_mode_read_only) else stringResource(R.string.text_editor_mode_editable),
                             style = MaterialTheme.typography.bodySmall,
                             color = if (readOnly) {
                                 MaterialTheme.colorScheme.error
@@ -532,17 +546,8 @@ fun TextEditorScreen(
                             text = status,
                             style = MaterialTheme.typography.bodySmall,
                             color = when {
-                                status == "OK" || status == "Saved." ->
-                                    MaterialTheme.colorScheme.tertiary
-
-                                status.contains("failed", ignoreCase = true) ||
-                                        status.contains("denied", ignoreCase = true) ||
-                                        status.contains("expired", ignoreCase = true) ||
-                                        status.contains("not found", ignoreCase = true) ||
-                                        status.contains("cannot", ignoreCase = true) ||
-                                        status.contains("changed on server", ignoreCase = true) ->
-                                    MaterialTheme.colorScheme.error
-
+                                statusIsOk -> MaterialTheme.colorScheme.tertiary
+                                statusIsError -> MaterialTheme.colorScheme.error
                                 else -> MaterialTheme.colorScheme.onSurfaceVariant
                             }
                         )
@@ -567,7 +572,7 @@ fun TextEditorScreen(
                                 onValueChange = { findQuery = it },
                                 modifier = Modifier.fillMaxWidth(),
                                 singleLine = true,
-                                label = { Text("Search") },
+                                label = { Text(stringResource(R.string.text_editor_search)) },
                                 enabled = !loading && !saving
                             )
 
@@ -578,7 +583,7 @@ fun TextEditorScreen(
                                 FilterChip(
                                     selected = matchCase,
                                     onClick = { matchCase = !matchCase },
-                                    label = { Text("Match case") },
+                                    label = { Text(stringResource(R.string.text_editor_match_case)) },
                                     enabled = !loading && !saving
                                 )
 
@@ -586,14 +591,14 @@ fun TextEditorScreen(
                                     onClick = { findPrev() },
                                     enabled = findQuery.isNotBlank() && matches.isNotEmpty()
                                 ) {
-                                    Text("Prev")
+                                    Text(stringResource(R.string.text_editor_prev))
                                 }
 
                                 TextButton(
                                     onClick = { findNext() },
                                     enabled = findQuery.isNotBlank() && matches.isNotEmpty()
                                 ) {
-                                    Text("Next")
+                                    Text(stringResource(R.string.text_editor_next))
                                 }
 
                                 Spacer(modifier = Modifier.weight(1f))
@@ -601,7 +606,7 @@ fun TextEditorScreen(
                                 Text(
                                     text = findStatus,
                                     style = MaterialTheme.typography.bodyMedium,
-                                    color = if (findStatus == "Not found") {
+                                    color = if (findQuery.isNotBlank() && matches.isEmpty()) {
                                         MaterialTheme.colorScheme.error
                                     } else {
                                         MaterialTheme.colorScheme.onSurfaceVariant
@@ -797,7 +802,7 @@ fun TextEditorScreen(
                         onClick = { requestReload() },
                         enabled = !loading && !saving
                     ) {
-                        Text("Reload")
+                        Text(stringResource(R.string.text_editor_reload))
                     }
 
                     Spacer(modifier = Modifier.weight(1f))
@@ -808,7 +813,7 @@ fun TextEditorScreen(
                         },
                         enabled = !loading && !saving && !readOnly
                     ) {
-                        Text(if (editMode) "Done" else "Edit")
+                        Text(if (editMode) stringResource(R.string.text_editor_done) else stringResource(R.string.text_editor_edit))
                     }
 
                     TextButton(
@@ -818,14 +823,14 @@ fun TextEditorScreen(
                             contentColor = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     ) {
-                        Text("Close")
+                        Text(stringResource(R.string.text_editor_close))
                     }
 
                     TextButton(
                         onClick = { saveFile() },
                         enabled = !loading && !saving && dirty
                     ) {
-                        Text(if (saving) "Saving..." else "Save")
+                        Text(if (saving) stringResource(R.string.text_editor_status_saving) else stringResource(R.string.text_editor_save))
                     }
                 }
             }
@@ -835,8 +840,8 @@ fun TextEditorScreen(
     if (showDiscardDialog) {
         AlertDialog(
             onDismissRequest = { showDiscardDialog = false },
-            title = { Text("Discard changes?") },
-            text = { Text("You have unsaved changes. Close the editor and discard them?") },
+            title = { Text(stringResource(R.string.text_editor_discard_changes_title)) },
+            text = { Text(stringResource(R.string.text_editor_discard_changes_text)) },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -848,14 +853,14 @@ fun TextEditorScreen(
                         }
                     }
                 ) {
-                    Text("Discard")
+                    Text(stringResource(R.string.text_editor_discard))
                 }
             },
             dismissButton = {
                 TextButton(
                     onClick = { showDiscardDialog = false }
                 ) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.text_editor_cancel))
                 }
             }
         )
@@ -864,8 +869,8 @@ fun TextEditorScreen(
     if (showReloadDialog) {
         AlertDialog(
             onDismissRequest = { showReloadDialog = false },
-            title = { Text("Reload from server?") },
-            text = { Text("Discard unsaved changes and reload the latest version from the server?") },
+            title = { Text(stringResource(R.string.text_editor_reload_from_server_title)) },
+            text = { Text(stringResource(R.string.text_editor_reload_from_server_text)) },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -873,14 +878,14 @@ fun TextEditorScreen(
                         uiScope.launch { loadFile() }
                     }
                 ) {
-                    Text("Reload")
+                    Text(stringResource(R.string.text_editor_reload))
                 }
             },
             dismissButton = {
                 TextButton(
                     onClick = { showReloadDialog = false }
                 ) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.text_editor_cancel))
                 }
             }
         )
@@ -1110,12 +1115,13 @@ private fun findMatches(
 }
 
 private fun computeFindStatus(
+    context: android.content.Context,
     matches: List<Int>,
     query: String,
     selectedStart: Int
 ): String {
     if (query.isBlank()) return ""
-    if (matches.isEmpty()) return "Not found"
+    if (matches.isEmpty()) return context.getString(R.string.text_editor_not_found)
 
     val exact = matches.indexOf(selectedStart)
     val current = when {
@@ -1143,6 +1149,7 @@ private fun composeApiMessage(
 }
 
 private fun friendlyTextEditorMessage(
+    context: android.content.Context,
     action: String,
     error: Throwable
 ): String {
@@ -1151,40 +1158,40 @@ private fun friendlyTextEditorMessage(
 
     return when {
         "changed_on_server" in lower || "changed on server" in lower ->
-            "File changed on server. Reload and review before saving again."
+            context.getString(R.string.text_editor_changed_on_server)
 
         "edit_locked" in lower ->
-            "This file is currently being edited by another session. Opened in read-only mode."
+            context.getString(R.string.text_editor_lock_edited_elsewhere)
 
         "edit_lock_missing" in lower ->
-            "Edit lease was lost. The file is now read-only. Reload to try again."
+            context.getString(R.string.text_editor_lock_missing)
 
         msg.contains("HTTP 400", ignoreCase = true) ->
-            "$action failed: invalid request."
+            context.getString(R.string.text_editor_action_failed_invalid_request, action)
 
         msg.contains("HTTP 401", ignoreCase = true) ->
-            "Session expired. Please pair again."
+            context.getString(R.string.text_editor_session_expired)
 
         msg.contains("HTTP 403", ignoreCase = true) ->
-            "Access denied."
+            context.getString(R.string.text_editor_access_denied)
 
         msg.contains("HTTP 404", ignoreCase = true) ->
-            "Item not found."
+            context.getString(R.string.text_editor_item_not_found)
 
         msg.contains("HTTP 409", ignoreCase = true) ->
-            "$action failed: conflict."
+            context.getString(R.string.text_editor_action_failed_conflict, action)
 
         msg.contains("HTTP 413", ignoreCase = true) ->
-            "$action failed: file is too large."
+            context.getString(R.string.text_editor_action_failed_too_large, action)
 
         msg.contains("HTTP 500", ignoreCase = true) ->
-            "$action failed: server error."
+            context.getString(R.string.text_editor_action_failed_server_error, action)
 
         msg.isNotBlank() ->
-            "$action failed: $msg"
+            context.getString(R.string.text_editor_action_failed_with_message, action, msg)
 
         else ->
-            "$action failed: unknown error"
+            context.getString(R.string.text_editor_action_failed_unknown, action)
     }
 }
 @Composable
