@@ -85,6 +85,11 @@ ALLOW_EXACT = {
     "owner",
     "editor",
     "viewer",
+
+    # Standard status token and hash label are technical UI tokens,
+    # not prose that should be translated.
+    "OK",
+    "SHA-256: ${shortSha(sha)}",
 }
 
 ALLOW_PREFIXES = (
