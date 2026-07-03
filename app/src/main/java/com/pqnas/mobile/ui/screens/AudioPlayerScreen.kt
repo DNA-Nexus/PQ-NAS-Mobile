@@ -2,6 +2,7 @@ package com.pqnas.mobile.ui.screens
 
 import android.content.Context
 import androidx.activity.compose.BackHandler
+import androidx.annotation.OptIn
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box

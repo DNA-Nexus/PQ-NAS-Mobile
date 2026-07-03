@@ -4,6 +4,7 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.CAMERA" />
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
 
     <application
         android:allowBackup="true"
@@ -16,6 +17,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.PQNAS">
 
+        <!-- nosemgrep: java.android.security.exported_activity.exported_activity - Launcher activity must be exported; privileged data access is still gated by app/session checks. -->
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -30,6 +32,7 @@
         </activity>
 
         <!-- PQNAS_INCOMING_ANDROID_SHARE_V1: Receive Android Sharesheet files into DNA-Nexus. -->
+        <!-- nosemgrep: java.android.security.exported_activity.exported_activity - Exported by design for Android Sharesheet; IncomingShareStager accepts only SEND/SEND_MULTIPLE before private staging. -->
         <activity
             android:name=".IncomingShareActivity"
             android:exported="true"

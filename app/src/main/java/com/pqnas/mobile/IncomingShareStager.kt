@@ -15,6 +15,13 @@ import java.util.Locale
 import java.util.UUID
 
 object IncomingShareStager {
+    private val SUPPORTED_SHARE_ACTIONS = setOf(
+        Intent.ACTION_SEND,
+        Intent.ACTION_SEND_MULTIPLE
+    )
+    private const val MAX_INCOMING_SHARE_ITEMS = 100
+    private const val MAX_INCOMING_TEXT_CHARS = 1_000_000
+
     data class Result(
         val manifestPath: String,
         val itemCount: Int
@@ -22,6 +29,14 @@ object IncomingShareStager {
 
     fun stage(context: Context, intent: Intent?): Result {
         require(intent != null) { "missing share intent" }
+
+        val action = intent.action.orEmpty()
+        // Security: IncomingShareActivity is exported for Android Sharesheet, so reject direct non-share launches.
+        require(action in SUPPORTED_SHARE_ACTIONS) { "unsupported share action" }
+
+        val uris = extractUris(intent)
+        // Security: prevent another app from staging an excessive number of share items at once.
+        require(uris.size <= MAX_INCOMING_SHARE_ITEMS) { "too many shared items" }
 
         val batchId = "share_" +
                 SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date()) +
@@ -36,7 +51,7 @@ object IncomingShareStager {
         val items = JSONArray()
         var count = 0
 
-        for ((index, uri) in extractUris(intent).withIndex()) {
+        for ((index, uri) in uris.withIndex()) {
             val staged = copyUriToPrivateFile(
                 context = context,
                 uri = uri,
@@ -48,8 +63,14 @@ object IncomingShareStager {
             count += 1
         }
 
-        val sharedText = intent.getCharSequenceExtra(Intent.EXTRA_TEXT)?.toString()
+        val sharedText = if (action == Intent.ACTION_SEND) {
+            intent.getCharSequenceExtra(Intent.EXTRA_TEXT)?.toString()
+        } else {
+            null
+        }
         if (!sharedText.isNullOrBlank()) {
+            // Security: avoid staging very large text payloads from an exported share entry point.
+            require(sharedText.length <= MAX_INCOMING_TEXT_CHARS) { "shared text is too large" }
             // PQNAS_ANDROID_INCOMING_URL_SHORTCUTS_V1:
             // Browser/app Sharesheet URL shares should become portable .url shortcut files,
             // not generic shared_text.txt files. Destination selection still happens later

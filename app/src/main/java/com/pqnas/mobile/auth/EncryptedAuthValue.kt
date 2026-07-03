@@ -16,6 +16,8 @@ internal object EncryptedAuthValue {
     private const val PREFIX_V1 = "enc:v1:"
     private const val PREFIX_V2 = "enc:v2:"
     private const val CURRENT_AES_KEY_BITS = 256
+    private const val GCM_TAG_BITS = 128
+    private const val GCM_EXPECTED_IV_BYTES = 12
 
     fun isEncrypted(value: String): Boolean =
         value.startsWith(PREFIX_V1) || value.startsWith(PREFIX_V2)
@@ -27,6 +29,7 @@ internal object EncryptedAuthValue {
         if (value.isBlank()) return ""
         if (isEncrypted(value)) return value
 
+        // nosemgrep: kotlin.lang.security.gcm-detection.gcm-detection - Android Keystore generates a fresh random AES-GCM IV for each encryption.
         val cipher = Cipher.getInstance(TRANSFORMATION)
         cipher.init(
             Cipher.ENCRYPT_MODE,
@@ -37,6 +40,7 @@ internal object EncryptedAuthValue {
         )
 
         val iv = cipher.iv
+        require(iv.size == GCM_EXPECTED_IV_BYTES) { "unexpected AES-GCM IV size" }
         val ciphertext = cipher.doFinal(value.toByteArray(Charsets.UTF_8))
 
         val ivB64 = Base64.encodeToString(iv, Base64.NO_WRAP)
@@ -68,12 +72,14 @@ internal object EncryptedAuthValue {
 
             val iv = Base64.decode(payload.substring(0, splitAt), Base64.NO_WRAP)
             val ciphertext = Base64.decode(payload.substring(splitAt + 1), Base64.NO_WRAP)
+            if (iv.size != GCM_EXPECTED_IV_BYTES || ciphertext.isEmpty()) return ""
 
+            // nosemgrep: kotlin.lang.security.gcm-detection.gcm-detection - Decryption uses the IV stored with this ciphertext; encryption never reuses caller-supplied IVs.
             val cipher = Cipher.getInstance(TRANSFORMATION)
             cipher.init(
                 Cipher.DECRYPT_MODE,
                 key,
-                javax.crypto.spec.GCMParameterSpec(128, iv)
+                javax.crypto.spec.GCMParameterSpec(GCM_TAG_BITS, iv)
             )
 
             String(cipher.doFinal(ciphertext), Charsets.UTF_8)
