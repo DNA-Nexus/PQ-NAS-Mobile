@@ -76,6 +76,9 @@
     <string name="file_more_actions">Lisää toimintoja</string>
     <string name="file_directory_icon">Kansion kuvake</string>
     <string name="file_file_icon">Tiedoston kuvake</string>
+    <string name="files_cached_refreshing">Välimuistissa olevat tiedostot — päivitetään...</string>
+    <string name="files_loading">Ladataan...</string>
+    <string name="files_loading_favorites">Ladataan suosikkeja...</string>
     <string name="menu_add_to_favorites">Lisää suosikkeihin</string>
     <string name="menu_remove_from_favorites">Poista suosikeista</string>
     <string name="menu_share">Jaa</string>
@@ -540,6 +543,7 @@
     <string name="drop_zone_public_title_placeholder">Lähetä tiedostot turvallisesti</string>
     <string name="drop_zone_public_desc_label">Julkisen sivun kuvaus</string>
     <string name="drop_zone_public_desc_placeholder">Kerro lataajalle, mihin tätä sivua käytetään.</string>
+    <string name="drop_zone_public_desc_default">Tällä sivulla voi lähettää tiedostoja suoraan DNA-Nexukseen.</string>
     <string name="drop_zone_button_text_label">Latauspainikkeen teksti</string>
     <string name="drop_zone_button_text_placeholder">Lataa tiedostot</string>
     <string name="drop_zone_footer_text_label">Alatunnisteen teksti</string>

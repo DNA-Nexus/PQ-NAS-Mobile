@@ -76,6 +76,9 @@
     <string name="file_more_actions">More actions</string>
     <string name="file_directory_icon">Directory icon</string>
     <string name="file_file_icon">File icon</string>
+    <string name="files_cached_refreshing">Cached files — refreshing...</string>
+    <string name="files_loading">Loading...</string>
+    <string name="files_loading_favorites">Loading favorites...</string>
     <string name="menu_add_to_favorites">Add to favorites</string>
     <string name="menu_remove_from_favorites">Remove from favorites</string>
     <string name="menu_share">Share</string>
@@ -540,6 +543,7 @@
     <string name="drop_zone_public_title_placeholder">Send files securely</string>
     <string name="drop_zone_public_desc_label">Public page description</string>
     <string name="drop_zone_public_desc_placeholder">Tell the uploader what this page is for.</string>
+    <string name="drop_zone_public_desc_default">Use this page to upload files directly to DNA-Nexus.</string>
     <string name="drop_zone_button_text_label">Upload button text</string>
     <string name="drop_zone_button_text_placeholder">Upload files</string>
     <string name="drop_zone_footer_text_label">Footer text</string>

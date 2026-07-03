@@ -199,7 +199,7 @@ fun FilesScreen(
     var showWorkspaceMessagesSheet by remember { mutableStateOf(false) }
     var showWorkspaceUrlLinkDialog by remember { mutableStateOf(false) }
 
-    var dropZoneName by remember { mutableStateOf("Drop Zone") }
+    var dropZoneName by remember { mutableStateOf(context.getString(R.string.drop_zone_name_placeholder)) }
     var dropZoneDestination by remember { mutableStateOf("") }
     var dropZonePassword by remember { mutableStateOf("") }
     var dropZoneExpiresInSeconds by remember { mutableStateOf(7L * 24L * 60L * 60L) }
@@ -207,11 +207,11 @@ fun FilesScreen(
     var dropZoneMaxTotalBytes by remember { mutableStateOf("") }
     var dropZoneDuplicatePolicy by remember { mutableStateOf("version") }
     var dropZoneBrandingCompanyName by remember { mutableStateOf("") }
-    var dropZoneBrandingKicker by remember { mutableStateOf("Secure upload") }
-    var dropZoneBrandingTitle by remember { mutableStateOf("Send files securely") }
-    var dropZoneBrandingDescription by remember { mutableStateOf("Use this page to upload files directly to DNA-Nexus.") }
-    var dropZoneBrandingButtonText by remember { mutableStateOf("Upload files") }
-    var dropZoneBrandingFooterText by remember { mutableStateOf("Powered by DNA-Nexus") }
+    var dropZoneBrandingKicker by remember { mutableStateOf(context.getString(R.string.drop_zone_kicker_placeholder)) }
+    var dropZoneBrandingTitle by remember { mutableStateOf(context.getString(R.string.drop_zone_public_title_placeholder)) }
+    var dropZoneBrandingDescription by remember { mutableStateOf(context.getString(R.string.drop_zone_public_desc_default)) }
+    var dropZoneBrandingButtonText by remember { mutableStateOf(context.getString(R.string.drop_zone_button_text_placeholder)) }
+    var dropZoneBrandingFooterText by remember { mutableStateOf(context.getString(R.string.drop_zone_footer_text_placeholder)) }
     var dropZoneBrandingLogoUrl by remember { mutableStateOf("") }
     var dropZoneBrandingPrimaryColor by remember { mutableStateOf("#ff9f1a") }
     var dropZoneBrandingBackgroundColor by remember { mutableStateOf("#070a10") }
@@ -390,10 +390,10 @@ fun FilesScreen(
             }
             listLoading = false
             startupEmptyStateGrace = false
-            status = "Cached files — refreshing..."
+            status = context.getString(R.string.files_cached_refreshing)
         } else {
             listLoading = true
-            status = "Loading..."
+            status = context.getString(R.string.files_loading)
         }
 
         commentedPaths = emptySet()
@@ -424,7 +424,7 @@ fun FilesScreen(
                     status = "OK"
                 } else {
                     items = emptyList()
-                    status = "Loading favorites..."
+                    status = context.getString(R.string.files_loading_favorites)
                 }
 
                 listLoading = false
