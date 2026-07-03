@@ -26,6 +26,20 @@ DEFAULT_ALLOWED_SAME_AS_BASE = {
     "theme_win_classic_label",
     "language_english_label",
     "language_finnish_label",
+
+    # Product / technical labels that are intentionally identical in Finnish.
+    "dna_nexus_files",
+    "versions_hash",
+    "versions_id_value",
+    "shares_type_state",
+
+    # Brand kickers, URL labels, examples, and placeholders.
+    "echo_stack_header_kicker",
+    "echo_stack_url_label",
+    "echo_stack_url_placeholder",
+    "drop_zone_header_kicker",
+    "drop_zone_name_placeholder",
+    "drop_zone_footer_text_placeholder",
 }
 
 
