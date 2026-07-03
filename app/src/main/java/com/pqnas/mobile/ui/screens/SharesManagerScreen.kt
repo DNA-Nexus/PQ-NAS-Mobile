@@ -141,7 +141,7 @@ fun SharesManagerScreen(
                 TopAppBar(
                     title = {
                         Text(
-                            text = "Share manager",
+                            text = stringResource(R.string.share_manager),
                             style = MaterialTheme.typography.titleLarge
                         )
                     },
@@ -149,7 +149,7 @@ fun SharesManagerScreen(
                         IconButton(onClick = onClose) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = "Back"
+                                contentDescription = stringResource(R.string.shares_back)
                             )
                         }
                     },
@@ -160,7 +160,7 @@ fun SharesManagerScreen(
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Refresh,
-                                contentDescription = "Refresh"
+                                contentDescription = stringResource(R.string.shares_refresh)
                             )
                         }
                     },
@@ -535,7 +535,7 @@ private fun copyShareText(
 ): Boolean {
     return try {
         val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-        val clip = ClipData.newPlainText("share link", text)
+        val clip = ClipData.newPlainText(context.getString(R.string.shares_clip_label_share_link), text)
         clipboard.setPrimaryClip(clip)
         true
     } catch (_: Exception) {

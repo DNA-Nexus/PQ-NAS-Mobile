@@ -326,6 +326,9 @@
     <string name="shares_downloads">Lataukset: %1$d</string>
     <string name="shares_link_not_available">Jakolinkki ei ole saatavilla</string>
     <string name="shares_copy_link">Kopioi linkki</string>
+    <string name="shares_back">Takaisin</string>
+    <string name="shares_refresh">Päivitä</string>
+    <string name="shares_clip_label_share_link">Jakolinkki</string>
     <string name="shares_error_invalid_request">%1$s epäonnistui: virheellinen pyyntö.</string>
     <string name="shares_error_session_expired">Istunto on vanhentunut. Tee laiteparitus uudelleen.</string>
     <string name="shares_error_access_denied">Pääsy estetty.</string>
