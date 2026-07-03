@@ -7,7 +7,17 @@ import java.util.Locale
 enum class PqnasAppLanguage(val id: String) {
     System("system"),
     English("en"),
-    Finnish("fi");
+    Finnish("fi"),
+    SimplifiedChinese("zh-CN"),
+    Swedish("sv"),
+    Ukrainian("uk"),
+    German("de"),
+    Estonian("et"),
+    Polish("pl"),
+    Spanish("es"),
+    French("fr"),
+    Italian("it"),
+    Turkish("tr");
 
     companion object {
         fun fromId(id: String?): PqnasAppLanguage {

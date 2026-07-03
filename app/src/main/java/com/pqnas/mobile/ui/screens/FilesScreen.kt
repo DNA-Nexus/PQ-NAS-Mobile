@@ -3881,6 +3881,16 @@ private fun languageLabel(language: PqnasAppLanguage): String {
         PqnasAppLanguage.System -> stringResource(R.string.language_system_label)
         PqnasAppLanguage.English -> stringResource(R.string.language_english_label)
         PqnasAppLanguage.Finnish -> stringResource(R.string.language_finnish_label)
+        PqnasAppLanguage.SimplifiedChinese -> stringResource(R.string.language_simplified_chinese_label)
+        PqnasAppLanguage.Swedish -> stringResource(R.string.language_swedish_label)
+        PqnasAppLanguage.Ukrainian -> stringResource(R.string.language_ukrainian_label)
+        PqnasAppLanguage.German -> stringResource(R.string.language_german_label)
+        PqnasAppLanguage.Estonian -> stringResource(R.string.language_estonian_label)
+        PqnasAppLanguage.Polish -> stringResource(R.string.language_polish_label)
+        PqnasAppLanguage.Spanish -> stringResource(R.string.language_spanish_label)
+        PqnasAppLanguage.French -> stringResource(R.string.language_french_label)
+        PqnasAppLanguage.Italian -> stringResource(R.string.language_italian_label)
+        PqnasAppLanguage.Turkish -> stringResource(R.string.language_turkish_label)
     }
 }
 

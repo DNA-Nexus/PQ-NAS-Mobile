@@ -319,6 +319,16 @@
     <string name="language_system_label">手机语言</string>
     <string name="language_english_label">English</string>
     <string name="language_finnish_label">Suomi</string>
+    <string name="language_simplified_chinese_label">简体中文</string>
+    <string name="language_swedish_label">Svenska</string>
+    <string name="language_ukrainian_label">Українська</string>
+    <string name="language_german_label">Deutsch</string>
+    <string name="language_estonian_label">Eesti</string>
+    <string name="language_polish_label">Polski</string>
+    <string name="language_spanish_label">Español</string>
+    <string name="language_french_label">Français</string>
+    <string name="language_italian_label">Italiano</string>
+    <string name="language_turkish_label">Türkçe</string>
     <string name="language_restart_note">语言选择会立即应用于此应用视图。</string>
     <string name="about_files_description">DNA-Nexus Mobile 是面向 DNA-Nexus Server 账户的 Android 应用。用户可以安全地访问和管理文件、共享链接、上传和账户存储空间，而实际数据仍保留在运营商的 DNA-Nexus Server 上。</string>
     <string name="app_display_name">DNA-Nexus Mobile</string>

@@ -319,6 +319,16 @@
     <string name="language_system_label">Telefonsprache</string>
     <string name="language_english_label">English</string>
     <string name="language_finnish_label">Suomi</string>
+    <string name="language_simplified_chinese_label">简体中文</string>
+    <string name="language_swedish_label">Svenska</string>
+    <string name="language_ukrainian_label">Українська</string>
+    <string name="language_german_label">Deutsch</string>
+    <string name="language_estonian_label">Eesti</string>
+    <string name="language_polish_label">Polski</string>
+    <string name="language_spanish_label">Español</string>
+    <string name="language_french_label">Français</string>
+    <string name="language_italian_label">Italiano</string>
+    <string name="language_turkish_label">Türkçe</string>
     <string name="language_restart_note">Die Sprachauswahl wird sofort in dieser App-Ansicht verwendet.</string>
     <string name="about_files_description">DNA-Nexus Mobile ist eine Android-App für DNA-Nexus Server-Konten. Damit können Benutzer ihre Dateien, Freigabelinks, Uploads und den Speicher ihres Kontos sicher verwenden und verwalten, während die eigentlichen Daten auf dem DNA-Nexus Server des Betreibers bleiben.</string>
     <string name="app_display_name">DNA-Nexus Mobile</string>
