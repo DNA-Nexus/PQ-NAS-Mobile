@@ -40,6 +40,13 @@ DEFAULT_ALLOWED_SAME_AS_BASE = {
     "drop_zone_header_kicker",
     "drop_zone_name_placeholder",
     "drop_zone_footer_text_placeholder",
+
+    # Placeholder/status templates where Finnish intentionally keeps the same shape.
+    "admin_status_action_running",
+    "admin_status_action_ok",
+
+    # Natural Finnish technical/media label.
+    "media_status_video",
 }
 
 

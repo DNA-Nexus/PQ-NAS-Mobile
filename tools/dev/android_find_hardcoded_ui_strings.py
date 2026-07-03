@@ -81,6 +81,7 @@ ALLOW_EXACT = {
     "file",
     "folder",
     "workspace",
+    "♪",
     "owner",
     "editor",
     "viewer",
@@ -125,10 +126,22 @@ ALLOW_LINE_PARTS = (
 KOTLIN_ESCAPES_RE = re.compile(r"\\[nrt\"']")
 
 
+def strip_kotlin_templates(value: str) -> str:
+    # Ignore strings that only render dynamic values/counters/errors.
+    # Example: "${currentIndex + 1} / ${videoFiles.size}" -> " / "
+    out = re.sub(r"\$\{[^}]*\}", "", value)
+    out = re.sub(r"\$[A-Za-z_][A-Za-z0-9_]*", "", out)
+    return out
+
+
 def is_probably_technical(value: str, line: str) -> bool:
     v = value.strip()
 
     if v in ALLOW_EXACT:
+        return True
+
+    literal_part = strip_kotlin_templates(v).strip()
+    if literal_part != v and re.fullmatch(r"[\s:/.,•×+\-()\[\]{}]*", literal_part):
         return True
 
     if any(v.startswith(prefix) for prefix in ALLOW_PREFIXES):
@@ -229,6 +242,12 @@ def main() -> int:
         help="Limit output count.",
     )
     ap.add_argument(
+        "--exclude-path",
+        action="append",
+        default=[],
+        help="Skip files whose path contains this text. Can be repeated.",
+    )
+    ap.add_argument(
         "--strict",
         action="store_true",
         help="Return non-zero if findings are found.",
@@ -248,6 +267,10 @@ def main() -> int:
             # Generated/build folders should not be scanned.
             parts = set(path.parts)
             if "build" in parts or ".gradle" in parts:
+                continue
+
+            path_text = str(path)
+            if any(excluded in path_text for excluded in args.exclude_path):
                 continue
 
             for line_no, kind, value, raw in scan_file(path, args.all_strings):
