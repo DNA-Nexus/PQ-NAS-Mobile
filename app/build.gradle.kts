@@ -59,6 +59,12 @@ android {
         // handled separately from the compileSdk/toolchain upgrade to avoid runtime
         // behavior changes.
         disable.add("LocalContextGetResourceValueCall")
+
+        // Keep targetSdk separate from compileSdk/toolchain updates. Raising
+        // targetSdk opts the app into new Android runtime behavior, so that
+        // should be tested separately with login, QR pairing, sharing, storage,
+        // media playback, and file-transfer flows.
+        disable.add("OldTargetApi")
     }
 }
 
