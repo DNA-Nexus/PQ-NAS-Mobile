@@ -1,5 +1,6 @@
 package com.pqnas.mobile.ui.screens
 
+import android.annotation.SuppressLint
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -929,7 +930,11 @@ private class ScrollAwareEditText(
         return super.onKeyPreIme(keyCode, event)
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(event: MotionEvent): Boolean {
+        // Accessibility: browse-mode taps are routed through performClick(),
+        // but this custom editor also needs low-level touch handling for
+        // inertial scrolling and tap-to-edit offset selection.
         if (!editingEnabled) {
             return handleBrowseTouch(event)
         }
@@ -939,6 +944,20 @@ private class ScrollAwareEditText(
         }
 
         return super.onTouchEvent(event)
+    }
+
+    override fun performClick(): Boolean {
+        // Accessibility: custom touch handling must still expose a click action
+        // so TalkBack/keyboard users can activate tap-to-edit behavior.
+        super.performClick()
+
+        if (canEdit && !editingEnabled) {
+            val textLen = text?.length ?: 0
+            val offset = selectionStart.coerceIn(0, textLen)
+            onTapToEditAtOffset?.invoke(offset)
+        }
+
+        return true
     }
 
     private fun handleBrowseTouch(event: MotionEvent): Boolean {
@@ -1014,7 +1033,10 @@ private class ScrollAwareEditText(
                     val offset = getOffsetForPosition(event.x, event.y)
                         .coerceIn(0, textLen)
 
-                    onTapToEditAtOffset?.invoke(offset)
+                    // Accessibility: route real tap activation through performClick()
+                    // while preserving the exact tapped text offset for edit mode.
+                    setSelection(offset)
+                    performClick()
                 }
 
                 dragging = false
