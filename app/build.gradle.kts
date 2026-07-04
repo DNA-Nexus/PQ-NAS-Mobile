@@ -22,6 +22,14 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    bundle {
+        language {
+            // Keep all packaged app languages installed so the in-app language selector
+            // can switch between DNA-Nexus translations without Play Core downloads.
+            enableSplit = false
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = true

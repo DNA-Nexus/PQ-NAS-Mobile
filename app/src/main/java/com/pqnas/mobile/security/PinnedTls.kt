@@ -1,5 +1,6 @@
 package com.pqnas.mobile.security
 
+import android.annotation.SuppressLint
 import android.util.Base64
 import okhttp3.OkHttpClient
 import java.security.KeyStore
@@ -98,6 +99,11 @@ object PinnedTls {
             ?: throw IllegalStateException("No default X509TrustManager available")
     }
 
+    // Lint warning is intentional here: this trust manager is only used for
+    // QR-carried SPKI pin trust on self-hosted/internal DNA-Nexus servers.
+    // It does not disable validation silently: public CA mode keeps OkHttp defaults,
+    // and pinned mode still requires valid dates plus exact leaf SPKI SHA-256 match.
+    @SuppressLint("CustomX509TrustManager")
     private class SpkiPinTrustManager(
         private val expectedPin: String
     ) : X509TrustManager {
