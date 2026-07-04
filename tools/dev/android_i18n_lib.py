@@ -27,6 +27,19 @@ DEFAULT_ALLOWED_SAME_AS_BASE = {
     "language_english_label",
     "language_finnish_label",
 
+    # Native language names are intentionally shown in their own language
+    # in every locale so the app language picker stays recognizable.
+    "language_simplified_chinese_label",
+    "language_swedish_label",
+    "language_ukrainian_label",
+    "language_german_label",
+    "language_estonian_label",
+    "language_polish_label",
+    "language_spanish_label",
+    "language_french_label",
+    "language_italian_label",
+    "language_turkish_label",
+
     # Product / technical labels that are intentionally identical in Finnish.
     "dna_nexus_files",
     "versions_hash",
