@@ -9,7 +9,7 @@
     <string name="messages">Sõnumid</string>
     <string name="save_url">Salvesta URL</string>
     <string name="theme_dark_label">Tume</string>
-    <string name="theme_dark_desc">DNA-Nexus tume tsüaan</string>
+    <string name="theme_dark_desc">Dark cyan theme</string>
     <string name="theme_bright_label">Hele</string>
     <string name="theme_bright_desc">Hele ja kergesti loetav režiim</string>
     <string name="theme_cpunk_orange_label">CPUNK-oranž</string>
@@ -17,10 +17,10 @@
     <string name="theme_win_classic_label">Windows Classic</string>
     <string name="theme_win_classic_desc">Helehall klassikaline kasutajaliides</string>
     <string name="admin_tools">Admini tööriistad</string>
-    <string name="about_dna_nexus_files">Teave DNA-Nexus Mobile’i kohta</string>
+    <string name="about_dna_nexus_files">About app</string>
     <string name="files_about_mascot_desc">CPUNK DNA-Nexus maskott</string>
     <string name="files_about_security_stack">Turvapinu</string>
-    <string name="files_about_security_stack_desc">DNA-Nexus ökosüsteem: ML-KEM-768 • CRYSTALS-Dilithium 5 • AES-256-GCM\nMobiilirakendus: HTTPS + TLS-kontroll • Android Keystore • AES-GCM-krüpteeritud kohalik autentimine/vahemälu</string>
+    <string name="files_about_security_stack_desc">Connected service security stack: ML-KEM-768 • CRYSTALS-Dilithium 5 • AES-256-GCM\nMobile app: HTTPS + TLS pinning • Android Keystore • AES-GCM encrypted local auth/cache</string>
     <string name="show_all_items">Näita kõiki üksusi</string>
     <string name="show_favorites_only">Näita ainult lemmikuid</string>
     <string name="refresh">Värskenda</string>
@@ -31,7 +31,7 @@
     <string name="storage_info_not_loaded">Salvestusruumi teavet pole laaditud</string>
     <string name="storage_usage">%1$d %% kasutusel</string>
     <string name="storage_approximate">Kasutus on hinnanguline</string>
-    <string name="apps_available_mobile_tools">Selles serveris saadaval olevad DNA-Nexus mobiilitööriistad.</string>
+    <string name="apps_available_mobile_tools">Available mobile tools on this server.</string>
     <string name="contacts">Contacts</string>
     <string name="contacts_desc">Ava privaatne aadressiraamat ja kerge kliendiregister.</string>
     <string name="circle_stack">Circle Stack</string>
@@ -674,7 +674,7 @@
     <string name="scan_help">Ava DNA-Nexuse veebiliideses Trusted Devices ja kuva QR-kood seal.</string>
     <string name="scan_start">Alusta QR-skannimist</string>
     <string name="scan_back">Tagasi</string>
-    <string name="pair_default_device_name">DNA-Nexus Android</string>
+    <string name="pair_default_device_name">Android device</string>
     <string name="pair_title">Seo seade</string>
     <string name="pair_mascot_desc">CPUNK DNA-Nexus maskott</string>
     <string name="pair_server">Server: %1$s</string>
@@ -786,4 +786,7 @@ See QR-kood osutab teisele serverile. Sidumine blokeeriti.</string>
     <string name="workspace_error_http">%1$s ebaõnnestus (HTTP %2$d)</string>
     <string name="workspace_error_failed_detail">%1$s ebaõnnestus: %2$s</string>
     <string name="workspace_unknown_error">tundmatu viga</string>
+    <string name="about_connected_server">About %1$s</string>
+    <string name="apps_available_mobile_tools_for_server">Available mobile tools on %1$s.</string>
+    <string name="connected_server_domain">Connected server: %1$s</string>
 </resources>

@@ -9,7 +9,7 @@
     <string name="messages">Messages</string>
     <string name="save_url">Save URL</string>
     <string name="theme_dark_label">Dark</string>
-    <string name="theme_dark_desc">DNA-Nexus dark cyan</string>
+    <string name="theme_dark_desc">Dark cyan theme</string>
     <string name="theme_bright_label">Bright</string>
     <string name="theme_bright_desc">Light readable mode</string>
     <string name="theme_cpunk_orange_label">CPUNK Orange</string>
@@ -17,10 +17,10 @@
     <string name="theme_win_classic_label">Windows Classic</string>
     <string name="theme_win_classic_desc">Light gray classic UI</string>
     <string name="admin_tools">Admin tools</string>
-    <string name="about_dna_nexus_files">About DNA-Nexus Mobile</string>
+    <string name="about_dna_nexus_files">About app</string>
     <string name="files_about_mascot_desc">CPUNK DNA-Nexus mascot</string>
     <string name="files_about_security_stack">Security stack</string>
-    <string name="files_about_security_stack_desc">DNA-Nexus ecosystem: ML-KEM-768 • CRYSTALS-Dilithium 5 • AES-256-GCM\nMobile app: HTTPS + TLS pinning • Android Keystore • AES-GCM encrypted local auth/cache</string>
+    <string name="files_about_security_stack_desc">Connected service security stack: ML-KEM-768 • CRYSTALS-Dilithium 5 • AES-256-GCM\nMobile app: HTTPS + TLS pinning • Android Keystore • AES-GCM encrypted local auth/cache</string>
     <string name="show_all_items">Show all items</string>
     <string name="show_favorites_only">Show favorites only</string>
     <string name="refresh">Refresh</string>
@@ -31,7 +31,7 @@
     <string name="storage_info_not_loaded">Storage info not loaded</string>
     <string name="storage_usage">%1$d%% used</string>
     <string name="storage_approximate">Usage is approximate</string>
-    <string name="apps_available_mobile_tools">Available DNA-Nexus mobile tools on this server.</string>
+    <string name="apps_available_mobile_tools">Available mobile tools on this server.</string>
     <string name="contacts">Contacts</string>
     <string name="contacts_desc">Open your private address book and lightweight customer registry.</string>
     <string name="circle_stack">Circle Stack</string>
@@ -674,7 +674,7 @@
     <string name="scan_help">Open Trusted Devices in DNA-Nexus web UI and show the QR code there.</string>
     <string name="scan_start">Start QR scan</string>
     <string name="scan_back">Back</string>
-    <string name="pair_default_device_name">DNA-Nexus Android</string>
+    <string name="pair_default_device_name">Android device</string>
     <string name="pair_title">Pair device</string>
     <string name="pair_mascot_desc">CPUNK DNA-Nexus mascot</string>
     <string name="pair_server">Server: %1$s</string>
@@ -786,4 +786,7 @@ This QR code points to a different server. Pairing is blocked.</string>
     <string name="workspace_error_http">%1$s failed (HTTP %2$d)</string>
     <string name="workspace_error_failed_detail">%1$s failed: %2$s</string>
     <string name="workspace_unknown_error">unknown error</string>
+    <string name="about_connected_server">About %1$s</string>
+    <string name="apps_available_mobile_tools_for_server">Available mobile tools on %1$s.</string>
+    <string name="connected_server_domain">Connected server: %1$s</string>
 </resources>

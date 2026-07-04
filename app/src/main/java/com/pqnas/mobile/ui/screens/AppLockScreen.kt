@@ -27,9 +27,15 @@ import com.pqnas.mobile.ui.theme.PqnasAppTheme
 fun AppLockScreen(
     status: String,
     appTheme: PqnasAppTheme,
+    appTitle: String = "",
+    serverHost: String = "",
     onUnlock: () -> Unit,
     onLogout: () -> Unit
 ) {
+    val displayTitle = appTitle.trim().ifBlank {
+        stringResource(R.string.app_lock_title)
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -38,7 +44,7 @@ fun AppLockScreen(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Text(
-            text = stringResource(R.string.app_lock_title),
+            text = displayTitle,
             style = MaterialTheme.typography.headlineSmall,
             color = MaterialTheme.colorScheme.onBackground
         )
@@ -80,6 +86,22 @@ Card(
                             .fillMaxSize()
                             .padding(horizontal = 18.dp, vertical = 14.dp),
                         contentScale = ContentScale.Fit
+                    )
+                }
+
+                Text(
+                    text = displayTitle,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+
+                if (serverHost.isNotBlank()) {
+                    // Runtime branding is display-only. Keep the real connected
+                    // origin visible so a server name cannot hide where data lives.
+                    Text(
+                        text = stringResource(R.string.connected_server_domain, serverHost),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
 

@@ -3,6 +3,7 @@ package com.pqnas.mobile.auth
 import android.os.Build
 import com.pqnas.mobile.BuildConfig
 import com.pqnas.mobile.api.ApiFactory
+import com.pqnas.mobile.api.AuthApi
 import com.pqnas.mobile.api.PairConsumeRequest
 import com.pqnas.mobile.api.RevokeRefreshTokenRequest
 
@@ -17,7 +18,8 @@ class AuthRepository(
         baseUrl: String,
         pairToken: String,
         tlsPinSha256: String,
-        deviceName: String = "DNA-Nexus Android"
+        deviceName: String = "DNA-Nexus Android",
+        serverDisplayNameFallback: String = ""
     ): Boolean {
         val api = ApiFactory.createAuthApi(
             baseUrl = baseUrl,
@@ -47,6 +49,11 @@ class AuthRepository(
             return false
         }
 
+        val serverDisplayName = resolveServerDisplayName(
+            api = api,
+            fallback = serverDisplayNameFallback
+        )
+
         tokenStore.saveTokens(
             accessToken = resp.access_token,
             refreshToken = resp.refresh_token,
@@ -54,7 +61,8 @@ class AuthRepository(
             fingerprintHex = resp.fingerprint_hex,
             role = resp.role,
             baseUrl = baseUrl,
-            tlsPinSha256 = tlsPinSha256
+            tlsPinSha256 = tlsPinSha256,
+            serverDisplayName = serverDisplayName
         )
 
         return true
@@ -64,6 +72,53 @@ class AuthRepository(
      * Revoke refresh token on the server, then wipe local auth state.
      * Best-effort: local state is always cleared even if the server call fails.
      */
+    suspend fun previewServerDisplayName(
+        baseUrl: String,
+        tlsPinSha256: String,
+        fallback: String
+    ): String {
+        val api = ApiFactory.createAuthApi(
+            baseUrl = baseUrl,
+            tlsPinSha256 = tlsPinSha256
+        )
+
+        return resolveServerDisplayName(
+            api = api,
+            fallback = fallback
+        )
+    }
+
+    private suspend fun resolveServerDisplayName(
+        api: AuthApi,
+        fallback: String
+    ): String {
+        val fromServer = runCatching {
+            val branding = api.publicBranding()
+            val preferred = branding.mobile?.display_name
+                ?.takeIf { it.isNotBlank() }
+                ?: branding.product_name.ifBlank { branding.product_short_name }
+
+            cleanServerDisplayName(preferred)
+        }.getOrDefault("")
+
+        return fromServer.ifBlank {
+            cleanServerDisplayName(fallback)
+        }
+    }
+
+    private fun cleanServerDisplayName(raw: String?): String {
+        // Runtime branding is untrusted display metadata from the connected
+        // server. Strip control characters so it cannot spoof layout/log output.
+        val cleaned = raw.orEmpty()
+            .map { ch ->
+                if (ch.code < 0x20 || ch.code == 0x7f) ' ' else ch
+            }
+            .joinToString("")
+            .trim()
+
+        return cleaned.take(80)
+    }
+
     suspend fun logout() {
         try {
             val state = tokenStore.getAuthStateOnce()

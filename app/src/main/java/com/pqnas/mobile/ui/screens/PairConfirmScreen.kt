@@ -43,7 +43,19 @@ fun PairConfirmScreen(
     var status by remember { mutableStateOf("") }
     var statusIsError by remember { mutableStateOf(false) }
     var busy by remember { mutableStateOf(false) }
+    var serverDisplayName by remember(payload.origin, payload.appName) {
+        mutableStateOf(payload.appName)
+    }
     val scope = rememberCoroutineScope()
+
+    LaunchedEffect(payload.origin, payload.tlsPinSha256, payload.appName) {
+        serverDisplayName = authRepository.previewServerDisplayName(
+            baseUrl = payload.origin,
+            tlsPinSha256 = payload.tlsPinSha256,
+            fallback = payload.appName
+        )
+    }
+
     fun normalizeOriginForCompare(value: String): String {
         return value.trim().trimEnd('/').lowercase()
     }
@@ -106,7 +118,7 @@ fun PairConfirmScreen(
                     )
                 }
                 Text(
-                    text = stringResource(R.string.pair_app, payload.appName),
+                    text = stringResource(R.string.pair_app, serverDisplayName),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -164,7 +176,8 @@ fun PairConfirmScreen(
                                     baseUrl = payload.origin,
                                     pairToken = payload.pairToken,
                                     tlsPinSha256 = payload.tlsPinSha256,
-                                    deviceName = deviceName
+                                    deviceName = deviceName,
+                                    serverDisplayNameFallback = serverDisplayName
                                 )
                                 if (ok) {
                                     onPaired()

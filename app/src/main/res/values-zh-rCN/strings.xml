@@ -9,7 +9,7 @@
     <string name="messages">消息</string>
     <string name="save_url">保存 URL</string>
     <string name="theme_dark_label">深色</string>
-    <string name="theme_dark_desc">DNA-Nexus 深色青色</string>
+    <string name="theme_dark_desc">Dark cyan theme</string>
     <string name="theme_bright_label">浅色</string>
     <string name="theme_bright_desc">浅色且易读的模式</string>
     <string name="theme_cpunk_orange_label">CPUNK 橙色</string>
@@ -17,10 +17,10 @@
     <string name="theme_win_classic_label">Windows Classic</string>
     <string name="theme_win_classic_desc">浅灰色经典界面</string>
     <string name="admin_tools">管理员工具</string>
-    <string name="about_dna_nexus_files">关于 DNA-Nexus Mobile</string>
+    <string name="about_dna_nexus_files">About app</string>
     <string name="files_about_mascot_desc">CPUNK DNA-Nexus 吉祥物</string>
     <string name="files_about_security_stack">安全栈</string>
-    <string name="files_about_security_stack_desc">DNA-Nexus 生态系统：ML-KEM-768 • CRYSTALS-Dilithium 5 • AES-256-GCM\n移动应用：HTTPS + TLS 校验 • Android Keystore • AES-GCM 加密的本地认证/缓存</string>
+    <string name="files_about_security_stack_desc">Connected service security stack: ML-KEM-768 • CRYSTALS-Dilithium 5 • AES-256-GCM\nMobile app: HTTPS + TLS pinning • Android Keystore • AES-GCM encrypted local auth/cache</string>
     <string name="show_all_items">显示所有项目</string>
     <string name="show_favorites_only">仅显示收藏</string>
     <string name="refresh">刷新</string>
@@ -31,7 +31,7 @@
     <string name="storage_info_not_loaded">存储信息尚未加载</string>
     <string name="storage_usage">已使用 %1$d %%</string>
     <string name="storage_approximate">使用量为估算值</string>
-    <string name="apps_available_mobile_tools">此服务器可用的 DNA-Nexus 移动工具。</string>
+    <string name="apps_available_mobile_tools">Available mobile tools on this server.</string>
     <string name="contacts">Contacts</string>
     <string name="contacts_desc">打开你的私人通讯录和轻量客户登记册。</string>
     <string name="circle_stack">Circle Stack</string>
@@ -674,7 +674,7 @@
     <string name="scan_help">在 DNA-Nexus Web 界面中打开 Trusted Devices，并在那里显示 QR 码。</string>
     <string name="scan_start">开始 QR 扫描</string>
     <string name="scan_back">返回</string>
-    <string name="pair_default_device_name">DNA-Nexus Android</string>
+    <string name="pair_default_device_name">Android device</string>
     <string name="pair_title">配对设备</string>
     <string name="pair_mascot_desc">CPUNK DNA-Nexus 吉祥物</string>
     <string name="pair_server">服务器：%1$s</string>
@@ -786,4 +786,7 @@
     <string name="workspace_error_http">%1$s 失败（HTTP %2$d）</string>
     <string name="workspace_error_failed_detail">%1$s 失败：%2$s</string>
     <string name="workspace_unknown_error">未知错误</string>
+    <string name="about_connected_server">About %1$s</string>
+    <string name="apps_available_mobile_tools_for_server">Available mobile tools on %1$s.</string>
+    <string name="connected_server_domain">Connected server: %1$s</string>
 </resources>

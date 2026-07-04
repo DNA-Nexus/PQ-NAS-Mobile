@@ -23,7 +23,8 @@ data class AuthState(
     val refreshToken: String = "",
     val deviceId: String = "",
     val fingerprintHex: String = "",
-    val role: String = ""
+    val role: String = "",
+    val serverDisplayName: String = ""
 ) {
     val isLoggedIn: Boolean
         get() = baseUrl.isNotBlank() &&
@@ -42,6 +43,7 @@ class TokenStore(private val context: Context) {
         val DEVICE_ID = stringPreferencesKey("device_id")
         val FINGERPRINT_HEX = stringPreferencesKey("fingerprint_hex")
         val ROLE = stringPreferencesKey("role")
+        val SERVER_DISPLAY_NAME = stringPreferencesKey("server_display_name")
 
         val all: List<Preferences.Key<String>> = listOf(
             BASE_URL,
@@ -50,7 +52,8 @@ class TokenStore(private val context: Context) {
             REFRESH_TOKEN,
             DEVICE_ID,
             FINGERPRINT_HEX,
-            ROLE
+            ROLE,
+            SERVER_DISPLAY_NAME
         )
     }
 
@@ -66,7 +69,8 @@ class TokenStore(private val context: Context) {
                 refreshToken = decryptPref(prefs[Keys.REFRESH_TOKEN]),
                 deviceId = decryptPref(prefs[Keys.DEVICE_ID]),
                 fingerprintHex = decryptPref(prefs[Keys.FINGERPRINT_HEX]),
-                role = decryptPref(prefs[Keys.ROLE])
+                role = decryptPref(prefs[Keys.ROLE]),
+                serverDisplayName = decryptPref(prefs[Keys.SERVER_DISPLAY_NAME])
             )
         }
 
@@ -80,6 +84,7 @@ class TokenStore(private val context: Context) {
         context.dataStore.edit { prefs ->
             prefs[Keys.BASE_URL] = encryptPref(baseUrl.trim().removeSuffix("/"))
             prefs.remove(Keys.TLS_PIN_SHA256)
+            prefs.remove(Keys.SERVER_DISPLAY_NAME)
         }
     }
 
@@ -90,7 +95,8 @@ class TokenStore(private val context: Context) {
         fingerprintHex: String = "",
         role: String = "",
         baseUrl: String = "",
-        tlsPinSha256: String = ""
+        tlsPinSha256: String = "",
+        serverDisplayName: String = ""
     ) {
         context.dataStore.edit { prefs ->
             if (baseUrl.isNotBlank()) {
@@ -105,6 +111,9 @@ class TokenStore(private val context: Context) {
             prefs[Keys.DEVICE_ID] = encryptPref(deviceId)
             prefs[Keys.FINGERPRINT_HEX] = encryptPref(fingerprintHex)
             prefs[Keys.ROLE] = encryptPref(role)
+            if (serverDisplayName.isNotBlank()) {
+                prefs[Keys.SERVER_DISPLAY_NAME] = encryptPref(serverDisplayName)
+            }
         }
     }
 
@@ -125,6 +134,17 @@ class TokenStore(private val context: Context) {
     suspend fun updateAccessToken(accessToken: String) {
         context.dataStore.edit { prefs ->
             prefs[Keys.ACCESS_TOKEN] = encryptPref(accessToken)
+        }
+    }
+
+    suspend fun saveServerDisplayName(serverDisplayName: String) {
+        context.dataStore.edit { prefs ->
+            val cleaned = serverDisplayName.trim()
+            if (cleaned.isBlank()) {
+                prefs.remove(Keys.SERVER_DISPLAY_NAME)
+            } else {
+                prefs[Keys.SERVER_DISPLAY_NAME] = encryptPref(cleaned)
+            }
         }
     }
 

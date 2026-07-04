@@ -219,3 +219,23 @@ data class RevokeRefreshTokenResponse(
     val ok: Boolean,
     val error: String? = null
 )
+
+data class PublicBrandingMobileDto(
+    val display_name: String? = null,
+    val short_name: String? = null,
+    val logo_url: String? = null,
+    val primary_color: String? = null,
+    val accent_color: String? = null
+)
+
+data class PublicBrandingResponse(
+    val ok: Boolean,
+    val enabled: Boolean = false,
+    val product_name: String = "",
+    val product_short_name: String = "",
+    val company_name: String = "",
+    val primary_color: String = "",
+    val accent_color: String = "",
+    val support_url: String = "",
+    val mobile: PublicBrandingMobileDto? = null
+)

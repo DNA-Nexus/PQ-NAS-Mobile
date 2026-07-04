@@ -123,6 +123,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 @Composable
 fun FilesScreen(
     filesRepository: FilesRepository,
+    serverDisplayName: String = "",
     onLogout: (() -> Unit)? = null,
     onOpenContacts: (() -> Unit)? = null,
     onOpenAdmin: (() -> Unit)? = null,
@@ -136,6 +137,15 @@ fun FilesScreen(
     onIncomingShareConsumed: () -> Unit = {}
 ) {
     val context = LocalContext.current
+    val fallbackAppTitle = stringResource(R.string.dna_nexus_files)
+    val appTitle = serverDisplayName.trim().ifBlank { fallbackAppTitle }
+    val aboutAppTitle = stringResource(R.string.about_connected_server, appTitle)
+    val appsForServerText = stringResource(R.string.apps_available_mobile_tools_for_server, appTitle)
+    val serverHost = filesRepository.baseUrlForDisplay()
+        .removePrefix("https://")
+        .removePrefix("http://")
+        .trimEnd('/')
+
     val initialFileListCache = remember(context) {
         FileListCache(context.applicationContext)
     }
@@ -1951,7 +1961,7 @@ fun FilesScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = stringResource(R.string.dna_nexus_files),
+                    text = appTitle,
                     style = MaterialTheme.typography.headlineSmall,
                     color = MaterialTheme.colorScheme.onBackground,
                     modifier = Modifier.weight(1f)
@@ -1976,7 +1986,19 @@ fun FilesScreen(
                 }
             }
 
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(4.dp))
+
+            if (serverHost.isNotBlank()) {
+                // Keep the connected origin visible so runtime branding cannot
+                // hide which server the user is actually connected to.
+                Text(
+                    text = serverHost,
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+
+                Spacer(Modifier.height(4.dp))
+            }
 
             Text(
                 text = stringResource(R.string.path_label, currentPath ?: "/"),
@@ -2537,7 +2559,7 @@ fun FilesScreen(
                 }
             },
             title = {
-                Text(stringResource(R.string.about_dna_nexus_files))
+                Text(aboutAppTitle)
             },
             text = {
                 Column(
@@ -2546,6 +2568,11 @@ fun FilesScreen(
                         .verticalScroll(rememberScrollState()),
                     verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
+                    ConnectedBrandingSummary(
+                        appTitle = appTitle,
+                        serverHost = serverHost
+                    )
+
                     SettingsAboutSection()
                 }
             }
@@ -2602,7 +2629,7 @@ fun FilesScreen(
                     onClick = { showAboutDialog = true },
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text(stringResource(R.string.about_dna_nexus_files))
+                    Text(aboutAppTitle)
                 }
 
                 Button(
@@ -2694,7 +2721,7 @@ fun FilesScreen(
                     )
 
                     Text(
-                        text = stringResource(R.string.apps_available_mobile_tools),
+                        text = appsForServerText,
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -3830,6 +3857,43 @@ fun FilesScreen(
     }
 }
 
+
+@Composable
+private fun ConnectedBrandingSummary(
+    appTitle: String,
+    serverHost: String
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
+        )
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+            Text(
+                text = appTitle,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+
+            if (serverHost.isNotBlank()) {
+                // Runtime branding is display-only. Keep the real connected
+                // domain visible so a server cannot hide its origin behind a logo/name.
+                Text(
+                    text = stringResource(R.string.connected_server_domain, serverHost),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+    }
+}
 
 private data class ShareExpiryOption(
     val label: String,

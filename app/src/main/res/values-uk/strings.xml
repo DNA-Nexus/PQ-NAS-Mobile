@@ -9,7 +9,7 @@
     <string name="messages">Повідомлення</string>
     <string name="save_url">Зберегти URL</string>
     <string name="theme_dark_label">Темна</string>
-    <string name="theme_dark_desc">Темний ціан DNA-Nexus</string>
+    <string name="theme_dark_desc">Dark cyan theme</string>
     <string name="theme_bright_label">Світла</string>
     <string name="theme_bright_desc">Світлий і зручний для читання режим</string>
     <string name="theme_cpunk_orange_label">CPUNK-помаранчева</string>
@@ -17,10 +17,10 @@
     <string name="theme_win_classic_label">Windows Classic</string>
     <string name="theme_win_classic_desc">Світло-сірий класичний інтерфейс</string>
     <string name="admin_tools">Інструменти адміністратора</string>
-    <string name="about_dna_nexus_files">Про DNA-Nexus Mobile</string>
+    <string name="about_dna_nexus_files">About app</string>
     <string name="files_about_mascot_desc">Маскот CPUNK DNA-Nexus</string>
     <string name="files_about_security_stack">Стек безпеки</string>
-    <string name="files_about_security_stack_desc">Екосистема DNA-Nexus: ML-KEM-768 • CRYSTALS-Dilithium 5 • AES-256-GCM\nМобільний застосунок: HTTPS + перевірка TLS • Android Keystore • локальна автентифікація/кеш, зашифровані AES-GCM</string>
+    <string name="files_about_security_stack_desc">Connected service security stack: ML-KEM-768 • CRYSTALS-Dilithium 5 • AES-256-GCM\nMobile app: HTTPS + TLS pinning • Android Keystore • AES-GCM encrypted local auth/cache</string>
     <string name="show_all_items">Показати всі елементи</string>
     <string name="show_favorites_only">Показати лише обране</string>
     <string name="refresh">Оновити</string>
@@ -31,7 +31,7 @@
     <string name="storage_info_not_loaded">Інформацію про сховище не завантажено</string>
     <string name="storage_usage">Використано %1$d %%</string>
     <string name="storage_approximate">Використання є приблизною оцінкою</string>
-    <string name="apps_available_mobile_tools">Мобільні інструменти DNA-Nexus, доступні на цьому сервері.</string>
+    <string name="apps_available_mobile_tools">Available mobile tools on this server.</string>
     <string name="contacts">Contacts</string>
     <string name="contacts_desc">Відкрити приватну адресну книгу та легкий реєстр клієнтів.</string>
     <string name="circle_stack">Circle Stack</string>
@@ -674,7 +674,7 @@
     <string name="scan_help">Відкрий Trusted Devices у вебінтерфейсі DNA-Nexus і покажи там QR-код.</string>
     <string name="scan_start">Почати QR-сканування</string>
     <string name="scan_back">Назад</string>
-    <string name="pair_default_device_name">DNA-Nexus Android</string>
+    <string name="pair_default_device_name">Android device</string>
     <string name="pair_title">Сполучити пристрій</string>
     <string name="pair_mascot_desc">Маскот CPUNK DNA-Nexus</string>
     <string name="pair_server">Сервер: %1$s</string>
@@ -786,4 +786,7 @@
     <string name="workspace_error_http">%1$s не вдалося (HTTP %2$d)</string>
     <string name="workspace_error_failed_detail">%1$s не вдалося: %2$s</string>
     <string name="workspace_unknown_error">невідома помилка</string>
+    <string name="about_connected_server">About %1$s</string>
+    <string name="apps_available_mobile_tools_for_server">Available mobile tools on %1$s.</string>
+    <string name="connected_server_domain">Connected server: %1$s</string>
 </resources>

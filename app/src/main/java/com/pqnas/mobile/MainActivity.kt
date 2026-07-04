@@ -81,6 +81,15 @@ class MainActivity : FragmentActivity() {
                 var pairPayload by remember { mutableStateOf<PairQrPayload?>(null) }
                 var authLoaded by remember { mutableStateOf(false) }
                 var isAdmin by remember { mutableStateOf(false) }
+                var serverDisplayName by remember { mutableStateOf("") }
+
+                val appTitle = serverDisplayName.trim().ifBlank {
+                    context.getString(R.string.dna_nexus_files)
+                }
+                val serverHost = baseUrl
+                    .removePrefix("https://")
+                    .removePrefix("http://")
+                    .trimEnd('/')
 
                 // PQNAS_INCOMING_ANDROID_SHARE_V1: pending Android Sharesheet batch, processed after app unlock.
                 var incomingShareManifestPath by remember {
@@ -141,6 +150,7 @@ class MainActivity : FragmentActivity() {
                         authRepository.logout()
                         baseUrl = ""
                         isAdmin = false
+                        serverDisplayName = ""
                         pairPayload = null
                         appUnlocked = false
                         appLockStatus = ""
@@ -224,8 +234,27 @@ class MainActivity : FragmentActivity() {
                     val state = tokenStore.getAuthStateOnce()
                     baseUrl = state.baseUrl
                     isAdmin = state.role == "admin"
+                    serverDisplayName = state.serverDisplayName
                     screen = if (state.isLoggedIn) "files" else "server"
                     authLoaded = true
+
+                    if (state.isLoggedIn && state.baseUrl.isNotBlank()) {
+                        runCatching {
+                            authRepository.previewServerDisplayName(
+                                baseUrl = state.baseUrl,
+                                tlsPinSha256 = state.tlsPinSha256,
+                                fallback = state.serverDisplayName
+                            )
+                        }.onSuccess { refreshedName ->
+                            val cleaned = refreshedName.trim()
+                            if (cleaned.isNotBlank() && cleaned != state.serverDisplayName) {
+                                // Public branding is display-only metadata. Refresh it after
+                                // startup so operator naming changes do not require re-pairing.
+                                tokenStore.saveServerDisplayName(cleaned)
+                                serverDisplayName = cleaned
+                            }
+                        }
+                    }
                 }
 
                 LaunchedEffect(authLoaded, screen, appUnlocked) {
@@ -295,6 +324,7 @@ class MainActivity : FragmentActivity() {
                                         val s = tokenStore.getAuthStateOnce()
                                         baseUrl = s.baseUrl
                                         isAdmin = s.role == "admin"
+                                        serverDisplayName = s.serverDisplayName
 
                                         // Pairing just completed successfully, so do not immediately
                                         // force a second unlock prompt in the same foreground session.
@@ -316,6 +346,8 @@ class MainActivity : FragmentActivity() {
                             AppLockScreen(
                                 status = appLockStatus,
                                 appTheme = appTheme,
+                                appTitle = appTitle,
+                                serverHost = serverHost,
                                 onUnlock = {
                                     requestAppUnlock(force = true)
                                 },
@@ -347,6 +379,8 @@ class MainActivity : FragmentActivity() {
                             AppLockScreen(
                                 status = appLockStatus,
                                 appTheme = appTheme,
+                                appTitle = appTitle,
+                                serverHost = serverHost,
                                 onUnlock = {
                                     requestAppUnlock(force = true)
                                 },
@@ -377,6 +411,8 @@ class MainActivity : FragmentActivity() {
                             AppLockScreen(
                                 status = appLockStatus,
                                 appTheme = appTheme,
+                                appTitle = appTitle,
+                                serverHost = serverHost,
                                 onUnlock = {
                                     requestAppUnlock(force = true)
                                 },
@@ -394,6 +430,7 @@ class MainActivity : FragmentActivity() {
 
                             FilesScreen(
                                 filesRepository = filesRepository,
+                                serverDisplayName = serverDisplayName,
                                 appTheme = appTheme,
                                 onAppThemeChange = { nextTheme ->
                                     appTheme = nextTheme

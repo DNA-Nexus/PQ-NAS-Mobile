@@ -9,7 +9,7 @@
     <string name="messages">Messaggi</string>
     <string name="save_url">Salva URL</string>
     <string name="theme_dark_label">Scuro</string>
-    <string name="theme_dark_desc">DNA-Nexus ciano scuro</string>
+    <string name="theme_dark_desc">Dark cyan theme</string>
     <string name="theme_bright_label">Chiaro</string>
     <string name="theme_bright_desc">Modalità chiara e facile da leggere</string>
     <string name="theme_cpunk_orange_label">Arancione CPUNK</string>
@@ -17,10 +17,10 @@
     <string name="theme_win_classic_label">Windows Classic</string>
     <string name="theme_win_classic_desc">Interfaccia classica grigio chiaro</string>
     <string name="admin_tools">Strumenti amministratore</string>
-    <string name="about_dna_nexus_files">Informazioni su DNA-Nexus Mobile</string>
+    <string name="about_dna_nexus_files">About app</string>
     <string name="files_about_mascot_desc">Mascotte CPUNK DNA-Nexus</string>
     <string name="files_about_security_stack">Stack di sicurezza</string>
-    <string name="files_about_security_stack_desc">Ecosistema DNA-Nexus: ML-KEM-768 • CRYSTALS-Dilithium 5 • AES-256-GCM\nApp mobile: HTTPS + verifica TLS • Android Keystore • autenticazione/cache locale cifrata AES-GCM</string>
+    <string name="files_about_security_stack_desc">Connected service security stack: ML-KEM-768 • CRYSTALS-Dilithium 5 • AES-256-GCM\nMobile app: HTTPS + TLS pinning • Android Keystore • AES-GCM encrypted local auth/cache</string>
     <string name="show_all_items">Mostra tutti gli elementi</string>
     <string name="show_favorites_only">Mostra solo preferiti</string>
     <string name="refresh">Aggiorna</string>
@@ -31,7 +31,7 @@
     <string name="storage_info_not_loaded">Le informazioni di archiviazione non sono state caricate</string>
     <string name="storage_usage">%1$d %% in uso</string>
     <string name="storage_approximate">L’utilizzo è una stima</string>
-    <string name="apps_available_mobile_tools">Strumenti mobili DNA-Nexus disponibili su questo server.</string>
+    <string name="apps_available_mobile_tools">Available mobile tools on this server.</string>
     <string name="contacts">Contacts</string>
     <string name="contacts_desc">Apri la rubrica privata e un registro clienti leggero.</string>
     <string name="circle_stack">Circle Stack</string>
@@ -674,7 +674,7 @@
     <string name="scan_help">Apri Trusted Devices nell’interfaccia web DNA-Nexus e mostra lì il codice QR.</string>
     <string name="scan_start">Avvia scansione QR</string>
     <string name="scan_back">Indietro</string>
-    <string name="pair_default_device_name">DNA-Nexus Android</string>
+    <string name="pair_default_device_name">Android device</string>
     <string name="pair_title">Associa dispositivo</string>
     <string name="pair_mascot_desc">Mascotte CPUNK DNA-Nexus</string>
     <string name="pair_server">Server: %1$s</string>
@@ -786,4 +786,7 @@ Questo codice QR punta a un server diverso. Associazione bloccata.</string>
     <string name="workspace_error_http">%1$s non riuscito (HTTP %2$d)</string>
     <string name="workspace_error_failed_detail">%1$s non riuscito: %2$s</string>
     <string name="workspace_unknown_error">errore sconosciuto</string>
+    <string name="about_connected_server">About %1$s</string>
+    <string name="apps_available_mobile_tools_for_server">Available mobile tools on %1$s.</string>
+    <string name="connected_server_domain">Connected server: %1$s</string>
 </resources>

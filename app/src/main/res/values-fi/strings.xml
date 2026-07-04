@@ -9,7 +9,7 @@
     <string name="messages">Viestit</string>
     <string name="save_url">Tallenna URL</string>
     <string name="theme_dark_label">Tumma</string>
-    <string name="theme_dark_desc">DNA-Nexus tumma syaani</string>
+    <string name="theme_dark_desc">Tumma syaani teema</string>
     <string name="theme_bright_label">Vaalea</string>
     <string name="theme_bright_desc">Vaalea ja helppolukuinen tila</string>
     <string name="theme_cpunk_orange_label">CPUNK-oranssi</string>
@@ -17,10 +17,10 @@
     <string name="theme_win_classic_label">Windows Classic</string>
     <string name="theme_win_classic_desc">Vaalea harmaa klassinen käyttöliittymä</string>
     <string name="admin_tools">Admin-työkalut</string>
-    <string name="about_dna_nexus_files">Tietoja DNA-Nexus Mobilesta</string>
+    <string name="about_dna_nexus_files">Tietoja sovelluksesta</string>
     <string name="files_about_mascot_desc">CPUNK DNA-Nexus -maskotti</string>
     <string name="files_about_security_stack">Tietoturvapino</string>
-    <string name="files_about_security_stack_desc">DNA-Nexus-ekosysteemi: ML-KEM-768 • CRYSTALS-Dilithium 5 • AES-256-GCM\nMobiiliappi: HTTPS + TLS-varmistus • Android Keystore • AES-GCM-salattu paikallinen tunnistautuminen/välimuisti</string>
+    <string name="files_about_security_stack_desc">Yhdistetyn palvelun tietoturvapino: ML-KEM-768 • CRYSTALS-Dilithium 5 • AES-256-GCM\nMobiiliappi: HTTPS + TLS-varmistus • Android Keystore • AES-GCM-salattu paikallinen tunnistautuminen/välimuisti</string>
     <string name="show_all_items">Näytä kaikki kohteet</string>
     <string name="show_favorites_only">Näytä vain suosikit</string>
     <string name="refresh">Päivitä</string>
@@ -31,7 +31,7 @@
     <string name="storage_info_not_loaded">Tallennustietoja ei ole ladattu</string>
     <string name="storage_usage">%1$d %% käytössä</string>
     <string name="storage_approximate">Käyttömäärä on arvio</string>
-    <string name="apps_available_mobile_tools">Tämän palvelimen käytettävissä olevat DNA-Nexus-mobiilityökalut.</string>
+    <string name="apps_available_mobile_tools">Tämän palvelimen käytettävissä olevat mobiilityökalut.</string>
     <string name="contacts">Contacts</string>
     <string name="contacts_desc">Avaa yksityinen osoitekirja ja kevyt asiakasrekisteri.</string>
     <string name="circle_stack">Circle Stack</string>
@@ -674,7 +674,7 @@
     <string name="scan_help">Avaa DNA-Nexuksen web-käyttöliittymästä Trusted Devices ja näytä QR-koodi siellä.</string>
     <string name="scan_start">Aloita QR-skannaus</string>
     <string name="scan_back">Takaisin</string>
-    <string name="pair_default_device_name">DNA-Nexus Android</string>
+    <string name="pair_default_device_name">Android-laite</string>
     <string name="pair_title">Parita laite</string>
     <string name="pair_mascot_desc">CPUNK DNA-Nexus -maskotti</string>
     <string name="pair_server">Palvelin: %1$s</string>
@@ -786,4 +786,7 @@ Tämä QR-koodi osoittaa eri palvelimeen. Paritus estettiin.</string>
     <string name="workspace_error_http">%1$s epäonnistui (HTTP %2$d)</string>
     <string name="workspace_error_failed_detail">%1$s epäonnistui: %2$s</string>
     <string name="workspace_unknown_error">tuntematon virhe</string>
+    <string name="about_connected_server">Tietoja: %1$s</string>
+    <string name="apps_available_mobile_tools_for_server">Palvelimen %1$s käytettävissä olevat mobiilityökalut.</string>
+    <string name="connected_server_domain">Yhdistetty palvelin: %1$s</string>
 </resources>

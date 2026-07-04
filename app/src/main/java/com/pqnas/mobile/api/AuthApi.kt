@@ -19,6 +19,9 @@ interface AuthApi {
         @Body req: RevokeRefreshTokenRequest
     ): RevokeRefreshTokenResponse
 
+    @GET("/api/v4/public/branding")
+    suspend fun publicBranding(): PublicBrandingResponse
+
     @GET("/api/v4/files/read_text")
     suspend fun readText(
         @Query("path") path: String
