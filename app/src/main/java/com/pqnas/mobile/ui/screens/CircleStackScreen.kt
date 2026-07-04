@@ -70,6 +70,7 @@ import java.net.URLEncoder
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import androidx.compose.ui.platform.LocalConfiguration
 
 private val CircleBg = Color(0xFF071018)
 private val CirclePanel = Color(0xFF121C28)
@@ -1076,7 +1077,7 @@ private fun CircleFederatedEventCard(
                 }
 
                 Text(
-                    text = mode.label.uppercase(Locale.getDefault()),
+                    text = mode.label.uppercase(LocalConfiguration.current.locales[0]),
                     style = MaterialTheme.typography.labelSmall,
                     color = CircleAccent,
                     fontWeight = FontWeight.Bold
@@ -1211,7 +1212,7 @@ private fun CirclePostCard(
                 }
 
                 Text(
-                    text = post.visibility.uppercase(Locale.getDefault()),
+                    text = post.visibility.uppercase(LocalConfiguration.current.locales[0]),
                     style = MaterialTheme.typography.labelSmall,
                     color = CircleAccent,
                     fontWeight = FontWeight.Bold

@@ -116,6 +116,7 @@ import org.json.JSONObject
 import com.pqnas.mobile.echostack.EchoStackRepository
 import com.pqnas.mobile.circlestack.CircleStackRepository
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.ui.platform.LocalConfiguration
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -4032,7 +4033,8 @@ private fun SettingsStorageSection(
                         0f
                     }
 
-                    val accentColor = when (storage.warn_level?.lowercase(Locale.getDefault())) {
+                    val observedLocale = LocalConfiguration.current.locales[0]
+                    val accentColor = when (storage.warn_level?.lowercase(observedLocale)) {
                         "crit" -> MaterialTheme.colorScheme.error
                         "warn" -> MaterialTheme.colorScheme.tertiary
                         else -> MaterialTheme.colorScheme.primary

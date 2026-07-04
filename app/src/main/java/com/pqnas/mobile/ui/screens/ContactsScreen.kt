@@ -56,6 +56,7 @@ import com.pqnas.mobile.api.ContactUpsertRequest
 import com.pqnas.mobile.contacts.ContactsRepository
 import kotlinx.coroutines.launch
 import java.util.Locale
+import androidx.compose.ui.platform.LocalConfiguration
 
 private data class ContactFormState(
     val subjectFingerprint: String = "",
@@ -398,7 +399,8 @@ fun ContactsScreen(
     }
 
     val filteredContacts = contacts.filter { c ->
-        val q = search.trim().lowercase(Locale.getDefault())
+        val observedLocale = LocalConfiguration.current.locales[0]
+        val q = search.trim().lowercase(observedLocale)
         if (q.isBlank()) {
             true
         } else {
@@ -417,7 +419,7 @@ fun ContactsScreen(
                 c.country,
                 c.tags,
                 c.notes
-            ).any { it.lowercase(Locale.getDefault()).contains(q) }
+            ).any { it.lowercase(observedLocale).contains(q) }
         }
     }
 
