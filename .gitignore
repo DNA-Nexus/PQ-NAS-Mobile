@@ -22,3 +22,6 @@ build.txt
 # Python cache files
 __pycache__/
 *.pyc
+
+# Local security/audit reports
+reports/
