@@ -58,10 +58,15 @@
 
         </activity>
 
+        <!-- Camera/capture screen is intentionally portrait-first.
+             The main app remains adaptive; this short-lived activity keeps the
+             capture UI stable on phones. Android 16+ may still ignore fixed
+             orientation on large screens. -->
         <activity
             android:name=".ui.screens.PortraitCaptureActivity"
             android:screenOrientation="portrait"
-            android:exported="false" />
+            android:exported="false"
+            tools:ignore="LockedOrientationActivity,DiscouragedApi" />
 
     </application>
 
