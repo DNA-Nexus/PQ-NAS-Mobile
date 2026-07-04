@@ -1,5 +1,6 @@
 package com.pqnas.mobile.ui.theme
 
+import androidx.core.content.edit
 import android.content.Context
 
 class PqnasThemeStore(context: Context) {
@@ -13,7 +14,9 @@ class PqnasThemeStore(context: Context) {
     }
 
     fun saveTheme(theme: PqnasAppTheme) {
-        prefs.edit().putString(KEY, theme.storageKey).apply()
+        prefs.edit {
+            putString(KEY, theme.storageKey)
+        }
     }
 
     private companion object {

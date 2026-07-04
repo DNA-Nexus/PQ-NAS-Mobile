@@ -1,5 +1,6 @@
 package com.pqnas.mobile.files
 
+import androidx.core.content.edit
 import android.content.Context
 import com.pqnas.mobile.auth.EncryptedAuthValue
 import java.util.UUID
@@ -27,22 +28,22 @@ object WorkspaceEditorSession {
                 .takeIf { it.isNotBlank() }
 
             if (rawExisting.isNotBlank() && !EncryptedAuthValue.isEncrypted(rawExisting)) {
-                prefs.edit()
-                    .putString(KEY_SESSION_ID, EncryptedAuthValue.encrypt(rawExisting))
-                    .apply()
+                prefs.edit {
+                    putString(KEY_SESSION_ID, EncryptedAuthValue.encrypt(rawExisting))
+                }
             } else if (EncryptedAuthValue.needsUpgrade(rawExisting)) {
                 val plain = EncryptedAuthValue.decryptOrLegacy(rawExisting)
                 if (plain.isNotBlank()) {
-                    prefs.edit()
-                        .putString(KEY_SESSION_ID, EncryptedAuthValue.encrypt(plain))
-                        .apply()
+                    prefs.edit {
+                        putString(KEY_SESSION_ID, EncryptedAuthValue.encrypt(plain))
+                    }
                 }
             }
 
             val sessionId = existing ?: UUID.randomUUID().toString().also { generated ->
-                prefs.edit()
-                    .putString(KEY_SESSION_ID, EncryptedAuthValue.encrypt(generated))
-                    .apply()
+                prefs.edit {
+                    putString(KEY_SESSION_ID, EncryptedAuthValue.encrypt(generated))
+                }
             }
 
             cachedSessionId = sessionId
@@ -61,18 +62,18 @@ object WorkspaceEditorSession {
             if (rawExisting.isBlank()) return
 
             if (!EncryptedAuthValue.isEncrypted(rawExisting)) {
-                prefs.edit()
-                    .putString(KEY_SESSION_ID, EncryptedAuthValue.encrypt(rawExisting))
-                    .apply()
+                prefs.edit {
+                    putString(KEY_SESSION_ID, EncryptedAuthValue.encrypt(rawExisting))
+                }
                 return
             }
 
             if (EncryptedAuthValue.needsUpgrade(rawExisting)) {
                 val plain = EncryptedAuthValue.decryptOrLegacy(rawExisting)
                 if (plain.isNotBlank()) {
-                    prefs.edit()
-                        .putString(KEY_SESSION_ID, EncryptedAuthValue.encrypt(plain))
-                        .apply()
+                    prefs.edit {
+                        putString(KEY_SESSION_ID, EncryptedAuthValue.encrypt(plain))
+                    }
                 }
             }
         }
@@ -84,7 +85,9 @@ object WorkspaceEditorSession {
             context.applicationContext.getSharedPreferences(
                 PREFS_NAME,
                 Context.MODE_PRIVATE
-            ).edit().clear().apply()
+            ).edit {
+                clear()
+            }
         }
     }
 }

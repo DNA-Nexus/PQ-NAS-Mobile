@@ -1,5 +1,6 @@
 package com.pqnas.mobile.ui.settings
 
+import androidx.core.content.edit
 import android.content.Context
 import android.content.res.Configuration
 import java.util.Locale
@@ -34,7 +35,9 @@ class PqnasAppLanguageStore(context: Context) {
     }
 
     fun saveLanguage(language: PqnasAppLanguage) {
-        prefs.edit().putString(KEY_LANGUAGE, language.id).apply()
+        prefs.edit {
+            putString(KEY_LANGUAGE, language.id)
+        }
     }
 
     companion object {

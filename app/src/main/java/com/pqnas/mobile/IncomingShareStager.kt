@@ -2,6 +2,7 @@ package com.pqnas.mobile
 
 // PQNAS_INCOMING_ANDROID_SHARE_V1
 
+import androidx.core.net.toUri
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -236,7 +237,7 @@ private fun isSafeHttpUrlForIncomingShortcut(value: String): Boolean {
     val trimmed = value.trim()
     if (trimmed.isBlank()) return false
 
-    val uri = Uri.parse(trimmed)
+    val uri = trimmed.toUri()
     val scheme = uri.scheme?.lowercase() ?: return false
     if (scheme != "http" && scheme != "https") return false
 
@@ -245,7 +246,7 @@ private fun isSafeHttpUrlForIncomingShortcut(value: String): Boolean {
 }
 
 private fun incomingUrlShortcutFileName(value: String): String {
-    val uri = Uri.parse(value.trim())
+    val uri = value.trim().toUri()
 
     val host = uri.host
         ?.trim()

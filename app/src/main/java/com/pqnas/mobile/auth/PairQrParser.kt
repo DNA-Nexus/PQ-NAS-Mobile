@@ -1,5 +1,6 @@
 package com.pqnas.mobile.auth
 
+import androidx.core.net.toUri
 import android.net.Uri
 import com.pqnas.mobile.security.PinnedTls
 
@@ -14,7 +15,7 @@ data class PairQrPayload(
 object PairQrParser {
     fun parse(raw: String): PairQrPayload? {
         val text = raw.trim()
-        val uri = runCatching { Uri.parse(text) }.getOrNull() ?: return null
+        val uri = runCatching { text.toUri() }.getOrNull() ?: return null
 
         if (uri.scheme?.lowercase() != "dna") return null
         if (uri.host?.lowercase() != "pair") return null
@@ -33,7 +34,7 @@ object PairQrParser {
 
         if (pairToken.isBlank() || origin.isBlank()) return null
 
-        val originUri = runCatching { Uri.parse(origin) }.getOrNull() ?: return null
+        val originUri = runCatching { origin.toUri() }.getOrNull() ?: return null
         if (originUri.scheme?.lowercase() != "https") return null
         if (originUri.host.isNullOrBlank()) return null
 

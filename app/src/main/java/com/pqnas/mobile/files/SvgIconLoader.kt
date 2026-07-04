@@ -1,5 +1,6 @@
 package com.pqnas.mobile.files
 
+import androidx.core.graphics.createBitmap
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
@@ -14,7 +15,7 @@ object SvgIconLoader {
         return try {
             context.assets.open(assetPath).use { input ->
                 val svg = SVG.getFromInputStream(input)
-                val bitmap = Bitmap.createBitmap(sizePx, sizePx, Bitmap.Config.ARGB_8888)
+                val bitmap = createBitmap(sizePx, sizePx)
                 val canvas = Canvas(bitmap)
 
                 svg.setDocumentWidth(sizePx.toFloat())

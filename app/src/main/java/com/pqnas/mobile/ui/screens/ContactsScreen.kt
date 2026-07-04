@@ -1,5 +1,6 @@
 package com.pqnas.mobile.ui.screens
 
+import androidx.core.net.toUri
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
@@ -386,7 +387,7 @@ fun ContactsScreen(
         }
 
         runCatching {
-            context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+            context.startActivity(Intent(Intent.ACTION_VIEW, url.toUri()))
         }.onFailure {
             status = context.getString(R.string.contacts_open_website_failed)
         }
