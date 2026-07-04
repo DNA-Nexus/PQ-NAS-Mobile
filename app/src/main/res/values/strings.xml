@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name">DNA-Nexus Mobile</string>
     <string name="dna_nexus_files">DNA-Nexus Mobile</string>
     <string name="add">Add</string>
@@ -159,8 +159,8 @@
     <string name="versions_read_only">Read only</string>
     <string name="versions_flagged_by_one">⭐ %1$s flagged this version</string>
     <string name="versions_flagged_by_two">⭐ %1$s and %2$s flagged this version</string>
-    <string name="versions_flagged_by_many">⭐ %1$s, %2$s and %3$d more flagged this version</string>
-    <string name="versions_flagged_by_count">⭐ Flagged by %1$d user(s)</string>
+    <string name="versions_flagged_by_many" tools:ignore="PluralsCandidate">⭐ %1$s, %2$s and %3$d more flagged this version</string>
+    <string name="versions_flagged_by_count" tools:ignore="PluralsCandidate">⭐ Flagged by %1$d user(s)</string>
     <string name="versions_kind_deleted_snapshot">Deleted file snapshot</string>
     <string name="versions_kind_before_overwrite">Before overwrite</string>
     <string name="versions_kind_preserved">Preserved version</string>
@@ -243,7 +243,7 @@
     <string name="upload_multi_preparing">Preparing upload %1$d/%2$d: %3$s…</string>
     <string name="upload_multi_uploading">Uploading %1$d/%2$d: %3$s…</string>
     <string name="upload_multi_part_uploaded">uploaded %1$d</string>
-    <string name="upload_multi_part_skipped">skipped %1$d existing</string>
+    <string name="upload_multi_part_skipped" tools:ignore="PluralsCandidate">skipped %1$d existing</string>
     <string name="upload_multi_part_failed">failed %1$d</string>
     <string name="upload_multi_none">No files uploaded.</string>
     <string name="upload_multi_complete">Multi upload complete: %1$s.</string>
@@ -251,7 +251,7 @@
     <string name="upload_shared_item_progress">Uploading shared item %1$d/%2$d: %3$s…</string>
     <string name="upload_incoming_no_files">Incoming share had no files to upload.</string>
     <string name="upload_shared_one">Uploaded shared item</string>
-    <string name="upload_shared_many">Uploaded %1$d shared items</string>
+    <string name="upload_shared_many" tools:ignore="PluralsCandidate">Uploaded %1$d shared items</string>
     <string name="upload_incoming_cancelled">Incoming share upload cancelled.</string>
     <string name="upload_replacing_item">Replacing %1$s…</string>
     <string name="file_list_loading_title">Loading files…</string>
@@ -315,7 +315,7 @@
     <string name="shares_loading">Loading shares…</string>
     <string name="shares_list_failed">Share list failed</string>
     <string name="shares_search_label">Search shares</string>
-    <string name="shares_showing_count">Showing %1$d / %2$d shares</string>
+    <string name="shares_showing_count" tools:ignore="PluralsCandidate">Showing %1$d / %2$d shares</string>
     <string name="shares_empty_title">No shares yet</string>
     <string name="shares_empty_filtered_title">No shares match the current filter</string>
     <string name="shares_empty_desc">Create a share from the files screen and it will appear here.</string>
@@ -371,7 +371,7 @@
     <string name="contacts_duplicate_cancelled">Save cancelled because a possible duplicate was found.</string>
     <string name="contacts_delete_title">Delete contact?</string>
     <string name="contacts_delete_confirm">Delete %1$s from Contacts? This removes it from your private address book.</string>
-    <string name="contacts_shown_total">%1$d shown / %2$d total</string>
+    <string name="contacts_shown_total" tools:ignore="PluralsCandidate">%1$d shown / %2$d total</string>
     <string name="contacts_search_label">Search</string>
     <string name="contacts_search_placeholder">Name, company, email, phone, city, tags or notes</string>
     <string name="contacts_new_contact">New contact</string>
@@ -575,7 +575,7 @@
     <string name="drop_zone_status_expired">Expired</string>
     <string name="drop_zone_status_active">Active</string>
     <string name="drop_zone_no_destination">No destination</string>
-    <string name="drop_zone_uploads_count">%1$d uploads</string>
+    <string name="drop_zone_uploads_count" tools:ignore="PluralsCandidate">%1$d uploads</string>
     <string name="drop_zone_password_required">password</string>
     <string name="drop_zone_edit">Edit</string>
     <string name="drop_zone_new_uploads">New uploads</string>
@@ -603,7 +603,7 @@
     <string name="file_scope_role_viewer">viewer</string>
     <string name="file_scope_no_workspaces">No workspaces available for this account.</string>
     <string name="admin_status_loading">Loading admin data…</string>
-    <string name="admin_status_loaded_users">Loaded %1$d users</string>
+    <string name="admin_status_loaded_users" tools:ignore="PluralsCandidate">Loaded %1$d users</string>
     <string name="admin_status_load_failed">Failed to load admin data</string>
     <string name="admin_status_action_running">%1$s…</string>
     <string name="admin_status_action_ok">%1$s OK</string>
@@ -695,10 +695,10 @@ This QR code points to a different server. Pairing is blocked.</string>
     <string name="version_compare_selected_to_current">Selected version → Current file</string>
     <string name="version_compare_close">Close</string>
     <string name="version_compare_hide_unchanged">Hide unchanged</string>
-    <string name="version_compare_hidden_lines">%1$d unchanged line(s) hidden</string>
+    <string name="version_compare_hidden_lines" tools:ignore="PluralsCandidate">%1$d unchanged line(s) hidden</string>
     <string name="version_compare_no_differences">No line differences found.</string>
-    <string name="version_compare_added">+%1$d added</string>
-    <string name="version_compare_removed">-%1$d removed</string>
+    <string name="version_compare_added" tools:ignore="PluralsCandidate">+%1$d added</string>
+    <string name="version_compare_removed" tools:ignore="PluralsCandidate">-%1$d removed</string>
     <string name="version_compare_large_file_fallback">large-file fallback</string>
     <string name="version_compare_unknown_error">unknown error</string>
     <string name="version_compare_failed">Compare failed: %1$s</string>
@@ -748,8 +748,8 @@ This QR code points to a different server. Pairing is blocked.</string>
     <string name="text_editor_cancel">Cancel</string>
     <string name="text_editor_reload_from_server_title">Reload from server?</string>
     <string name="text_editor_reload_from_server_text">Discard unsaved changes and reload the latest version from the server?</string>
-    <string name="workspace_messages_loaded_status">OK: %1$d messages loaded for %2$s</string>
-    <string name="workspace_message_sent_status">Message sent. Local list now has %1$d messages.</string>
+    <string name="workspace_messages_loaded_status" tools:ignore="PluralsCandidate">OK: %1$d messages loaded for %2$s</string>
+    <string name="workspace_message_sent_status" tools:ignore="PluralsCandidate">Message sent. Local list now has %1$d messages.</string>
     <string name="workspace_send_failed">Send failed.</string>
     <string name="workspace_action_load_messages">Load messages</string>
     <string name="workspace_action_send_message">Send message</string>
