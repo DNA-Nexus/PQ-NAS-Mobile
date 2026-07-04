@@ -14,13 +14,13 @@ coroutinesAndroid = "1.8.1"
 retrofit = "2.11.0"
 okhttp = "4.12.0"
 datastorePreferences = "1.1.1"
-moshiKotlin = "1.15.1"
+moshiKotlin = "1.15.2"
 coil = "2.7.0"
 zxingAndroidEmbedded = "4.3.0"
-zxingCore = "3.5.3"
+zxingCore = "3.5.4"
 androidSvg = "1.4"
-media3 = "1.10.0"
-robolectric = "4.14.1"
+media3 = "1.10.1"
+robolectric = "4.16.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
