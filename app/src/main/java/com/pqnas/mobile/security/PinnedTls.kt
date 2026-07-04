@@ -19,7 +19,7 @@ object PinnedTls {
     /**
      * Public CA trust mode.
      *
-     * Use this when DNA-Nexus is exposed through Cloudflare, an operator reverse
+     * Use this when the service is exposed through Cloudflare, an operator reverse
      * proxy, or another managed HTTPS edge where SPKI pins may rotate outside
      * the NAS owner's control.
      *
@@ -100,7 +100,7 @@ object PinnedTls {
     }
 
     // Lint warning is intentional here: this trust manager is only used for
-    // QR-carried SPKI pin trust on self-hosted/internal DNA-Nexus servers.
+    // QR-carried SPKI pin trust on self-hosted/internal servers.
     // It does not disable validation silently: public CA mode keeps OkHttp defaults,
     // and pinned mode still requires valid dates plus exact leaf SPKI SHA-256 match.
     @SuppressLint("CustomX509TrustManager")
@@ -139,7 +139,7 @@ object PinnedTls {
                 defaultTrustManager.checkServerTrusted(chain, authType)
             } catch (_: CertificateException) {
                 // The QR-carried SPKI pin is the explicit trust root for
-                // self-signed/internal DNA-Nexus servers.
+                // self-signed/internal servers.
                 //
                 // We still require:
                 // - HTTPS

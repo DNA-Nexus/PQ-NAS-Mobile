@@ -1,6 +1,6 @@
 <resources>
-    <string name="app_name">DNA-Nexus Mobile</string>
-    <string name="dna_nexus_files">DNA-Nexus Mobile</string>
+    <string name="app_name">Nexus Cloud</string>
+    <string name="dna_nexus_files">Nexus Cloud</string>
     <string name="add">Lisää</string>
     <string name="apps">Sovellukset</string>
     <string name="settings_and_info">Asetukset ja tiedot</string>
@@ -18,7 +18,7 @@
     <string name="theme_win_classic_desc">Vaalea harmaa klassinen käyttöliittymä</string>
     <string name="admin_tools">Admin-työkalut</string>
     <string name="about_dna_nexus_files">Tietoja sovelluksesta</string>
-    <string name="files_about_mascot_desc">CPUNK DNA-Nexus -maskotti</string>
+    <string name="files_about_mascot_desc">CPUNK-maskotti</string>
     <string name="files_about_security_stack">Tietoturvapino</string>
     <string name="files_about_security_stack_desc">Yhdistetyn palvelun tietoturvapino: ML-KEM-768 • CRYSTALS-Dilithium 5 • AES-256-GCM\nMobiiliappi: HTTPS + TLS-varmistus • Android Keystore • AES-GCM-salattu paikallinen tunnistautuminen/välimuisti</string>
     <string name="show_all_items">Näytä kaikki kohteet</string>
@@ -35,7 +35,7 @@
     <string name="contacts">Contacts</string>
     <string name="contacts_desc">Avaa yksityinen osoitekirja ja kevyt asiakasrekisteri.</string>
     <string name="circle_stack">Circle Stack</string>
-    <string name="circle_stack_desc">Avaa yksityinen sosiaalinen syötteesi tältä DNA-Nexus-palvelimelta.</string>
+    <string name="circle_stack_desc">Avaa yksityinen sosiaalinen syötteesi tältä palvelimelta.</string>
     <string name="echo_stack">Echo Stack</string>
     <string name="echo_stack_desc">Tallenna kirjanmerkkejä ja arkistoituja verkkosivuja.</string>
     <string name="drop_zone">Drop Zone</string>
@@ -196,7 +196,7 @@
     <string name="info_loading_comment">Ladataan kommenttia…</string>
     <string name="info_file_comment_label">Tiedoston kommentti</string>
     <string name="info_file_comment_placeholder">Lisää muistiinpano tästä tiedostosta…</string>
-    <string name="info_comment_server_note">Tallennetaan DNA-Nexus-palvelimelle ja näkyy työpöydällä sekä mobiilissa.</string>
+    <string name="info_comment_server_note">Tallennetaan yhdistetylle palvelimelle ja näkyy työpöydällä sekä mobiilissa.</string>
     <string name="info_no_comment_yet">Ei kommenttia vielä.</string>
     <string name="info_saving_comment">Tallennetaan kommenttia…</string>
     <string name="info_comment_cleared">Kommentti tyhjennetty.</string>
@@ -204,7 +204,7 @@
     <string name="info_saving">Tallennetaan…</string>
     <string name="info_save">Tallenna</string>
     <string name="info_clear">Tyhjennä</string>
-    <string name="create_menu_title">Lisää DNA-Nexukseen</string>
+    <string name="create_menu_title">Lisää Nexus Cloudiin</string>
     <string name="create_upload_file">Lataa tiedosto</string>
     <string name="create_upload_file_desc">Valitse tiedosto tästä puhelimesta</string>
     <string name="create_upload_multiple">Lataa useita tiedostoja</string>
@@ -257,10 +257,10 @@
     <string name="file_list_loading_title">Ladataan tiedostoja…</string>
     <string name="file_list_no_favorites_title">Ei suosikkeja täällä</string>
     <string name="file_list_no_files_title">Ei tiedostoja täällä</string>
-    <string name="file_list_contacting_server">Yhdistetään DNA-Nexus-palvelimeen…</string>
+    <string name="file_list_contacting_server">Yhdistetään palvelimeen…</string>
     <string name="file_list_no_favorites_desc">Tässä kansiossa ei ole suosikkikohteita.</string>
     <string name="file_list_empty_or_failed_desc">Tämä kansio on tyhjä tai sitä ei voitu ladata.</string>
-    <string name="incoming_share_title">Lataa jaetut kohteet DNA-Nexukseen</string>
+    <string name="incoming_share_title">Lataa jaetut kohteet Nexus Cloudiin</string>
     <string name="incoming_share_choose_destination">Valitse mihin Androidin jaettu sisältö ladataan.</string>
     <string name="incoming_share_phone_uploads">Puhelimen lataukset</string>
     <string name="incoming_share_current_location">Nykyinen sijainti</string>
@@ -272,8 +272,8 @@
     <string name="incoming_share_workspace_missing">Valittu työtila ei ole enää saatavilla.</string>
     <string name="incoming_share_unknown_destination">Tuntematon latauskohde.</string>
     <string name="incoming_share_upload_button">Lataa</string>
-    <string name="app_lock_title">DNA-Nexus on lukittu</string>
-    <string name="app_lock_logo_desc">DNA-Nexus-logo</string>
+    <string name="app_lock_title">Nexus Cloud on lukittu</string>
+    <string name="app_lock_logo_desc">Nexus Cloud -logo</string>
     <string name="app_lock_description">Vahvista henkilöllisyytesi ennen tiedostojen avaamista.</string>
     <string name="app_lock_unlock">Avaa lukitus</string>
     <string name="app_lock_no_biometric_hardware">Tässä laitteessa ei ole biometristä tunnistinta. Käytä uloskirjautumista tai määritä laitteen suojaus.</string>
@@ -286,7 +286,7 @@
     <string name="app_lock_waiting_auth">Odotetaan tunnistautumista…</string>
     <string name="app_lock_cancelled_or_failed">Lukituksen avaus peruttiin tai epäonnistui: %1$s</string>
     <string name="app_lock_auth_failed">Tunnistautuminen epäonnistui. Yritä uudelleen.</string>
-    <string name="app_lock_prompt_title">Avaa DNA-Nexus</string>
+    <string name="app_lock_prompt_title">Avaa Nexus Cloud</string>
     <string name="app_lock_prompt_subtitle">Vahvista henkilöllisyytesi ennen tiedostojen avaamista</string>
     <string name="app_lock_timeout">Lukituksen avaus aikakatkaistiin. Yritä uudelleen napauttamalla Avaa lukitus.</string>
     <string name="app_settings">Asetukset</string>
@@ -307,7 +307,7 @@
     <string name="language_italian_label">Italiano</string>
     <string name="language_turkish_label">Türkçe</string>
     <string name="language_restart_note">Kielivalinta otetaan käyttöön heti tässä sovellusnäkymässä.</string>
-    <string name="about_files_description">DNA-Nexus Mobile on Android-sovellus DNA-Nexus Server -tileille. Sen avulla käyttäjät voivat käyttää ja hallita tiedostojaan, jakolinkkejään, latauksiaan ja tilinsä tallennustilaa turvallisesti, samalla kun varsinainen data säilyy operaattorin DNA-Nexus Serverillä.</string>
+    <string name="about_files_description">Tämä mobiilisovellus on yhdistetty palveluun %1$s. Sen avulla käyttäjät voivat käyttää ja hallita tiedostojaan, jakolinkkejään, latauksiaan ja tilinsä tallennustilaa turvallisesti, samalla kun varsinainen data säilyy yhdistetyllä operaattoripalvelimella.</string>
     <string name="shares_filter_all">Kaikki</string>
     <string name="shares_filter_active">Aktiiviset</string>
     <string name="shares_filter_expired">Vanhentuneet</string>
@@ -552,11 +552,11 @@
     <string name="drop_zone_public_title_placeholder">Lähetä tiedostot turvallisesti</string>
     <string name="drop_zone_public_desc_label">Julkisen sivun kuvaus</string>
     <string name="drop_zone_public_desc_placeholder">Kerro lataajalle, mihin tätä sivua käytetään.</string>
-    <string name="drop_zone_public_desc_default">Tällä sivulla voi lähettää tiedostoja suoraan DNA-Nexukseen.</string>
+    <string name="drop_zone_public_desc_default">Tällä sivulla voi lähettää tiedostoja suoraan pilvipalveluun.</string>
     <string name="drop_zone_button_text_label">Latauspainikkeen teksti</string>
     <string name="drop_zone_button_text_placeholder">Lataa tiedostot</string>
     <string name="drop_zone_footer_text_label">Alatunnisteen teksti</string>
-    <string name="drop_zone_footer_text_placeholder">Powered by DNA-Nexus</string>
+    <string name="drop_zone_footer_text_placeholder">Powered by Nexus Cloud</string>
     <string name="drop_zone_logo_url_label">Logon URL, valinnainen</string>
     <string name="drop_zone_primary_color_label">Pääväri</string>
     <string name="drop_zone_button_text_color_label">Painikkeen teksti</string>
@@ -593,7 +593,7 @@
     <string name="drop_zone_duplicate_label_reject">Hylkää duplikaatit</string>
     <string name="drop_zone_duplicate_label_version">Versioi olemassa oleva tiedosto</string>
     <string name="apps_checking_available">Tarkistetaan käytettävissä olevia appeja…</string>
-    <string name="apps_checking_available_desc">DNA-Nexus Mobile tarkistaa, mitkä palvelimen appit ovat käytettävissä tällä tilillä.</string>
+    <string name="apps_checking_available_desc">Mobiilisovellus tarkistaa, mitkä palvelimen appit ovat käytettävissä tällä tilillä.</string>
     <string name="file_scope_my_files">Omat tiedostot</string>
     <string name="file_scope_workspace_fallback">Jaettu tila</string>
     <string name="file_scope_current_user">Nykyinen sijainti: Omat tiedostot</string>
@@ -660,23 +660,23 @@
     <string name="video_url_failed">Video-URL:n muodostus epäonnistui</string>
     <string name="video_failed">Videon toisto epäonnistui</string>
     <string name="video_file_not_found">Videotiedostoa ei löytynyt.</string>
-    <string name="setup_logo_desc">DNA-Nexus-logo</string>
+    <string name="setup_logo_desc">Nexus Cloud -logo</string>
     <string name="setup_intro">Yhdistä turvallisesti luotetun laitteen parituksella.</string>
     <string name="setup_server_url">Palvelimen URL</string>
     <string name="setup_https_required">Vain HTTPS-palvelinosoitteet ovat sallittuja.</string>
     <string name="setup_scan_pairing_qr">Skannaa paritus-QR</string>
-    <string name="setup_scan_help">Avaa DNA-Nexuksen web-käyttöliittymästä Trusted Devices, näytä QR-koodi ja skannaa se täällä.</string>
-    <string name="scan_status_ready">Valmis skannaamaan DNA-Nexuksen paritus-QR-koodin</string>
+    <string name="setup_scan_help">Avaa web-käyttöliittymässä Trusted Devices, näytä QR-koodi ja skannaa se täällä.</string>
+    <string name="scan_status_ready">Valmis skannaamaan paritus-QR</string>
     <string name="scan_status_cancelled">Skannaus peruutettu</string>
-    <string name="scan_status_invalid">Virheellinen DNA-Nexus-paritus-QR tai TLS trust pin puuttuu</string>
-    <string name="scan_prompt">Skannaa DNA-Nexuksen paritus-QR</string>
+    <string name="scan_status_invalid">Virheellinen paritus-QR tai TLS trust pin puuttuu</string>
+    <string name="scan_prompt">Skannaa paritus-QR</string>
     <string name="scan_title">Skannaa paritus-QR</string>
-    <string name="scan_help">Avaa DNA-Nexuksen web-käyttöliittymästä Trusted Devices ja näytä QR-koodi siellä.</string>
+    <string name="scan_help">Avaa web-käyttöliittymässä Trusted Devices ja näytä QR-koodi siellä.</string>
     <string name="scan_start">Aloita QR-skannaus</string>
     <string name="scan_back">Takaisin</string>
     <string name="pair_default_device_name">Android-laite</string>
     <string name="pair_title">Parita laite</string>
-    <string name="pair_mascot_desc">CPUNK DNA-Nexus -maskotti</string>
+    <string name="pair_mascot_desc">CPUNK-maskotti</string>
     <string name="pair_server">Palvelin: %1$s</string>
     <string name="pair_configured_server_mismatch">Määritetty palvelin: %1$s
 Tämä QR-koodi osoittaa eri palvelimeen. Paritus estettiin.</string>

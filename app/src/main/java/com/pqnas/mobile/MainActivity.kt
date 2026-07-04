@@ -275,7 +275,7 @@ class MainActivity : FragmentActivity() {
                 // PQNAS_ANDROID_BACK_NAV_V1:
                 // Handle Android's system Back button for the app-level screens.
                 // Without this, screens stored as plain state can let the Activity finish
-                // instead of returning to the previous DNA-Nexus screen.
+                // instead of returning to the previous app screen.
                 BackHandler(
                     enabled = authLoaded && screen != "server" && screen != "files"
                 ) {

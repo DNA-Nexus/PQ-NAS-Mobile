@@ -25,7 +25,7 @@ class IncomingShareActivity : Activity() {
                     if (launch == null) {
                         Toast.makeText(
                             this,
-                            "DNA-Nexus received the share, but could not open the app.",
+                            "Nexus Cloud received the share, but could not open the app.",
                             Toast.LENGTH_LONG
                         ).show()
                         finish()
@@ -43,7 +43,7 @@ class IncomingShareActivity : Activity() {
                 runOnUiThread {
                     Toast.makeText(
                         this,
-                        "DNA-Nexus share receive failed: ${e.message}",
+                        "Nexus Cloud share receive failed: ${e.message}",
                         Toast.LENGTH_LONG
                     ).show()
                     finish()

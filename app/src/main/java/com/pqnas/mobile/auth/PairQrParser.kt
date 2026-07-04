@@ -48,7 +48,7 @@ object PairQrParser {
             version = version,
             pairToken = pairToken,
             origin = origin.trim().trimEnd('/'),
-            appName = if (appName.isBlank()) "DNA-Nexus" else appName,
+            appName = if (appName.isBlank()) "Nexus Cloud" else appName,
             tlsPinSha256 = tlsPinSha256
         )
     }

@@ -1,6 +1,6 @@
 <resources>
-    <string name="app_name">DNA-Nexus Mobile</string>
-    <string name="dna_nexus_files">DNA-Nexus Mobile</string>
+    <string name="app_name">Nexus Cloud</string>
+    <string name="dna_nexus_files">Nexus Cloud</string>
     <string name="add">Dodaj</string>
     <string name="apps">Aplikacje</string>
     <string name="settings_and_info">Ustawienia i informacje</string>
@@ -18,7 +18,7 @@
     <string name="theme_win_classic_desc">Jasnoszary klasyczny interfejs</string>
     <string name="admin_tools">Narzędzia administratora</string>
     <string name="about_dna_nexus_files">About app</string>
-    <string name="files_about_mascot_desc">Maskotka CPUNK DNA-Nexus</string>
+    <string name="files_about_mascot_desc">CPUNK mascot</string>
     <string name="files_about_security_stack">Stos bezpieczeństwa</string>
     <string name="files_about_security_stack_desc">Connected service security stack: ML-KEM-768 • CRYSTALS-Dilithium 5 • AES-256-GCM\nMobile app: HTTPS + TLS pinning • Android Keystore • AES-GCM encrypted local auth/cache</string>
     <string name="show_all_items">Pokaż wszystkie elementy</string>
@@ -35,7 +35,7 @@
     <string name="contacts">Contacts</string>
     <string name="contacts_desc">Otwórz prywatną książkę adresową i lekki rejestr klientów.</string>
     <string name="circle_stack">Circle Stack</string>
-    <string name="circle_stack_desc">Otwórz swój prywatny kanał społecznościowy z tego serwera DNA-Nexus.</string>
+    <string name="circle_stack_desc">Open your private social feed from this server.</string>
     <string name="echo_stack">Echo Stack</string>
     <string name="echo_stack_desc">Zapisuj zakładki i zarchiwizowane strony internetowe.</string>
     <string name="drop_zone">Drop Zone</string>
@@ -196,7 +196,7 @@
     <string name="info_loading_comment">Ładowanie komentarza…</string>
     <string name="info_file_comment_label">Komentarz do pliku</string>
     <string name="info_file_comment_placeholder">Dodaj notatkę o tym pliku…</string>
-    <string name="info_comment_server_note">Zapisywane na serwerze DNA-Nexus i widoczne na komputerze oraz w telefonie.</string>
+    <string name="info_comment_server_note">Stored on the connected server and visible from desktop/mobile.</string>
     <string name="info_no_comment_yet">Brak komentarza.</string>
     <string name="info_saving_comment">Zapisywanie komentarza…</string>
     <string name="info_comment_cleared">Komentarz wyczyszczony.</string>
@@ -204,7 +204,7 @@
     <string name="info_saving">Zapisywanie…</string>
     <string name="info_save">Zapisz</string>
     <string name="info_clear">Wyczyść</string>
-    <string name="create_menu_title">Dodaj do DNA-Nexus</string>
+    <string name="create_menu_title">Add to Nexus Cloud</string>
     <string name="create_upload_file">Prześlij plik</string>
     <string name="create_upload_file_desc">Wybierz plik z tego telefonu</string>
     <string name="create_upload_multiple">Prześlij wiele plików</string>
@@ -257,10 +257,10 @@
     <string name="file_list_loading_title">Ładowanie plików…</string>
     <string name="file_list_no_favorites_title">Brak ulubionych tutaj</string>
     <string name="file_list_no_files_title">Brak plików tutaj</string>
-    <string name="file_list_contacting_server">Łączenie z serwerem DNA-Nexus…</string>
+    <string name="file_list_contacting_server">Contacting server…</string>
     <string name="file_list_no_favorites_desc">W tym folderze nie ma ulubionych elementów.</string>
     <string name="file_list_empty_or_failed_desc">Ten folder jest pusty albo nie udało się go załadować.</string>
-    <string name="incoming_share_title">Prześlij udostępnione elementy do DNA-Nexus</string>
+    <string name="incoming_share_title">Upload shared items to Nexus Cloud</string>
     <string name="incoming_share_choose_destination">Wybierz, gdzie przesłać treść udostępnioną z Androida.</string>
     <string name="incoming_share_phone_uploads">Przesyłanie z telefonu</string>
     <string name="incoming_share_current_location">Bieżąca lokalizacja</string>
@@ -272,8 +272,8 @@
     <string name="incoming_share_workspace_missing">Wybrany obszar roboczy nie jest już dostępny.</string>
     <string name="incoming_share_unknown_destination">Nieznany cel przesyłania.</string>
     <string name="incoming_share_upload_button">Prześlij</string>
-    <string name="app_lock_title">DNA-Nexus jest zablokowany</string>
-    <string name="app_lock_logo_desc">Logo DNA-Nexus</string>
+    <string name="app_lock_title">Nexus Cloud is locked</string>
+    <string name="app_lock_logo_desc">Nexus Cloud logo</string>
     <string name="app_lock_description">Potwierdź swoją tożsamość przed otwarciem plików.</string>
     <string name="app_lock_unlock">Odblokuj</string>
     <string name="app_lock_no_biometric_hardware">To urządzenie nie ma czujnika biometrycznego. Wyloguj się albo skonfiguruj zabezpieczenia urządzenia.</string>
@@ -286,7 +286,7 @@
     <string name="app_lock_waiting_auth">Oczekiwanie na uwierzytelnienie…</string>
     <string name="app_lock_cancelled_or_failed">Odblokowanie anulowane albo nieudane: %1$s</string>
     <string name="app_lock_auth_failed">Uwierzytelnianie nie powiodło się. Spróbuj ponownie.</string>
-    <string name="app_lock_prompt_title">Odblokuj DNA-Nexus</string>
+    <string name="app_lock_prompt_title">Unlock Nexus Cloud</string>
     <string name="app_lock_prompt_subtitle">Potwierdź swoją tożsamość przed otwarciem plików</string>
     <string name="app_lock_timeout">Czas odblokowania minął. Dotknij Odblokuj, aby spróbować ponownie.</string>
     <string name="app_settings">Ustawienia</string>
@@ -307,7 +307,7 @@
     <string name="language_italian_label">Italiano</string>
     <string name="language_turkish_label">Türkçe</string>
     <string name="language_restart_note">Wybór języka jest stosowany od razu w tym widoku aplikacji.</string>
-    <string name="about_files_description">DNA-Nexus Mobile to aplikacja Android dla kont DNA-Nexus Server. Pozwala użytkownikom bezpiecznie używać i zarządzać plikami, linkami udostępniania, przesyłaniem oraz pamięcią konta, podczas gdy rzeczywiste dane pozostają na serwerze DNA-Nexus Server operatora.</string>
+    <string name="about_files_description">This mobile app is connected to %1$s. It lets users securely access and manage files, sharing links, uploads, and account storage while the actual data remains on the connected operator server.</string>
     <string name="shares_filter_all">Wszystkie</string>
     <string name="shares_filter_active">Aktywne</string>
     <string name="shares_filter_expired">Wygasłe</string>
@@ -552,11 +552,11 @@
     <string name="drop_zone_public_title_placeholder">Wyślij pliki bezpiecznie</string>
     <string name="drop_zone_public_desc_label">Opis strony publicznej</string>
     <string name="drop_zone_public_desc_placeholder">Wyjaśnij przesyłającemu, do czego służy ta strona.</string>
-    <string name="drop_zone_public_desc_default">Na tej stronie można wysyłać pliki bezpośrednio do DNA-Nexus.</string>
+    <string name="drop_zone_public_desc_default">Use this page to upload files directly to the cloud service.</string>
     <string name="drop_zone_button_text_label">Tekst przycisku przesyłania</string>
     <string name="drop_zone_button_text_placeholder">Prześlij pliki</string>
     <string name="drop_zone_footer_text_label">Tekst stopki</string>
-    <string name="drop_zone_footer_text_placeholder">Powered by DNA-Nexus</string>
+    <string name="drop_zone_footer_text_placeholder">Powered by Nexus Cloud</string>
     <string name="drop_zone_logo_url_label">URL logo, opcjonalnie</string>
     <string name="drop_zone_primary_color_label">Kolor główny</string>
     <string name="drop_zone_button_text_color_label">Tekst przycisku</string>
@@ -593,7 +593,7 @@
     <string name="drop_zone_duplicate_label_reject">Odrzucaj duplikaty</string>
     <string name="drop_zone_duplicate_label_version">Wersjonuj istniejący plik</string>
     <string name="apps_checking_available">Sprawdzanie dostępnych aplikacji…</string>
-    <string name="apps_checking_available_desc">DNA-Nexus Mobile sprawdza, które aplikacje serwerowe są dostępne dla tego konta.</string>
+    <string name="apps_checking_available_desc">The mobile app is checking which server apps are available for this account.</string>
     <string name="file_scope_my_files">Moje pliki</string>
     <string name="file_scope_workspace_fallback">Przestrzeń współdzielona</string>
     <string name="file_scope_current_user">Bieżąca lokalizacja: Moje pliki</string>
@@ -660,23 +660,23 @@
     <string name="video_url_failed">Nie udało się utworzyć URL wideo</string>
     <string name="video_failed">Wideo nie powiodło się</string>
     <string name="video_file_not_found">Nie znaleziono pliku wideo.</string>
-    <string name="setup_logo_desc">Logo DNA-Nexus</string>
+    <string name="setup_logo_desc">Nexus Cloud logo</string>
     <string name="setup_intro">Połącz bezpiecznie przez parowanie zaufanego urządzenia.</string>
     <string name="setup_server_url">URL serwera</string>
     <string name="setup_https_required">Dozwolone są tylko adresy serwerów HTTPS.</string>
     <string name="setup_scan_pairing_qr">Skanuj QR parowania</string>
-    <string name="setup_scan_help">Otwórz Trusted Devices w interfejsie web DNA-Nexus, pokaż kod QR i zeskanuj go tutaj.</string>
-    <string name="scan_status_ready">Gotowe do skanowania kodu QR parowania DNA-Nexus</string>
+    <string name="setup_scan_help">Open Trusted Devices in the web interface, show the QR code, then scan it here.</string>
+    <string name="scan_status_ready">Ready to scan pairing QR</string>
     <string name="scan_status_cancelled">Skanowanie anulowane</string>
-    <string name="scan_status_invalid">Nieprawidłowy QR parowania DNA-Nexus albo brak TLS trust pin</string>
-    <string name="scan_prompt">Skanuj QR parowania DNA-Nexus</string>
+    <string name="scan_status_invalid">Invalid pairing QR or missing TLS trust pin</string>
+    <string name="scan_prompt">Scan pairing QR</string>
     <string name="scan_title">Skanuj QR parowania</string>
-    <string name="scan_help">Otwórz Trusted Devices w interfejsie web DNA-Nexus i pokaż tam kod QR.</string>
+    <string name="scan_help">Open Trusted Devices in the web interface and show the QR code there.</string>
     <string name="scan_start">Rozpocznij skanowanie QR</string>
     <string name="scan_back">Wstecz</string>
     <string name="pair_default_device_name">Android device</string>
     <string name="pair_title">Sparuj urządzenie</string>
-    <string name="pair_mascot_desc">Maskotka CPUNK DNA-Nexus</string>
+    <string name="pair_mascot_desc">CPUNK mascot</string>
     <string name="pair_server">Serwer: %1$s</string>
     <string name="pair_configured_server_mismatch">Skonfigurowany serwer: %1$s
 Ten kod QR wskazuje inny serwer. Parowanie zostało zablokowane.</string>

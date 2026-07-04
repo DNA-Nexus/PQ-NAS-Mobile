@@ -17,7 +17,7 @@ internal fun safeApiErrorMessage(e: HttpException, fallback: String): String {
                 errorToken.contains("storage unavailable")
 
     if (storageUnallocated) {
-        return "$fallback: storage not allocated yet. Your device is paired, but this account has no file storage assigned. Ask an administrator to allocate storage in DNA-Nexus Server → Admin → User profiles. (HTTP $code)"
+        return "$fallback: storage not allocated yet. Your device is paired, but this account has no file storage assigned. Ask an administrator to allocate storage in the web admin panel → Admin → User profiles. (HTTP $code)"
     }
 
     val reason = when {

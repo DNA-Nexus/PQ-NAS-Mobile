@@ -1,6 +1,6 @@
 <resources>
-    <string name="app_name">DNA-Nexus Mobile</string>
-    <string name="dna_nexus_files">DNA-Nexus Mobile</string>
+    <string name="app_name">Nexus Cloud</string>
+    <string name="dna_nexus_files">Nexus Cloud</string>
     <string name="add">Додати</string>
     <string name="apps">Застосунки</string>
     <string name="settings_and_info">Налаштування та інформація</string>
@@ -18,7 +18,7 @@
     <string name="theme_win_classic_desc">Світло-сірий класичний інтерфейс</string>
     <string name="admin_tools">Інструменти адміністратора</string>
     <string name="about_dna_nexus_files">About app</string>
-    <string name="files_about_mascot_desc">Маскот CPUNK DNA-Nexus</string>
+    <string name="files_about_mascot_desc">CPUNK mascot</string>
     <string name="files_about_security_stack">Стек безпеки</string>
     <string name="files_about_security_stack_desc">Connected service security stack: ML-KEM-768 • CRYSTALS-Dilithium 5 • AES-256-GCM\nMobile app: HTTPS + TLS pinning • Android Keystore • AES-GCM encrypted local auth/cache</string>
     <string name="show_all_items">Показати всі елементи</string>
@@ -35,7 +35,7 @@
     <string name="contacts">Contacts</string>
     <string name="contacts_desc">Відкрити приватну адресну книгу та легкий реєстр клієнтів.</string>
     <string name="circle_stack">Circle Stack</string>
-    <string name="circle_stack_desc">Відкрити приватну соціальну стрічку з цього сервера DNA-Nexus.</string>
+    <string name="circle_stack_desc">Open your private social feed from this server.</string>
     <string name="echo_stack">Echo Stack</string>
     <string name="echo_stack_desc">Зберігати закладки та архівовані вебсторінки.</string>
     <string name="drop_zone">Drop Zone</string>
@@ -196,7 +196,7 @@
     <string name="info_loading_comment">Завантаження коментаря…</string>
     <string name="info_file_comment_label">Коментар до файлу</string>
     <string name="info_file_comment_placeholder">Додай нотатку про цей файл…</string>
-    <string name="info_comment_server_note">Зберігається на сервері DNA-Nexus і видима на комп’ютері та мобільному.</string>
+    <string name="info_comment_server_note">Stored on the connected server and visible from desktop/mobile.</string>
     <string name="info_no_comment_yet">Коментарів ще немає.</string>
     <string name="info_saving_comment">Збереження коментаря…</string>
     <string name="info_comment_cleared">Коментар очищено.</string>
@@ -204,7 +204,7 @@
     <string name="info_saving">Збереження…</string>
     <string name="info_save">Зберегти</string>
     <string name="info_clear">Очистити</string>
-    <string name="create_menu_title">Додати до DNA-Nexus</string>
+    <string name="create_menu_title">Add to Nexus Cloud</string>
     <string name="create_upload_file">Завантажити файл</string>
     <string name="create_upload_file_desc">Вибрати файл із цього телефона</string>
     <string name="create_upload_multiple">Завантажити кілька файлів</string>
@@ -257,10 +257,10 @@
     <string name="file_list_loading_title">Завантаження файлів…</string>
     <string name="file_list_no_favorites_title">Тут немає обраного</string>
     <string name="file_list_no_files_title">Тут немає файлів</string>
-    <string name="file_list_contacting_server">Підключення до сервера DNA-Nexus…</string>
+    <string name="file_list_contacting_server">Contacting server…</string>
     <string name="file_list_no_favorites_desc">У цій папці немає обраних елементів.</string>
     <string name="file_list_empty_or_failed_desc">Ця папка порожня або її не вдалося завантажити.</string>
-    <string name="incoming_share_title">Завантажити спільні елементи до DNA-Nexus</string>
+    <string name="incoming_share_title">Upload shared items to Nexus Cloud</string>
     <string name="incoming_share_choose_destination">Вибери, куди буде завантажено вміст, поширений з Android.</string>
     <string name="incoming_share_phone_uploads">Завантаження з телефона</string>
     <string name="incoming_share_current_location">Поточне розташування</string>
@@ -272,8 +272,8 @@
     <string name="incoming_share_workspace_missing">Вибраний робочий простір більше недоступний.</string>
     <string name="incoming_share_unknown_destination">Невідоме місце завантаження.</string>
     <string name="incoming_share_upload_button">Завантажити</string>
-    <string name="app_lock_title">DNA-Nexus заблоковано</string>
-    <string name="app_lock_logo_desc">Логотип DNA-Nexus</string>
+    <string name="app_lock_title">Nexus Cloud is locked</string>
+    <string name="app_lock_logo_desc">Nexus Cloud logo</string>
     <string name="app_lock_description">Підтвердь свою особу перед відкриттям файлів.</string>
     <string name="app_lock_unlock">Розблокувати</string>
     <string name="app_lock_no_biometric_hardware">На цьому пристрої немає біометричного сенсора. Вийди з облікового запису або налаштуй захист пристрою.</string>
@@ -286,7 +286,7 @@
     <string name="app_lock_waiting_auth">Очікування автентифікації…</string>
     <string name="app_lock_cancelled_or_failed">Розблокування скасовано або не вдалося: %1$s</string>
     <string name="app_lock_auth_failed">Автентифікація не вдалася. Спробуй ще раз.</string>
-    <string name="app_lock_prompt_title">Розблокувати DNA-Nexus</string>
+    <string name="app_lock_prompt_title">Unlock Nexus Cloud</string>
     <string name="app_lock_prompt_subtitle">Підтвердь свою особу перед відкриттям файлів</string>
     <string name="app_lock_timeout">Час очікування розблокування вичерпано. Торкнися Розблокувати, щоб спробувати ще раз.</string>
     <string name="app_settings">Налаштування</string>
@@ -307,7 +307,7 @@
     <string name="language_italian_label">Italiano</string>
     <string name="language_turkish_label">Türkçe</string>
     <string name="language_restart_note">Вибір мови застосовується одразу в цьому вигляді застосунку.</string>
-    <string name="about_files_description">DNA-Nexus Mobile — це Android-застосунок для облікових записів DNA-Nexus Server. Він дає змогу безпечно користуватися файлами, посиланнями спільного доступу, завантаженнями та сховищем облікового запису, тоді як фактичні дані залишаються на DNA-Nexus Server оператора.</string>
+    <string name="about_files_description">This mobile app is connected to %1$s. It lets users securely access and manage files, sharing links, uploads, and account storage while the actual data remains on the connected operator server.</string>
     <string name="shares_filter_all">Усі</string>
     <string name="shares_filter_active">Активні</string>
     <string name="shares_filter_expired">Прострочені</string>
@@ -552,11 +552,11 @@
     <string name="drop_zone_public_title_placeholder">Надішли файли безпечно</string>
     <string name="drop_zone_public_desc_label">Опис публічної сторінки</string>
     <string name="drop_zone_public_desc_placeholder">Поясни завантажувачу, для чого використовується ця сторінка.</string>
-    <string name="drop_zone_public_desc_default">На цій сторінці можна надсилати файли прямо до DNA-Nexus.</string>
+    <string name="drop_zone_public_desc_default">Use this page to upload files directly to the cloud service.</string>
     <string name="drop_zone_button_text_label">Текст кнопки завантаження</string>
     <string name="drop_zone_button_text_placeholder">Завантажити файли</string>
     <string name="drop_zone_footer_text_label">Текст нижнього колонтитула</string>
-    <string name="drop_zone_footer_text_placeholder">Powered by DNA-Nexus</string>
+    <string name="drop_zone_footer_text_placeholder">Powered by Nexus Cloud</string>
     <string name="drop_zone_logo_url_label">URL логотипа, необов’язково</string>
     <string name="drop_zone_primary_color_label">Основний колір</string>
     <string name="drop_zone_button_text_color_label">Текст кнопки</string>
@@ -593,7 +593,7 @@
     <string name="drop_zone_duplicate_label_reject">Відхиляти дублікати</string>
     <string name="drop_zone_duplicate_label_version">Версіонувати наявний файл</string>
     <string name="apps_checking_available">Перевірка доступних застосунків…</string>
-    <string name="apps_checking_available_desc">DNA-Nexus Mobile перевіряє, які серверні застосунки доступні для цього облікового запису.</string>
+    <string name="apps_checking_available_desc">The mobile app is checking which server apps are available for this account.</string>
     <string name="file_scope_my_files">Мої файли</string>
     <string name="file_scope_workspace_fallback">Спільний простір</string>
     <string name="file_scope_current_user">Поточне розташування: Мої файли</string>
@@ -660,23 +660,23 @@
     <string name="video_url_failed">Не вдалося створити відео-URL</string>
     <string name="video_failed">Відео не вдалося</string>
     <string name="video_file_not_found">Відеофайл не знайдено.</string>
-    <string name="setup_logo_desc">Логотип DNA-Nexus</string>
+    <string name="setup_logo_desc">Nexus Cloud logo</string>
     <string name="setup_intro">Безпечно підключайся через сполучення довіреного пристрою.</string>
     <string name="setup_server_url">URL сервера</string>
     <string name="setup_https_required">Дозволено лише HTTPS-адреси серверів.</string>
     <string name="setup_scan_pairing_qr">Сканувати QR сполучення</string>
-    <string name="setup_scan_help">Відкрий Trusted Devices у вебінтерфейсі DNA-Nexus, покажи QR-код і відскануй його тут.</string>
-    <string name="scan_status_ready">Готово до сканування QR-коду сполучення DNA-Nexus</string>
+    <string name="setup_scan_help">Open Trusted Devices in the web interface, show the QR code, then scan it here.</string>
+    <string name="scan_status_ready">Ready to scan pairing QR</string>
     <string name="scan_status_cancelled">Сканування скасовано</string>
-    <string name="scan_status_invalid">Недійсний QR сполучення DNA-Nexus або відсутній TLS trust pin</string>
-    <string name="scan_prompt">Сканувати QR сполучення DNA-Nexus</string>
+    <string name="scan_status_invalid">Invalid pairing QR or missing TLS trust pin</string>
+    <string name="scan_prompt">Scan pairing QR</string>
     <string name="scan_title">Сканувати QR сполучення</string>
-    <string name="scan_help">Відкрий Trusted Devices у вебінтерфейсі DNA-Nexus і покажи там QR-код.</string>
+    <string name="scan_help">Open Trusted Devices in the web interface and show the QR code there.</string>
     <string name="scan_start">Почати QR-сканування</string>
     <string name="scan_back">Назад</string>
     <string name="pair_default_device_name">Android device</string>
     <string name="pair_title">Сполучити пристрій</string>
-    <string name="pair_mascot_desc">Маскот CPUNK DNA-Nexus</string>
+    <string name="pair_mascot_desc">CPUNK mascot</string>
     <string name="pair_server">Сервер: %1$s</string>
     <string name="pair_configured_server_mismatch">Налаштований сервер: %1$s
 Цей QR-код вказує на інший сервер. Сполучення заблоковано.</string>

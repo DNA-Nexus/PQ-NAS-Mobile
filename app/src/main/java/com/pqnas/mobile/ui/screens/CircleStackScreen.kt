@@ -97,7 +97,7 @@ private enum class CircleStackFeedMode(
     Federated(
         apiValue = "federated",
         label = "Federated",
-        subtitle = "Posts received from other DNA-Nexus servers"
+        subtitle = "Posts received from other connected servers"
     ),
     MyCircle(
         apiValue = "my_circle",
@@ -256,7 +256,7 @@ fun CircleStackScreen(
             uploadingImage = imageUri != null
             status = when {
                 nasMediaPath.isNotBlank() -> "Publishing Circle Stack post..."
-                imageUri != null -> "Importing image to DNA-Nexus..."
+                imageUri != null -> "Importing image to cloud storage..."
                 else -> "Publishing Circle Stack post..."
             }
 
@@ -502,7 +502,7 @@ fun CircleStackScreen(
                                     ),
                                     modifier = Modifier.weight(1f)
                                 ) {
-                                    Text("Choose from DNA-Nexus")
+                                    Text("Choose from cloud storage")
                                 }
 
                                 TextButton(
@@ -533,7 +533,7 @@ fun CircleStackScreen(
                                 ) {
                                     Text(
                                         text = if (selectedNasImagePath.isNotBlank()) {
-                                            "DNA-Nexus image: /$selectedNasImagePath"
+                                            "Cloud image: /$selectedNasImagePath"
                                         } else {
                                             "Imported image: ${pendingImageName.ifBlank { "attached" }}"
                                         },
@@ -747,7 +747,7 @@ fun CircleStackScreen(
                     verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     Text(
-                        text = "Choose image from DNA-Nexus",
+                        text = "Choose image from cloud storage",
                         style = MaterialTheme.typography.titleMedium,
                         color = CircleText,
                         fontWeight = FontWeight.Bold
@@ -826,7 +826,7 @@ fun CircleStackScreen(
                                             pendingImageMime = null
                                             showNasImagePicker = false
                                             composerExpanded = true
-                                            status = "Image selected from DNA-Nexus."
+                                            status = "Image selected from cloud storage."
                                         }
                                     },
                                 colors = CardDefaults.cardColors(
@@ -1144,7 +1144,7 @@ private fun CircleFederatedEventCard(
                     }
                 } else {
                     Text(
-                        text = "Media exists on origin DNA-Nexus, but no preview URL was available.",
+                        text = "Media exists on the origin server, but no preview URL was available.",
                         style = MaterialTheme.typography.bodySmall,
                         color = CircleMuted
                     )
@@ -1637,7 +1637,7 @@ private fun circleStackShouldHidePickerItem(name: String): Boolean {
     val clean = name.trim()
     if (clean.isBlank()) return true
 
-    // Hide DNA-Nexus/private implementation folders from normal media picking:
+    // Hide service-private implementation folders from normal media picking:
     // .pqnas_activity, .pqnas_circlestack, .trash-like internals, editor temp dirs, etc.
     if (clean.startsWith(".")) return true
 

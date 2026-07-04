@@ -1,6 +1,6 @@
 <resources>
-    <string name="app_name">DNA-Nexus Mobile</string>
-    <string name="dna_nexus_files">DNA-Nexus Mobile</string>
+    <string name="app_name">Nexus Cloud</string>
+    <string name="dna_nexus_files">Nexus Cloud</string>
     <string name="add">Ekle</string>
     <string name="apps">Uygulamalar</string>
     <string name="settings_and_info">Ayarlar ve bilgiler</string>
@@ -18,7 +18,7 @@
     <string name="theme_win_classic_desc">Açık gri klasik kullanıcı arayüzü</string>
     <string name="admin_tools">Yönetici araçları</string>
     <string name="about_dna_nexus_files">About app</string>
-    <string name="files_about_mascot_desc">CPUNK DNA-Nexus maskotu</string>
+    <string name="files_about_mascot_desc">CPUNK mascot</string>
     <string name="files_about_security_stack">Güvenlik yığını</string>
     <string name="files_about_security_stack_desc">Connected service security stack: ML-KEM-768 • CRYSTALS-Dilithium 5 • AES-256-GCM\nMobile app: HTTPS + TLS pinning • Android Keystore • AES-GCM encrypted local auth/cache</string>
     <string name="show_all_items">Tüm öğeleri göster</string>
@@ -35,7 +35,7 @@
     <string name="contacts">Contacts</string>
     <string name="contacts_desc">Özel adres defterini ve hafif müşteri kaydını aç.</string>
     <string name="circle_stack">Circle Stack</string>
-    <string name="circle_stack_desc">Özel sosyal akışını bu DNA-Nexus sunucusundan aç.</string>
+    <string name="circle_stack_desc">Open your private social feed from this server.</string>
     <string name="echo_stack">Echo Stack</string>
     <string name="echo_stack_desc">Yer imlerini ve arşivlenmiş web sayfalarını kaydet.</string>
     <string name="drop_zone">Drop Zone</string>
@@ -196,7 +196,7 @@
     <string name="info_loading_comment">Yorum yükleniyor…</string>
     <string name="info_file_comment_label">Dosya yorumu</string>
     <string name="info_file_comment_placeholder">Bu dosya hakkında not ekle…</string>
-    <string name="info_comment_server_note">DNA-Nexus sunucusuna kaydedilir ve hem masaüstünde hem mobilde görünür.</string>
+    <string name="info_comment_server_note">Stored on the connected server and visible from desktop/mobile.</string>
     <string name="info_no_comment_yet">Henüz yorum yok.</string>
     <string name="info_saving_comment">Yorum kaydediliyor…</string>
     <string name="info_comment_cleared">Yorum temizlendi.</string>
@@ -204,7 +204,7 @@
     <string name="info_saving">Kaydediliyor…</string>
     <string name="info_save">Kaydet</string>
     <string name="info_clear">Temizle</string>
-    <string name="create_menu_title">DNA-Nexus’a ekle</string>
+    <string name="create_menu_title">Add to Nexus Cloud</string>
     <string name="create_upload_file">Dosya yükle</string>
     <string name="create_upload_file_desc">Bu telefondan bir dosya seç</string>
     <string name="create_upload_multiple">Birden fazla dosya yükle</string>
@@ -257,10 +257,10 @@
     <string name="file_list_loading_title">Dosyalar yükleniyor…</string>
     <string name="file_list_no_favorites_title">Burada favori yok</string>
     <string name="file_list_no_files_title">Burada dosya yok</string>
-    <string name="file_list_contacting_server">DNA-Nexus sunucusuna bağlanılıyor…</string>
+    <string name="file_list_contacting_server">Contacting server…</string>
     <string name="file_list_no_favorites_desc">Bu klasörde favori öğe yok.</string>
     <string name="file_list_empty_or_failed_desc">Bu klasör boş veya yüklenemedi.</string>
-    <string name="incoming_share_title">Paylaşılan öğeleri DNA-Nexus’a yükle</string>
+    <string name="incoming_share_title">Upload shared items to Nexus Cloud</string>
     <string name="incoming_share_choose_destination">Android’den paylaşılan içeriğin nereye yükleneceğini seç.</string>
     <string name="incoming_share_phone_uploads">Telefon yüklemeleri</string>
     <string name="incoming_share_current_location">Geçerli konum</string>
@@ -272,8 +272,8 @@
     <string name="incoming_share_workspace_missing">Seçilen çalışma alanı artık kullanılabilir değil.</string>
     <string name="incoming_share_unknown_destination">Bilinmeyen yükleme hedefi.</string>
     <string name="incoming_share_upload_button">Yükle</string>
-    <string name="app_lock_title">DNA-Nexus kilitli</string>
-    <string name="app_lock_logo_desc">DNA-Nexus logosu</string>
+    <string name="app_lock_title">Nexus Cloud is locked</string>
+    <string name="app_lock_logo_desc">Nexus Cloud logo</string>
     <string name="app_lock_description">Dosyaları açmadan önce kimliğini doğrula.</string>
     <string name="app_lock_unlock">Kilidi aç</string>
     <string name="app_lock_no_biometric_hardware">Bu cihazda biyometrik sensör yok. Çıkış yapmayı kullan veya cihaz korumasını ayarla.</string>
@@ -286,7 +286,7 @@
     <string name="app_lock_waiting_auth">Kimlik doğrulama bekleniyor…</string>
     <string name="app_lock_cancelled_or_failed">Kilit açma iptal edildi veya başarısız oldu: %1$s</string>
     <string name="app_lock_auth_failed">Kimlik doğrulama başarısız oldu. Tekrar dene.</string>
-    <string name="app_lock_prompt_title">DNA-Nexus kilidini aç</string>
+    <string name="app_lock_prompt_title">Unlock Nexus Cloud</string>
     <string name="app_lock_prompt_subtitle">Dosyaları açmadan önce kimliğini doğrula</string>
     <string name="app_lock_timeout">Kilit açma zaman aşımına uğradı. Kilidi aç’a dokunarak tekrar dene.</string>
     <string name="app_settings">Ayarlar</string>
@@ -307,7 +307,7 @@
     <string name="language_italian_label">Italiano</string>
     <string name="language_turkish_label">Türkçe</string>
     <string name="language_restart_note">Dil seçimi bu uygulama görünümünde hemen kullanılır.</string>
-    <string name="about_files_description">DNA-Nexus Mobile, DNA-Nexus Server hesapları için bir Android uygulamasıdır. Kullanıcılar dosyalarını, paylaşım bağlantılarını, yüklemelerini ve hesap depolama alanını güvenli şekilde kullanıp yönetebilir; gerçek veriler ise operatörün DNA-Nexus Server’ında kalır.</string>
+    <string name="about_files_description">This mobile app is connected to %1$s. It lets users securely access and manage files, sharing links, uploads, and account storage while the actual data remains on the connected operator server.</string>
     <string name="shares_filter_all">Tümü</string>
     <string name="shares_filter_active">Etkin</string>
     <string name="shares_filter_expired">Süresi dolmuş</string>
@@ -552,11 +552,11 @@
     <string name="drop_zone_public_title_placeholder">Dosyaları güvenle gönder</string>
     <string name="drop_zone_public_desc_label">Herkese açık sayfa açıklaması</string>
     <string name="drop_zone_public_desc_placeholder">Yükleyiciye bu sayfanın ne için kullanıldığını anlat.</string>
-    <string name="drop_zone_public_desc_default">Bu sayfada dosyalar doğrudan DNA-Nexus’a gönderilebilir.</string>
+    <string name="drop_zone_public_desc_default">Use this page to upload files directly to the cloud service.</string>
     <string name="drop_zone_button_text_label">Yükleme düğmesi metni</string>
     <string name="drop_zone_button_text_placeholder">Dosyaları yükle</string>
     <string name="drop_zone_footer_text_label">Alt bilgi metni</string>
-    <string name="drop_zone_footer_text_placeholder">Powered by DNA-Nexus</string>
+    <string name="drop_zone_footer_text_placeholder">Powered by Nexus Cloud</string>
     <string name="drop_zone_logo_url_label">Logo URL’si, isteğe bağlı</string>
     <string name="drop_zone_primary_color_label">Ana renk</string>
     <string name="drop_zone_button_text_color_label">Düğme metni</string>
@@ -593,7 +593,7 @@
     <string name="drop_zone_duplicate_label_reject">Kopyaları reddet</string>
     <string name="drop_zone_duplicate_label_version">Mevcut dosyayı sürümle</string>
     <string name="apps_checking_available">Kullanılabilir uygulamalar kontrol ediliyor…</string>
-    <string name="apps_checking_available_desc">DNA-Nexus Mobile bu hesap için hangi sunucu uygulamalarının kullanılabilir olduğunu kontrol ediyor.</string>
+    <string name="apps_checking_available_desc">The mobile app is checking which server apps are available for this account.</string>
     <string name="file_scope_my_files">Dosyalarım</string>
     <string name="file_scope_workspace_fallback">Paylaşılan alan</string>
     <string name="file_scope_current_user">Geçerli konum: Dosyalarım</string>
@@ -660,23 +660,23 @@
     <string name="video_url_failed">Video URL’si oluşturulamadı</string>
     <string name="video_failed">Video oynatma başarısız oldu</string>
     <string name="video_file_not_found">Video dosyası bulunamadı.</string>
-    <string name="setup_logo_desc">DNA-Nexus logosu</string>
+    <string name="setup_logo_desc">Nexus Cloud logo</string>
     <string name="setup_intro">Güvenilen cihaz eşleştirme ile güvenli şekilde bağlan.</string>
     <string name="setup_server_url">Sunucu URL’si</string>
     <string name="setup_https_required">Yalnızca HTTPS sunucu adreslerine izin verilir.</string>
     <string name="setup_scan_pairing_qr">Eşleştirme QR kodunu tara</string>
-    <string name="setup_scan_help">DNA-Nexus web arayüzünde Trusted Devices bölümünü aç, QR kodunu göster ve burada tara.</string>
-    <string name="scan_status_ready">DNA-Nexus eşleştirme QR kodu taranmaya hazır</string>
+    <string name="setup_scan_help">Open Trusted Devices in the web interface, show the QR code, then scan it here.</string>
+    <string name="scan_status_ready">Ready to scan pairing QR</string>
     <string name="scan_status_cancelled">Tarama iptal edildi</string>
-    <string name="scan_status_invalid">Geçersiz DNA-Nexus eşleştirme QR kodu veya TLS trust pin eksik</string>
-    <string name="scan_prompt">DNA-Nexus eşleştirme QR kodunu tara</string>
+    <string name="scan_status_invalid">Invalid pairing QR or missing TLS trust pin</string>
+    <string name="scan_prompt">Scan pairing QR</string>
     <string name="scan_title">Eşleştirme QR kodunu tara</string>
-    <string name="scan_help">DNA-Nexus web arayüzünde Trusted Devices bölümünü aç ve QR kodunu orada göster.</string>
+    <string name="scan_help">Open Trusted Devices in the web interface and show the QR code there.</string>
     <string name="scan_start">QR taramayı başlat</string>
     <string name="scan_back">Geri</string>
     <string name="pair_default_device_name">Android device</string>
     <string name="pair_title">Cihazı eşleştir</string>
-    <string name="pair_mascot_desc">CPUNK DNA-Nexus maskotu</string>
+    <string name="pair_mascot_desc">CPUNK mascot</string>
     <string name="pair_server">Sunucu: %1$s</string>
     <string name="pair_configured_server_mismatch">Yapılandırılmış sunucu: %1$s
 Bu QR kodu farklı bir sunucuyu gösteriyor. Eşleştirme engellendi.</string>

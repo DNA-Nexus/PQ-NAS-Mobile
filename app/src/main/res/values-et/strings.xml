@@ -1,6 +1,6 @@
 <resources>
-    <string name="app_name">DNA-Nexus Mobile</string>
-    <string name="dna_nexus_files">DNA-Nexus Mobile</string>
+    <string name="app_name">Nexus Cloud</string>
+    <string name="dna_nexus_files">Nexus Cloud</string>
     <string name="add">Lisa</string>
     <string name="apps">Rakendused</string>
     <string name="settings_and_info">Seaded ja teave</string>
@@ -18,7 +18,7 @@
     <string name="theme_win_classic_desc">Helehall klassikaline kasutajaliides</string>
     <string name="admin_tools">Admini tööriistad</string>
     <string name="about_dna_nexus_files">About app</string>
-    <string name="files_about_mascot_desc">CPUNK DNA-Nexus maskott</string>
+    <string name="files_about_mascot_desc">CPUNK mascot</string>
     <string name="files_about_security_stack">Turvapinu</string>
     <string name="files_about_security_stack_desc">Connected service security stack: ML-KEM-768 • CRYSTALS-Dilithium 5 • AES-256-GCM\nMobile app: HTTPS + TLS pinning • Android Keystore • AES-GCM encrypted local auth/cache</string>
     <string name="show_all_items">Näita kõiki üksusi</string>
@@ -35,7 +35,7 @@
     <string name="contacts">Contacts</string>
     <string name="contacts_desc">Ava privaatne aadressiraamat ja kerge kliendiregister.</string>
     <string name="circle_stack">Circle Stack</string>
-    <string name="circle_stack_desc">Ava oma privaatne sotsiaalvoog sellest DNA-Nexus serverist.</string>
+    <string name="circle_stack_desc">Open your private social feed from this server.</string>
     <string name="echo_stack">Echo Stack</string>
     <string name="echo_stack_desc">Salvesta järjehoidjaid ja arhiveeritud veebilehti.</string>
     <string name="drop_zone">Drop Zone</string>
@@ -196,7 +196,7 @@
     <string name="info_loading_comment">Kommentaari laaditakse…</string>
     <string name="info_file_comment_label">Faili kommentaar</string>
     <string name="info_file_comment_placeholder">Lisa selle faili kohta märkus…</string>
-    <string name="info_comment_server_note">Salvestatakse DNA-Nexus serverisse ning on nähtav nii töölaual kui mobiilis.</string>
+    <string name="info_comment_server_note">Stored on the connected server and visible from desktop/mobile.</string>
     <string name="info_no_comment_yet">Kommentaari pole veel.</string>
     <string name="info_saving_comment">Kommentaari salvestatakse…</string>
     <string name="info_comment_cleared">Kommentaar tühjendatud.</string>
@@ -204,7 +204,7 @@
     <string name="info_saving">Salvestatakse…</string>
     <string name="info_save">Salvesta</string>
     <string name="info_clear">Tühjenda</string>
-    <string name="create_menu_title">Lisa DNA-Nexusesse</string>
+    <string name="create_menu_title">Add to Nexus Cloud</string>
     <string name="create_upload_file">Laadi fail üles</string>
     <string name="create_upload_file_desc">Vali fail sellest telefonist</string>
     <string name="create_upload_multiple">Laadi üles mitu faili</string>
@@ -257,10 +257,10 @@
     <string name="file_list_loading_title">Faile laaditakse…</string>
     <string name="file_list_no_favorites_title">Siin pole lemmikuid</string>
     <string name="file_list_no_files_title">Siin pole faile</string>
-    <string name="file_list_contacting_server">Ühendatakse DNA-Nexus serveriga…</string>
+    <string name="file_list_contacting_server">Contacting server…</string>
     <string name="file_list_no_favorites_desc">Selles kaustas pole lemmiküksusi.</string>
     <string name="file_list_empty_or_failed_desc">See kaust on tühi või seda ei saanud laadida.</string>
-    <string name="incoming_share_title">Laadi jagatud üksused DNA-Nexusesse</string>
+    <string name="incoming_share_title">Upload shared items to Nexus Cloud</string>
     <string name="incoming_share_choose_destination">Vali, kuhu Androidi jagatud sisu üles laaditakse.</string>
     <string name="incoming_share_phone_uploads">Telefoni üleslaadimised</string>
     <string name="incoming_share_current_location">Praegune asukoht</string>
@@ -272,8 +272,8 @@
     <string name="incoming_share_workspace_missing">Valitud tööruum pole enam saadaval.</string>
     <string name="incoming_share_unknown_destination">Tundmatu üleslaadimise sihtkoht.</string>
     <string name="incoming_share_upload_button">Laadi üles</string>
-    <string name="app_lock_title">DNA-Nexus on lukustatud</string>
-    <string name="app_lock_logo_desc">DNA-Nexus logo</string>
+    <string name="app_lock_title">Nexus Cloud is locked</string>
+    <string name="app_lock_logo_desc">Nexus Cloud logo</string>
     <string name="app_lock_description">Kinnita oma identiteet enne failide avamist.</string>
     <string name="app_lock_unlock">Ava lukustus</string>
     <string name="app_lock_no_biometric_hardware">Selles seadmes pole biomeetrilist andurit. Kasuta väljalogimist või seadista seadme kaitse.</string>
@@ -286,7 +286,7 @@
     <string name="app_lock_waiting_auth">Oodatakse autentimist…</string>
     <string name="app_lock_cancelled_or_failed">Lukustuse avamine tühistati või ebaõnnestus: %1$s</string>
     <string name="app_lock_auth_failed">Autentimine ebaõnnestus. Proovi uuesti.</string>
-    <string name="app_lock_prompt_title">Ava DNA-Nexus</string>
+    <string name="app_lock_prompt_title">Unlock Nexus Cloud</string>
     <string name="app_lock_prompt_subtitle">Kinnita oma identiteet enne failide avamist</string>
     <string name="app_lock_timeout">Lukustuse avamine aegus. Proovi uuesti, puudutades Ava lukustus.</string>
     <string name="app_settings">Seaded</string>
@@ -307,7 +307,7 @@
     <string name="language_italian_label">Italiano</string>
     <string name="language_turkish_label">Türkçe</string>
     <string name="language_restart_note">Keelevalik rakendub selles rakenduse vaates kohe.</string>
-    <string name="about_files_description">DNA-Nexus Mobile on Androidi rakendus DNA-Nexus Serveri kontodele. See võimaldab kasutajatel turvaliselt kasutada ja hallata oma faile, jagamislinke, üleslaadimisi ja konto salvestusruumi, samal ajal kui tegelikud andmed jäävad operaatori DNA-Nexus Serverisse.</string>
+    <string name="about_files_description">This mobile app is connected to %1$s. It lets users securely access and manage files, sharing links, uploads, and account storage while the actual data remains on the connected operator server.</string>
     <string name="shares_filter_all">Kõik</string>
     <string name="shares_filter_active">Aktiivsed</string>
     <string name="shares_filter_expired">Aegunud</string>
@@ -552,11 +552,11 @@
     <string name="drop_zone_public_title_placeholder">Saada failid turvaliselt</string>
     <string name="drop_zone_public_desc_label">Avaliku lehe kirjeldus</string>
     <string name="drop_zone_public_desc_placeholder">Selgita üleslaadijale, milleks seda lehte kasutatakse.</string>
-    <string name="drop_zone_public_desc_default">Sellel lehel saab faile saata otse DNA-Nexusesse.</string>
+    <string name="drop_zone_public_desc_default">Use this page to upload files directly to the cloud service.</string>
     <string name="drop_zone_button_text_label">Üleslaadimisnupu tekst</string>
     <string name="drop_zone_button_text_placeholder">Laadi failid üles</string>
     <string name="drop_zone_footer_text_label">Jaluse tekst</string>
-    <string name="drop_zone_footer_text_placeholder">Powered by DNA-Nexus</string>
+    <string name="drop_zone_footer_text_placeholder">Powered by Nexus Cloud</string>
     <string name="drop_zone_logo_url_label">Logo URL, valikuline</string>
     <string name="drop_zone_primary_color_label">Põhivärv</string>
     <string name="drop_zone_button_text_color_label">Nupu tekst</string>
@@ -593,7 +593,7 @@
     <string name="drop_zone_duplicate_label_reject">Lükka duplikaadid tagasi</string>
     <string name="drop_zone_duplicate_label_version">Versioonita olemasolev fail</string>
     <string name="apps_checking_available">Kontrollitakse saadaval olevaid rakendusi…</string>
-    <string name="apps_checking_available_desc">DNA-Nexus Mobile kontrollib, millised serverirakendused on selle konto jaoks saadaval.</string>
+    <string name="apps_checking_available_desc">The mobile app is checking which server apps are available for this account.</string>
     <string name="file_scope_my_files">Minu failid</string>
     <string name="file_scope_workspace_fallback">Jagatud ruum</string>
     <string name="file_scope_current_user">Praegune asukoht: Minu failid</string>
@@ -660,23 +660,23 @@
     <string name="video_url_failed">Video-URL-i loomine ebaõnnestus</string>
     <string name="video_failed">Video esitus ebaõnnestus</string>
     <string name="video_file_not_found">Videofaili ei leitud.</string>
-    <string name="setup_logo_desc">DNA-Nexus logo</string>
+    <string name="setup_logo_desc">Nexus Cloud logo</string>
     <string name="setup_intro">Ühendu turvaliselt usaldatud seadme sidumisega.</string>
     <string name="setup_server_url">Serveri URL</string>
     <string name="setup_https_required">Lubatud on ainult HTTPS-serveriaadressid.</string>
     <string name="setup_scan_pairing_qr">Skanni sidumise QR</string>
-    <string name="setup_scan_help">Ava DNA-Nexuse veebiliideses Trusted Devices, kuva QR-kood ja skanni see siin.</string>
-    <string name="scan_status_ready">Valmis skannima DNA-Nexuse sidumise QR-koodi</string>
+    <string name="setup_scan_help">Open Trusted Devices in the web interface, show the QR code, then scan it here.</string>
+    <string name="scan_status_ready">Ready to scan pairing QR</string>
     <string name="scan_status_cancelled">Skannimine tühistatud</string>
-    <string name="scan_status_invalid">Vigane DNA-Nexuse sidumise QR või TLS trust pin puudub</string>
-    <string name="scan_prompt">Skanni DNA-Nexuse sidumise QR</string>
+    <string name="scan_status_invalid">Invalid pairing QR or missing TLS trust pin</string>
+    <string name="scan_prompt">Scan pairing QR</string>
     <string name="scan_title">Skanni sidumise QR</string>
-    <string name="scan_help">Ava DNA-Nexuse veebiliideses Trusted Devices ja kuva QR-kood seal.</string>
+    <string name="scan_help">Open Trusted Devices in the web interface and show the QR code there.</string>
     <string name="scan_start">Alusta QR-skannimist</string>
     <string name="scan_back">Tagasi</string>
     <string name="pair_default_device_name">Android device</string>
     <string name="pair_title">Seo seade</string>
-    <string name="pair_mascot_desc">CPUNK DNA-Nexus maskott</string>
+    <string name="pair_mascot_desc">CPUNK mascot</string>
     <string name="pair_server">Server: %1$s</string>
     <string name="pair_configured_server_mismatch">Seadistatud server: %1$s
 See QR-kood osutab teisele serverile. Sidumine blokeeriti.</string>

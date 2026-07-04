@@ -397,7 +397,7 @@ private data class WorkspaceContactCardData(
 )
 
 // PQNAS_ANDROID_CONTACT_CARD_RENDER_V1:
-// Parse only the explicit DNA-Nexus contact-card envelope. The message body is
+// Parse only the explicit contact-card envelope. The message body is
 // still rendered as plain Compose Text, not HTML, so workspace messages cannot
 // inject markup or execute scripts through contact fields.
 private fun parseWorkspaceContactCardText(text: String): ParsedWorkspaceContactCard? {

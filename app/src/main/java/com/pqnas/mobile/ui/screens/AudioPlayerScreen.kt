@@ -118,7 +118,7 @@ fun AudioPlayerScreen(
     }
 
     /*
-     * We create the MediaSource with DNA-Nexus' authenticated, pinned-TLS OkHttp client.
+     * We create the MediaSource with the connected service's authenticated, pinned-TLS OkHttp client.
      * This is important: normal media players would not know about our Bearer token,
      * token refresh, or QR-pinned server certificate.
      */

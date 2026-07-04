@@ -23,7 +23,7 @@ data class FileItemDto(
     val isFavorite: Boolean = false,
     val isShared: Boolean = false,
 
-    // DNA-Nexus file lock metadata from server list responses.
+    // File lock metadata from server list responses.
     val is_locked: Boolean = false,
     val locked: Boolean = false,
     val lock_note: String? = null,

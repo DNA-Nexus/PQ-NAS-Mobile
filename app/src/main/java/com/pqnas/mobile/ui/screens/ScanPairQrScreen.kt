@@ -57,7 +57,7 @@ fun ScanPairQrScreen(
             setPrompt(context.getString(R.string.scan_prompt))
             setBeepEnabled(true)
 
-            // DNA-Nexus: force scanner upright on devices where sensor-driven
+            // Force scanner upright on devices where sensor-driven
             // orientation opens the QR scanner sideways, e.g. Samsung S25.
             setCaptureActivity(PortraitCaptureActivity::class.java)
             setOrientationLocked(true)

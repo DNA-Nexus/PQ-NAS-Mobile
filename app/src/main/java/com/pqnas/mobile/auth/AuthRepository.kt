@@ -18,7 +18,7 @@ class AuthRepository(
         baseUrl: String,
         pairToken: String,
         tlsPinSha256: String,
-        deviceName: String = "DNA-Nexus Android",
+        deviceName: String = "Nexus Cloud Android",
         serverDisplayNameFallback: String = ""
     ): Boolean {
         val api = ApiFactory.createAuthApi(

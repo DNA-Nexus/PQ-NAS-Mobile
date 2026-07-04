@@ -1,6 +1,6 @@
 <resources>
-    <string name="app_name">DNA-Nexus Mobile</string>
-    <string name="dna_nexus_files">DNA-Nexus Mobile</string>
+    <string name="app_name">Nexus Cloud</string>
+    <string name="dna_nexus_files">Nexus Cloud</string>
     <string name="add">Lägg till</string>
     <string name="apps">Appar</string>
     <string name="settings_and_info">Inställningar och information</string>
@@ -18,7 +18,7 @@
     <string name="theme_win_classic_desc">Ljusgrå klassisk användarvy</string>
     <string name="admin_tools">Adminverktyg</string>
     <string name="about_dna_nexus_files">About app</string>
-    <string name="files_about_mascot_desc">CPUNK DNA-Nexus-maskot</string>
+    <string name="files_about_mascot_desc">CPUNK mascot</string>
     <string name="files_about_security_stack">Säkerhetsstack</string>
     <string name="files_about_security_stack_desc">Connected service security stack: ML-KEM-768 • CRYSTALS-Dilithium 5 • AES-256-GCM\nMobile app: HTTPS + TLS pinning • Android Keystore • AES-GCM encrypted local auth/cache</string>
     <string name="show_all_items">Visa alla objekt</string>
@@ -35,7 +35,7 @@
     <string name="contacts">Contacts</string>
     <string name="contacts_desc">Öppna din privata adressbok och ditt lätta kundregister.</string>
     <string name="circle_stack">Circle Stack</string>
-    <string name="circle_stack_desc">Öppna ditt privata sociala flöde från denna DNA-Nexus-server.</string>
+    <string name="circle_stack_desc">Open your private social feed from this server.</string>
     <string name="echo_stack">Echo Stack</string>
     <string name="echo_stack_desc">Spara bokmärken och arkiverade webbsidor.</string>
     <string name="drop_zone">Drop Zone</string>
@@ -196,7 +196,7 @@
     <string name="info_loading_comment">Laddar kommentar…</string>
     <string name="info_file_comment_label">Filkommentar</string>
     <string name="info_file_comment_placeholder">Lägg till en anteckning om denna fil…</string>
-    <string name="info_comment_server_note">Sparas på DNA-Nexus-servern och visas både på dator och mobil.</string>
+    <string name="info_comment_server_note">Stored on the connected server and visible from desktop/mobile.</string>
     <string name="info_no_comment_yet">Ingen kommentar ännu.</string>
     <string name="info_saving_comment">Sparar kommentar…</string>
     <string name="info_comment_cleared">Kommentaren rensades.</string>
@@ -204,7 +204,7 @@
     <string name="info_saving">Sparar…</string>
     <string name="info_save">Spara</string>
     <string name="info_clear">Rensa</string>
-    <string name="create_menu_title">Lägg till i DNA-Nexus</string>
+    <string name="create_menu_title">Add to Nexus Cloud</string>
     <string name="create_upload_file">Ladda upp fil</string>
     <string name="create_upload_file_desc">Välj en fil från denna telefon</string>
     <string name="create_upload_multiple">Ladda upp flera filer</string>
@@ -257,10 +257,10 @@
     <string name="file_list_loading_title">Laddar filer…</string>
     <string name="file_list_no_favorites_title">Inga favoriter här</string>
     <string name="file_list_no_files_title">Inga filer här</string>
-    <string name="file_list_contacting_server">Ansluter till DNA-Nexus-servern…</string>
+    <string name="file_list_contacting_server">Contacting server…</string>
     <string name="file_list_no_favorites_desc">Det finns inga favoritobjekt i denna mapp.</string>
     <string name="file_list_empty_or_failed_desc">Denna mapp är tom eller kunde inte laddas.</string>
-    <string name="incoming_share_title">Ladda upp delade objekt till DNA-Nexus</string>
+    <string name="incoming_share_title">Upload shared items to Nexus Cloud</string>
     <string name="incoming_share_choose_destination">Välj vart Androids delade innehåll ska laddas upp.</string>
     <string name="incoming_share_phone_uploads">Telefonens uppladdningar</string>
     <string name="incoming_share_current_location">Nuvarande plats</string>
@@ -272,8 +272,8 @@
     <string name="incoming_share_workspace_missing">Den valda arbetsytan är inte längre tillgänglig.</string>
     <string name="incoming_share_unknown_destination">Okänt uppladdningsmål.</string>
     <string name="incoming_share_upload_button">Ladda upp</string>
-    <string name="app_lock_title">DNA-Nexus är låst</string>
-    <string name="app_lock_logo_desc">DNA-Nexus-logotyp</string>
+    <string name="app_lock_title">Nexus Cloud is locked</string>
+    <string name="app_lock_logo_desc">Nexus Cloud logo</string>
     <string name="app_lock_description">Bekräfta din identitet innan filer öppnas.</string>
     <string name="app_lock_unlock">Lås upp</string>
     <string name="app_lock_no_biometric_hardware">Den här enheten har ingen biometrisk sensor. Använd utloggning eller konfigurera enhetsskydd.</string>
@@ -286,7 +286,7 @@
     <string name="app_lock_waiting_auth">Väntar på autentisering…</string>
     <string name="app_lock_cancelled_or_failed">Upplåsningen avbröts eller misslyckades: %1$s</string>
     <string name="app_lock_auth_failed">Autentisering misslyckades. Försök igen.</string>
-    <string name="app_lock_prompt_title">Lås upp DNA-Nexus</string>
+    <string name="app_lock_prompt_title">Unlock Nexus Cloud</string>
     <string name="app_lock_prompt_subtitle">Bekräfta din identitet innan filer öppnas</string>
     <string name="app_lock_timeout">Upplåsningen tog för lång tid. Försök igen genom att trycka på Lås upp.</string>
     <string name="app_settings">Inställningar</string>
@@ -307,7 +307,7 @@
     <string name="language_italian_label">Italiano</string>
     <string name="language_turkish_label">Türkçe</string>
     <string name="language_restart_note">Språkvalet används direkt i denna appvy.</string>
-    <string name="about_files_description">DNA-Nexus Mobile är en Android-app för DNA-Nexus Server-konton. Med den kan användare säkert använda och hantera sina filer, delningslänkar, uppladdningar och kontots lagringsutrymme, medan själva datan finns kvar på operatörens DNA-Nexus Server.</string>
+    <string name="about_files_description">This mobile app is connected to %1$s. It lets users securely access and manage files, sharing links, uploads, and account storage while the actual data remains on the connected operator server.</string>
     <string name="shares_filter_all">Alla</string>
     <string name="shares_filter_active">Aktiva</string>
     <string name="shares_filter_expired">Utgångna</string>
@@ -552,11 +552,11 @@
     <string name="drop_zone_public_title_placeholder">Skicka filer säkert</string>
     <string name="drop_zone_public_desc_label">Beskrivning av offentlig sida</string>
     <string name="drop_zone_public_desc_placeholder">Berätta för uppladdaren vad denna sida används till.</string>
-    <string name="drop_zone_public_desc_default">På denna sida kan filer skickas direkt till DNA-Nexus.</string>
+    <string name="drop_zone_public_desc_default">Use this page to upload files directly to the cloud service.</string>
     <string name="drop_zone_button_text_label">Text på uppladdningsknappen</string>
     <string name="drop_zone_button_text_placeholder">Ladda upp filer</string>
     <string name="drop_zone_footer_text_label">Sidfotstext</string>
-    <string name="drop_zone_footer_text_placeholder">Powered by DNA-Nexus</string>
+    <string name="drop_zone_footer_text_placeholder">Powered by Nexus Cloud</string>
     <string name="drop_zone_logo_url_label">Logotypens URL, valfri</string>
     <string name="drop_zone_primary_color_label">Primär färg</string>
     <string name="drop_zone_button_text_color_label">Knapptext</string>
@@ -593,7 +593,7 @@
     <string name="drop_zone_duplicate_label_reject">Avvisa dubbletter</string>
     <string name="drop_zone_duplicate_label_version">Versionera befintlig fil</string>
     <string name="apps_checking_available">Kontrollerar tillgängliga appar…</string>
-    <string name="apps_checking_available_desc">DNA-Nexus Mobile kontrollerar vilka serverappar som är tillgängliga för detta konto.</string>
+    <string name="apps_checking_available_desc">The mobile app is checking which server apps are available for this account.</string>
     <string name="file_scope_my_files">Mina filer</string>
     <string name="file_scope_workspace_fallback">Delad yta</string>
     <string name="file_scope_current_user">Nuvarande plats: Mina filer</string>
@@ -660,23 +660,23 @@
     <string name="video_url_failed">Kunde inte skapa video-URL</string>
     <string name="video_failed">Videouppspelning misslyckades</string>
     <string name="video_file_not_found">Videofilen hittades inte.</string>
-    <string name="setup_logo_desc">DNA-Nexus-logotyp</string>
+    <string name="setup_logo_desc">Nexus Cloud logo</string>
     <string name="setup_intro">Anslut säkert med parning av betrodd enhet.</string>
     <string name="setup_server_url">Serverns URL</string>
     <string name="setup_https_required">Endast HTTPS-serveradresser är tillåtna.</string>
     <string name="setup_scan_pairing_qr">Skanna parnings-QR</string>
-    <string name="setup_scan_help">Öppna Trusted Devices i DNA-Nexus webbanvändarvy, visa QR-koden och skanna den här.</string>
-    <string name="scan_status_ready">Redo att skanna DNA-Nexus parnings-QR-kod</string>
+    <string name="setup_scan_help">Open Trusted Devices in the web interface, show the QR code, then scan it here.</string>
+    <string name="scan_status_ready">Ready to scan pairing QR</string>
     <string name="scan_status_cancelled">Skanning avbruten</string>
-    <string name="scan_status_invalid">Ogiltig DNA-Nexus parnings-QR eller TLS trust pin saknas</string>
-    <string name="scan_prompt">Skanna DNA-Nexus parnings-QR</string>
+    <string name="scan_status_invalid">Invalid pairing QR or missing TLS trust pin</string>
+    <string name="scan_prompt">Scan pairing QR</string>
     <string name="scan_title">Skanna parnings-QR</string>
-    <string name="scan_help">Öppna Trusted Devices i DNA-Nexus webbanvändarvy och visa QR-koden där.</string>
+    <string name="scan_help">Open Trusted Devices in the web interface and show the QR code there.</string>
     <string name="scan_start">Starta QR-skanning</string>
     <string name="scan_back">Tillbaka</string>
     <string name="pair_default_device_name">Android device</string>
     <string name="pair_title">Para enhet</string>
-    <string name="pair_mascot_desc">CPUNK DNA-Nexus-maskot</string>
+    <string name="pair_mascot_desc">CPUNK mascot</string>
     <string name="pair_server">Server: %1$s</string>
     <string name="pair_configured_server_mismatch">Konfigurerad server: %1$s
 Denna QR-kod pekar på en annan server. Parning blockerades.</string>

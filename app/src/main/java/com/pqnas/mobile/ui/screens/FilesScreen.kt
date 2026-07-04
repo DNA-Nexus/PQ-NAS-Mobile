@@ -2573,7 +2573,9 @@ fun FilesScreen(
                         serverHost = serverHost
                     )
 
-                    SettingsAboutSection()
+                    SettingsAboutSection(
+                        appTitle = appTitle
+                    )
                 }
             }
         )
@@ -4615,7 +4617,7 @@ private fun friendlyHttpMessage(
         lowMessage.contains("storage not allocated") ||
         lowMessage.contains("no file storage assigned")
     ) {
-        return "Storage not allocated yet. Your device is paired, but this account has no file storage assigned. Ask an administrator to allocate storage in DNA-Nexus Server → Admin → User profiles."
+        return "Storage not allocated yet. Your device is paired, but this account has no file storage assigned. Ask an administrator to allocate storage in the web admin panel → Admin → User profiles."
     }
 
     val http = (error as? HttpException)?.code()
@@ -4672,7 +4674,9 @@ private fun queryDisplayName(context: Context, uri: Uri): String? {
 
 
 @Composable
-private fun SettingsAboutSection() {
+private fun SettingsAboutSection(
+    appTitle: String
+) {
     Column(
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(10.dp)
@@ -4695,7 +4699,7 @@ private fun SettingsAboutSection() {
         }
 
         Text(
-            text = stringResource(R.string.about_dna_nexus_files),
+            text = appTitle,
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onSurface
@@ -4708,7 +4712,7 @@ private fun SettingsAboutSection() {
         )
 
         Text(
-            text = stringResource(R.string.about_files_description),
+            text = stringResource(R.string.about_files_description, appTitle),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )

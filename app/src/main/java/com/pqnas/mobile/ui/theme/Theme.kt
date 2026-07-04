@@ -14,7 +14,7 @@ enum class PqnasAppTheme(
     Dark(
         storageKey = "dark",
         label = "Dark",
-        description = "DNA-Nexus dark cyan"
+        description = "Nexus Cloud dark cyan"
     ),
     Bright(
         storageKey = "bright",
