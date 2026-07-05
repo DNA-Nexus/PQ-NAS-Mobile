@@ -34,6 +34,7 @@
     <string name="apps_available_mobile_tools">Tämän palvelimen käytettävissä olevat mobiilityökalut.</string>
     <string name="contacts">Contacts</string>
     <string name="contacts_desc">Avaa yksityinen osoitekirja ja kevyt asiakasrekisteri.</string>
+    <string name="contacts_app_disabled">Yhteystietosovellusta ei ole asennettu tai otettu käyttöön tällä palvelimella.</string>
     <string name="circle_stack">Circle Stack</string>
     <string name="circle_stack_desc">Avaa yksityinen sosiaalinen syötteesi tältä palvelimelta.</string>
     <string name="echo_stack">Echo Stack</string>

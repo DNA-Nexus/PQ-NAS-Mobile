@@ -12,13 +12,31 @@ import java.util.Locale
 class ContactsRepository(
     private val api: ContactsApi
 ) {
+
+    private fun contactsHttpError(e: HttpException, fallback: String): String {
+        val body = runCatching { e.response()?.errorBody()?.string().orEmpty() }.getOrDefault("")
+
+        // Contacts app gate:
+        // If an admin uninstalls/disables Contacts on the server, do not show a raw HTTP 403.
+        // Surface a stable code so the UI can render a localized explanation.
+        if (e.code() == 403 &&
+            body.contains("\"app\"") &&
+            body.contains("\"contacts\"") &&
+            body.contains("app_disabled")
+        ) {
+            return CONTACTS_APP_DISABLED_CODE
+        }
+
+        return "$fallback: HTTP ${e.code()}"
+    }
+
     suspend fun listContacts(): List<ContactDto> {
         return try {
             val r = api.listContacts()
             if (!r.ok) throw IllegalStateException(r.message ?: r.error ?: "Could not load contacts.")
             r.contacts
         } catch (e: HttpException) {
-            throw IllegalStateException("Contacts load failed: HTTP ${e.code()}")
+            throw IllegalStateException(contactsHttpError(e, "Contacts load failed"))
         }
     }
 
@@ -28,7 +46,7 @@ class ContactsRepository(
             if (!r.ok) throw IllegalStateException(r.message ?: r.error ?: "Could not save contact.")
             r.contact ?: request.toContactDto()
         } catch (e: HttpException) {
-            throw IllegalStateException("Contact save failed: HTTP ${e.code()}")
+            throw IllegalStateException(contactsHttpError(e, "Contact save failed"))
         }
     }
 
@@ -37,7 +55,7 @@ class ContactsRepository(
             val r = api.deleteContact(ContactDeleteRequest(subjectFingerprint))
             if (!r.ok) throw IllegalStateException(r.message ?: r.error ?: "Could not delete contact.")
         } catch (e: HttpException) {
-            throw IllegalStateException("Contact delete failed: HTTP ${e.code()}")
+            throw IllegalStateException(contactsHttpError(e, "Contact delete failed"))
         }
     }
 
@@ -62,6 +80,7 @@ class ContactsRepository(
     }
 
     companion object {
+        const val CONTACTS_APP_DISABLED_CODE = "contacts_app_disabled"
         fun normalizeFingerprint(value: String?): String =
             value.orEmpty()
                 .trim()

@@ -34,6 +34,7 @@
     <string name="apps_available_mobile_tools">Available mobile tools on this server.</string>
     <string name="contacts">Contacts</string>
     <string name="contacts_desc">Abre tu libreta de direcciones privada y un registro ligero de clientes.</string>
+    <string name="contacts_app_disabled">La aplicación Contacts no está instalada o activada en este servidor.</string>
     <string name="circle_stack">Circle Stack</string>
     <string name="circle_stack_desc">Open your private social feed from this server.</string>
     <string name="echo_stack">Echo Stack</string>

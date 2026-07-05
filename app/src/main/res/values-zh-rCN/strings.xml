@@ -34,6 +34,7 @@
     <string name="apps_available_mobile_tools">Available mobile tools on this server.</string>
     <string name="contacts">Contacts</string>
     <string name="contacts_desc">打开你的私人通讯录和轻量客户登记册。</string>
+    <string name="contacts_app_disabled">此服务器未安装或未启用 Contacts 应用。</string>
     <string name="circle_stack">Circle Stack</string>
     <string name="circle_stack_desc">Open your private social feed from this server.</string>
     <string name="echo_stack">Echo Stack</string>

@@ -126,6 +126,14 @@ fun ContactsScreen(
     var loading by remember { mutableStateOf(true) }
     var saving by remember { mutableStateOf(false) }
     var status by remember { mutableStateOf(context.getString(R.string.contacts_loading)) }
+
+    fun contactErrorMessage(e: Throwable, fallbackResId: Int): String {
+        return if (e.message == ContactsRepository.CONTACTS_APP_DISABLED_CODE) {
+            context.getString(R.string.contacts_app_disabled)
+        } else {
+            e.message ?: context.getString(fallbackResId)
+        }
+    }
     var search by remember { mutableStateOf("") }
     var selectedFingerprint by remember { mutableStateOf("") }
     var form by remember {
@@ -190,7 +198,7 @@ fun ContactsScreen(
                 }
             }.onFailure { e ->
                 loading = false
-                status = e.message ?: context.getString(R.string.contacts_load_failed)
+                status = contactErrorMessage(e, R.string.contacts_load_failed)
             }
         }
     }
@@ -283,7 +291,7 @@ fun ContactsScreen(
                 status = context.getString(R.string.contacts_saved)
                 reloadContacts(saved.subject_fingerprint.ifBlank { payload.subject_fingerprint })
             }.onFailure { e ->
-                status = e.message ?: context.getString(R.string.contacts_save_failed)
+                status = contactErrorMessage(e, R.string.contacts_save_failed)
             }
 
             saving = false
@@ -328,7 +336,7 @@ fun ContactsScreen(
                 clearEditor()
                 reloadContacts()
             }.onFailure { e ->
-                status = e.message ?: context.getString(R.string.contacts_delete_failed)
+                status = contactErrorMessage(e, R.string.contacts_delete_failed)
             }
         }
     }

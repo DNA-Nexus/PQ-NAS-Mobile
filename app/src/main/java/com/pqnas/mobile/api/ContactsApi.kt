@@ -99,21 +99,21 @@ data class ContactLocalUsersResponse(
 )
 
 interface ContactsApi {
-    @GET("/api/v4/people/list")
+    @GET("/api/v4/contacts/list")
     suspend fun listContacts(): ContactsListResponse
 
     @Headers("Content-Type: application/json")
-    @POST("/api/v4/people/upsert")
+    @POST("/api/v4/contacts/upsert")
     suspend fun upsertContact(
         @Body request: ContactUpsertRequest
     ): ContactUpsertResponse
 
     @Headers("Content-Type: application/json")
-    @POST("/api/v4/people/delete")
+    @POST("/api/v4/contacts/delete")
     suspend fun deleteContact(
         @Body request: ContactDeleteRequest
     ): ContactDeleteResponse
 
-    @GET("/api/v4/people/local-users")
+    @GET("/api/v4/contacts/local-users")
     suspend fun listLocalUsers(): ContactLocalUsersResponse
 }
