@@ -16,7 +16,6 @@ import androidx.compose.material.icons.filled.Refresh
 
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -42,6 +41,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.pqnas.mobile.R
 import com.pqnas.mobile.files.FilesRepository
@@ -70,6 +70,7 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -433,7 +434,9 @@ fun TextEditorScreen(
                     title = {
                         Text(
                             text = stringResource(R.string.text_editor_title),
-                            style = MaterialTheme.typography.titleLarge
+                            style = MaterialTheme.typography.titleLarge,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
                         )
                     },
                     navigationIcon = {
@@ -465,20 +468,40 @@ fun TextEditorScreen(
                             )
                         }
 
-                        TextButton(
+                        IconButton(
                             onClick = {
                                 if (editMode) exitEditMode() else enterEditMode()
                             },
                             enabled = !loading && !saving && !readOnly
                         ) {
-                            Text(if (editMode) stringResource(R.string.text_editor_done) else stringResource(R.string.text_editor_edit))
+                            Icon(
+                                painter = painterResource(
+                                    if (editMode) {
+                                        R.drawable.ic_text_editor_done_24
+                                    } else {
+                                        R.drawable.ic_text_editor_edit_24
+                                    }
+                                ),
+                                contentDescription = if (editMode) {
+                                    stringResource(R.string.text_editor_done)
+                                } else {
+                                    stringResource(R.string.text_editor_edit)
+                                }
+                            )
                         }
 
-                        TextButton(
+                        IconButton(
                             onClick = { saveFile() },
                             enabled = !loading && !saving && dirty
                         ) {
-                            Text(if (saving) stringResource(R.string.text_editor_status_saving) else stringResource(R.string.text_editor_save))
+                            Icon(
+                                painter = painterResource(R.drawable.ic_text_editor_save_24),
+                                contentDescription = if (saving) {
+                                    stringResource(R.string.text_editor_status_saving)
+                                } else {
+                                    stringResource(R.string.text_editor_save)
+                                }
+                            )
                         }
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
@@ -797,41 +820,65 @@ fun TextEditorScreen(
                 }
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    TextButton(
+                    IconButton(
                         onClick = { requestReload() },
                         enabled = !loading && !saving
                     ) {
-                        Text(stringResource(R.string.text_editor_reload))
+                        Icon(
+                            imageVector = Icons.Default.Refresh,
+                            contentDescription = stringResource(R.string.text_editor_reload)
+                        )
                     }
 
                     Spacer(modifier = Modifier.weight(1f))
 
-                    TextButton(
+                    IconButton(
                         onClick = {
                             if (editMode) exitEditMode() else enterEditMode()
                         },
                         enabled = !loading && !saving && !readOnly
                     ) {
-                        Text(if (editMode) stringResource(R.string.text_editor_done) else stringResource(R.string.text_editor_edit))
-                    }
-
-                    TextButton(
-                        onClick = { requestClose() },
-                        enabled = !saving,
-                        colors = ButtonDefaults.textButtonColors(
-                            contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+                        Icon(
+                            painter = painterResource(
+                                if (editMode) {
+                                    R.drawable.ic_text_editor_done_24
+                                } else {
+                                    R.drawable.ic_text_editor_edit_24
+                                }
+                            ),
+                            contentDescription = if (editMode) {
+                                stringResource(R.string.text_editor_done)
+                            } else {
+                                stringResource(R.string.text_editor_edit)
+                            }
                         )
-                    ) {
-                        Text(stringResource(R.string.text_editor_close))
                     }
 
-                    TextButton(
+                    IconButton(
+                        onClick = { requestClose() },
+                        enabled = !saving
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_text_editor_close_24),
+                            contentDescription = stringResource(R.string.text_editor_close)
+                        )
+                    }
+
+                    IconButton(
                         onClick = { saveFile() },
                         enabled = !loading && !saving && dirty
                     ) {
-                        Text(if (saving) stringResource(R.string.text_editor_status_saving) else stringResource(R.string.text_editor_save))
+                        Icon(
+                            painter = painterResource(R.drawable.ic_text_editor_save_24),
+                            contentDescription = if (saving) {
+                                stringResource(R.string.text_editor_status_saving)
+                            } else {
+                                stringResource(R.string.text_editor_save)
+                            }
+                        )
                     }
                 }
             }
