@@ -258,6 +258,8 @@ fun FilesScreen(
     var videoPlayerStartIndex by remember { mutableStateOf<Int?>(null) }
     var textEditorName by remember { mutableStateOf<String?>(null) }
     var textEditorPath by remember { mutableStateOf<String?>(null) }
+    var pdfPreviewName by remember { mutableStateOf<String?>(null) }
+    var pdfPreviewPath by remember { mutableStateOf<String?>(null) }
 
     val scope = rememberCoroutineScope()
     val mainThreadHandler = remember { Handler(Looper.getMainLooper()) }
@@ -732,6 +734,14 @@ fun FilesScreen(
         textEditorName = item.name
     }
 
+    fun openPdfPreview(item: FileItemDto) {
+        if (item.type != "file") return
+        if (!isProbablyPdfFile(item.name)) return
+
+        pdfPreviewPath = buildItemPath(currentPath, item.name)
+        pdfPreviewName = item.name
+    }
+
 
     fun parentPath(path: String?): String? {
         if (path.isNullOrBlank()) return null
@@ -771,6 +781,8 @@ fun FilesScreen(
         videoPlayerStartIndex != null ||
         textEditorName != null ||
         textEditorPath != null ||
+        pdfPreviewName != null ||
+        pdfPreviewPath != null ||
         favoritesOnly ||
         currentPath != null ||
         currentScope != FileScope.User
@@ -2255,6 +2267,8 @@ fun FilesScreen(
                                         openAudioPlayer(item)
                                     } else if (isProbablyVideoFile(item.name)) {
                                         openVideoPlayer(item)
+                                    } else if (isProbablyPdfFile(item.name)) {
+                                        openPdfPreview(item)
                                     } else if (isProbablyTextFile(item.name)) {
                                         openTextEditor(item)
                                     }
@@ -2267,6 +2281,7 @@ fun FilesScreen(
                                         "Preview" -> openImagePreview(clickedItem)
                                         "PlayAudio" -> openAudioPlayer(clickedItem)
                                         "PlayVideo" -> openVideoPlayer(clickedItem)
+                                        "PreviewPdf" -> openPdfPreview(clickedItem)
                                         "EditText" -> openTextEditor(clickedItem)
                                         "ToggleFavorite" -> toggleFavorite(clickedItem)
                                         "Share" -> openShareDialog(clickedItem)
@@ -3841,6 +3856,19 @@ fun FilesScreen(
             }
         }
 
+        if (pdfPreviewPath != null && pdfPreviewName != null) {
+            PdfPreviewScreen(
+                filesRepository = filesRepository,
+                fileScope = currentScope,
+                relPath = pdfPreviewPath!!,
+                displayName = pdfPreviewName!!,
+                onClose = {
+                    pdfPreviewPath = null
+                    pdfPreviewName = null
+                }
+            )
+        }
+
         if (textEditorPath != null && textEditorName != null) {
             TextEditorScreen(
                 filesRepository = filesRepository,
@@ -4350,6 +4378,16 @@ private fun FileRow(
                             )
                         }
 
+                        if (!isDir && isProbablyPdfFile(item.name)) {
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.menu_open_preview)) },
+                                onClick = {
+                                    menuExpanded = false
+                                    onMenuAction("PreviewPdf", item)
+                                }
+                            )
+                        }
+
                         if (!isDir && isProbablyTextFile(item.name)) {
                             DropdownMenuItem(
                                 text = { Text(stringResource(R.string.menu_edit_text)) },
@@ -4737,3 +4775,7 @@ private fun SettingsAboutSection(
 }
 
 // PQNAS_ANDROID_SAVE_URL_USE_UPLOAD_V1
+
+
+private fun isProbablyPdfFile(name: String): Boolean =
+    name.lowercase(Locale.getDefault()).endsWith(".pdf")
