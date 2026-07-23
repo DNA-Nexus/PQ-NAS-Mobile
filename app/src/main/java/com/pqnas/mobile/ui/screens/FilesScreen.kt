@@ -1,10 +1,13 @@
 package com.pqnas.mobile.ui.screens
 import com.pqnas.mobile.api.DropZoneUploadDto
 
+import android.Manifest
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
 import android.os.Handler
 import android.os.Looper
 
@@ -12,6 +15,7 @@ import android.provider.OpenableColumns
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.background
@@ -111,6 +115,7 @@ import com.pqnas.mobile.files.ScopedFilesOps
 import com.pqnas.mobile.files.listWorkspaces
 import okhttp3.RequestBody.Companion.toRequestBody
 import com.pqnas.mobile.files.stageUriToTempFile
+import com.pqnas.mobile.files.requiresOriginalPhotoAccess
 import java.io.File
 import org.json.JSONObject
 import com.pqnas.mobile.echostack.EchoStackRepository
@@ -241,6 +246,15 @@ fun FilesScreen(
     var renameItem by remember { mutableStateOf<FileItemDto?>(null) }
     var pendingUploadUri by remember { mutableStateOf<Uri?>(null) }
     var pendingUploadName by remember { mutableStateOf<String?>(null) }
+
+    // Hold the picker result while Android asks whether original photo
+    // location metadata may be accessed.
+    var pendingMediaLocationUploadUri by remember {
+        mutableStateOf<Uri?>(null)
+    }
+    var pendingMediaLocationUploadUris by remember {
+        mutableStateOf<List<Uri>>(emptyList())
+    }
     var renameText by remember { mutableStateOf("") }
     var moveCopyItem by remember { mutableStateOf<FileItemDto?>(null) }
     var moveCopyMode by remember { mutableStateOf("Move") }
@@ -1668,10 +1682,60 @@ fun FilesScreen(
         }
     }
 
+    fun hasMediaLocationPermission(): Boolean {
+        return Build.VERSION.SDK_INT < Build.VERSION_CODES.Q ||
+            ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.ACCESS_MEDIA_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED
+    }
+
+    val mediaLocationPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        val pendingSingle = pendingMediaLocationUploadUri
+        val pendingMultiple = pendingMediaLocationUploadUris
+
+        pendingMediaLocationUploadUri = null
+        pendingMediaLocationUploadUris = emptyList()
+
+        if (granted) {
+            when {
+                pendingSingle != null ->
+                    uploadUri(pendingSingle, overwrite = false)
+
+                pendingMultiple.isNotEmpty() ->
+                    uploadUrisSequentially(pendingMultiple)
+            }
+        } else {
+            // Fail closed: silently uploading a redacted copy would lose
+            // location metadata from a photo backup.
+            status = context.getString(R.string.upload_cancelled_snackbar)
+            scope.launch {
+                snackbarHostState.showSnackbar(
+                    context.getString(R.string.upload_cancelled_snackbar)
+                )
+            }
+        }
+    }
+
     val uploadDocumentLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument()
     ) { uri: Uri? ->
         if (uri == null) return@rememberLauncherForActivityResult
+
+        if (
+            requiresOriginalPhotoAccess(context, uri) &&
+            !hasMediaLocationPermission()
+        ) {
+            pendingMediaLocationUploadUri = uri
+            pendingMediaLocationUploadUris = emptyList()
+            mediaLocationPermissionLauncher.launch(
+                Manifest.permission.ACCESS_MEDIA_LOCATION
+            )
+            return@rememberLauncherForActivityResult
+        }
+
         uploadUri(uri, overwrite = false)
     }
 
@@ -1679,6 +1743,23 @@ fun FilesScreen(
         contract = ActivityResultContracts.OpenMultipleDocuments()
     ) { uris: List<Uri> ->
         if (uris.isEmpty()) return@rememberLauncherForActivityResult
+
+        val needsOriginalPhotoAccess = uris.any {
+            requiresOriginalPhotoAccess(context, it)
+        }
+
+        if (
+            needsOriginalPhotoAccess &&
+            !hasMediaLocationPermission()
+        ) {
+            pendingMediaLocationUploadUri = null
+            pendingMediaLocationUploadUris = uris
+            mediaLocationPermissionLauncher.launch(
+                Manifest.permission.ACCESS_MEDIA_LOCATION
+            )
+            return@rememberLauncherForActivityResult
+        }
+
         uploadUrisSequentially(uris)
     }
 
